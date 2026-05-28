@@ -7036,11 +7036,13 @@ window.docGuardar=async function(){
   setTimeout(()=>{docCerrarModal();renderDocs();},800);
 };
 
-window.docEliminar=function(id){
+window.docEliminar=async function(id){
   if(!confirm('¿Eliminar este documento?'))return;
   const list=cargarDocs().filter(x=>x.id!==id);
   guardarDocs(list);
-  try{sb.from('documentos_sgc').delete().eq('local_id',id);}catch(e){}
+  try{
+    await sb.from('documentos_sgc').delete().eq('local_id',id);
+  }catch(e){console.error('error eliminando doc:',e);}
   renderDocs();
 };
 
