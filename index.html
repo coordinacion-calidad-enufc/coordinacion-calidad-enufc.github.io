@@ -48,7 +48,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .nav-group-hdr:hover{color:var(--muted)}
 .nav-chevron{width:13px;height:13px;flex-shrink:0;transition:transform .22s ease;color:var(--hint)}
 .nav-group-hdr.collapsed .nav-chevron{transform:rotate(-90deg)}
-.nav-collapse{overflow:hidden;transition:max-height .25s ease;max-height:600px}
+.nav-collapse{overflow:hidden;transition:max-height .25s ease;max-height:900px}
 .nav-collapse.collapsed{max-height:0!important}
 .main{margin-left:235px;flex:1;padding:1.75rem 1.5rem;min-height:100vh}
 
@@ -847,6 +847,103 @@ textarea{resize:vertical;min-height:70px}
   body.only-print-preview #ind-preview-card{display:block!important;margin:0!important}
   body.only-print-preview #ind-preview-card .card{display:block!important}
 }
+/* ── Memorándum preview ─────────────────────────── */
+.memo-sheet{
+  position:relative;width:100%;max-width:740px;margin:0 auto;
+  box-shadow:0 2px 20px rgba(0,0,0,.18);font-family:Arial,sans-serif;font-size:11pt;color:#000;
+  box-sizing:border-box;min-height:270mm;overflow:hidden;background:#fff}
+/* Membrete IEBEM — imagen de fondo de página completa */
+.memo-bg{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  object-fit:fill;z-index:0;display:block;pointer-events:none}
+/* Elementos solo visibles en impresión multi-página */
+.memo-print-bg-fixed,.memo-print-header-fixed,.memo-print-footer-fixed,.memo-print-doccode-fixed{display:none}
+.memo-overlay-inst-fixed{font-size:7pt;line-height:1.4;text-align:right;color:#000}
+.memo-footer-badge{display:inline-flex;align-items:center;gap:3px;vertical-align:middle}
+/* Código centrado en pie — solo impresión */
+.memo-print-doccode-fixed{text-align:center;font-size:7pt;color:#555}
+/* Overlay con info institucional — zona derecha del encabezado (≈ 55% desde izquierda, igual que Word) */
+.memo-overlay-inst{
+  position:absolute;top:3mm;left:54%;
+  width:44%;font-size:7pt;line-height:1.4;color:#000;z-index:2;text-align:right}
+.memo-overlay-inst b{font-size:7pt}
+/* Cuerpo del memo — se superpone sobre el membrete */
+.memo-body{
+  position:relative;z-index:1;
+  padding:48mm 14mm 12mm 14mm; /* top: espacio para el área gráfica del membrete */
+  min-height:270mm;box-sizing:border-box}
+.memo-title-block{text-align:center;margin:0 0 4px}
+.memo-title-block .mt{font-weight:700;font-size:13pt}
+.memo-title-block .ms{font-weight:700;font-size:11pt}
+.memo-title-block .mp{font-weight:700;font-size:11pt;margin-bottom:4px}
+.memo-divider{border:none;border-bottom:2px solid #4472C4;margin:4px 0 10px}
+.memo-fields-table{width:100%;border-collapse:collapse;margin:6px 0}
+.memo-fields-table td{vertical-align:top;font-size:11pt;padding:2px 4px}
+.memo-fields-table td.mlbl{font-weight:700;white-space:nowrap;width:32px}
+.memo-fields-table td.mval{font-size:10.5pt}
+.memo-asunto{font-size:11pt;margin:12px 0 6px}
+.memo-asunto b{font-weight:700}
+.memo-cuerpo{font-size:11pt;line-height:1.65;white-space:pre-wrap;margin:8px 0}
+.memo-footer-table{width:100%;font-size:7pt;color:#333;border-top:1px solid #999;
+  padding-top:4px;display:flex;justify-content:space-between;margin-top:30px}
+.memo-footer-table div:last-child{text-align:right}
+.memo-doccode{text-align:center;font-size:7pt;color:#666;margin-top:auto;padding-top:8px}
+/* Placeholder para contenteditable */
+#memo-cuerpo:empty:before{content:attr(data-placeholder);color:#aaa;pointer-events:none}
+/* Tablas dentro del editor de memo */
+#memo-cuerpo table{border-collapse:collapse;width:100%;margin:8px 0}
+#memo-cuerpo td,#memo-cuerpo th{border:1px solid #555;padding:4px 8px;min-width:60px;font-size:10.5pt}
+#memo-cuerpo th{background:#e8e8e8;font-weight:700;text-align:center}
+.memo-cuerpo table{border-collapse:collapse;width:100%;margin:6px 0}
+.memo-cuerpo td,.memo-cuerpo th{border:1px solid #555;padding:4px 8px;min-width:60px;font-size:10.5pt}
+.memo-cuerpo th{background:#e8e8e8;font-weight:700;text-align:center}
+@media print{
+  body.memo-print .sidebar,body.memo-print .topbar,body.memo-print .bottom-nav,
+  body.memo-print .overlay,body.memo-print .no-print,body.memo-print .page-title,
+  body.memo-print .page-sub,body.memo-print .card{display:none!important}
+  body.memo-print .main{margin:0!important;padding:0!important}
+  body.memo-print .section{display:none!important}
+  body.memo-print #sec-memorandum{display:block!important;padding:0!important}
+  body.memo-print #memo-preview-wrap{display:block!important}
+  /* Fondo membrete fijo — se repite en CADA página impresa */
+  body.memo-print .memo-print-bg-fixed{
+    display:block!important;position:fixed;top:0;left:0;right:0;bottom:0;
+    z-index:0;width:100%;height:100%;
+    -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  /* Encabezado fijo — se repite en CADA página impresa */
+  body.memo-print .memo-print-header-fixed{
+    display:block!important;position:fixed;top:3mm;right:8mm;
+    z-index:10;width:44%}
+  /* Pie fijo — se repite en CADA página impresa */
+  body.memo-print .memo-print-footer-fixed{
+    display:flex!important;position:fixed;bottom:26mm;left:8mm;right:8mm;
+    z-index:10;justify-content:space-between;align-items:flex-end;font-size:7pt;color:#333;
+    border-top:1px solid #999;padding:3px 4px 2px;
+    background:rgba(255,255,255,0.97);
+    -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body.memo-print .memo-print-doccode-fixed{
+    display:block!important;position:fixed;bottom:20mm;left:0;right:0;
+    text-align:center;font-size:7pt;color:#555;z-index:10;
+    background:rgba(255,255,255,0.97);
+    -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  /* Ocultar lo del sheet que se reemplaza por los fijos */
+  body.memo-print .memo-sheet{box-shadow:none!important;background:transparent!important;
+    position:static!important;min-height:0!important}
+  body.memo-print .memo-bg,body.memo-print .memo-overlay-inst{display:none!important}
+  /* Ocultar pie del cuerpo — el fijo ya lo cubre en cada página */
+  body.memo-print .memo-footer-table,body.memo-print .memo-doccode,
+  body.memo-print #prev-doccode,
+  body.memo-print #memo-preview-wrap>p{display:none!important}
+  body.memo-print .memo-body{
+    position:relative;z-index:1;
+    padding:45mm 14mm 42mm!important;
+    -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  @page{margin:.5in}
+}
+@media(max-width:600px){
+  .memo-sheet{padding:12px;min-height:auto}
+  .memo-header-wrap{flex-wrap:wrap}
+}
 @media(max-width:600px){
   .fh-wrap{grid-template-columns:60px 1fr 110px;min-height:70px}
   .fh-title-txt{font-size:13px}
@@ -1209,6 +1306,10 @@ textarea{resize:vertical;min-height:70px}
     <div class="nav-item" data-sec="solicitud" onclick="goto('solicitud',this)">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
       Solicitud de Servicios
+    </div>
+    <div class="nav-item" data-sec="memorandum" onclick="goto('memorandum',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7l-5-5H6a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+      Memorándum
     </div>
   </div>
   <!-- GESTIÓN DE PROVEEDORES -->
@@ -2231,6 +2332,217 @@ Coordinacion de Calidad</textarea>
     </div>
     <div class="card" id="admin-ia-card">
       <!-- Llenado por renderAdminIA() -->
+    </div>
+  </div>
+
+  <!-- ═══ MEMORÁNDUM ═══ -->
+  <div class="section" id="sec-memorandum">
+    <p class="page-title no-print">Memorándum</p>
+    <p class="page-sub no-print">Generador de Memorándums — R-74/01 Rev.00</p>
+
+    <!-- Toolbar -->
+    <div class="card no-print" style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <span style="font-size:13px;color:var(--muted)" id="memo-list-count"></span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="memoNuevo()">+ Nuevo Memorándum</button>
+          <button class="btn btn-sm" onclick="memoConfigAbrir()" title="Configurar remitente y lema">⚙ Configurar</button>
+        </div>
+      </div>
+      <div id="memo-lista" style="margin-top:12px"></div>
+    </div>
+
+    <!-- Config panel -->
+    <div class="card no-print" id="memo-config-card" style="display:none">
+      <h3 style="margin-bottom:14px">⚙ Configuración del Memorándum</h3>
+      <div class="row2">
+        <div>
+          <label class="lbl">Lema del año <span style="font-size:11px;color:var(--muted)">(se cambia cada año)</span></label>
+          <input type="text" id="memo-cfg-lema" placeholder="Ej. 2026, Año de Margarita Maza Parada">
+        </div>
+        <div>
+          <label class="lbl">Código del documento (pie de página)</label>
+          <input type="text" id="memo-cfg-codigo" placeholder="Ej. R-74/01 Rev. 00">
+        </div>
+        <div>
+          <label class="lbl">Iniciales (pie de página) <span style="font-size:11px;color:var(--muted)">Ej. RCAP*rjta</span></label>
+          <input type="text" id="memo-cfg-iniciales" placeholder="Ej. RCAP*rjta">
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label class="lbl">Nombre del remitente (DE:)</label>
+          <input type="text" id="memo-cfg-de-nombre" placeholder="Ej. MTRO. ROBERTO CARLOS AGUILAR PEDROZA">
+        </div>
+        <div>
+          <label class="lbl">Cargo del remitente</label>
+          <input type="text" id="memo-cfg-de-cargo" placeholder="Ej. COORDINADOR DE CALIDAD ISO 9001:2015">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary btn-sm" onclick="memoConfigGuardar()">Guardar configuración</button>
+        <button class="btn btn-sm" onclick="document.getElementById('memo-config-card').style.display='none'">Cancelar</button>
+      </div>
+      <div id="memo-cfg-msg" style="margin-top:8px"></div>
+    </div>
+
+    <!-- Form -->
+    <div class="card no-print" id="memo-form-card" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <h3 style="margin:0">Redactar Memorándum</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-sm" onclick="memoGenerarDocx()" title="Descargar como archivo Word">⬇ Descargar DOCX</button>
+          <button class="btn btn-sm" onclick="memoImprimirPreview()">🖨 Imprimir</button>
+          <button class="btn btn-sm" onclick="memoFormCerrar()">✕ Cerrar</button>
+        </div>
+      </div>
+      <input type="hidden" id="memo-id">
+      <div class="row2">
+        <div>
+          <label class="lbl">Número / Folio</label>
+          <input type="text" id="memo-folio" placeholder="Ej. MCC-001-2026" oninput="memoPreviewActualizar()">
+        </div>
+        <div>
+          <label class="lbl">Fecha</label>
+          <input type="date" id="memo-fecha" oninput="memoPreviewActualizar()">
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <label class="lbl" style="margin:0">Para (destinatarios)</label>
+          <button type="button" class="btn btn-sm" onclick="memoAgregarDestinatario()" style="font-size:12px;padding:2px 10px;min-height:28px">+ Agregar</button>
+        </div>
+        <div id="memo-destinatarios"></div>
+      </div>
+      <div class="row2">
+        <div>
+          <label class="lbl">De — Nombre</label>
+          <input type="text" id="memo-de-nombre" placeholder="Nombre del remitente" oninput="memoPreviewActualizar()">
+        </div>
+        <div>
+          <label class="lbl">De — Cargo</label>
+          <input type="text" id="memo-de-cargo" placeholder="Cargo del remitente" oninput="memoPreviewActualizar()">
+        </div>
+      </div>
+      <label class="lbl">Asunto</label>
+      <input type="text" id="memo-asunto" placeholder="Descripción breve del asunto" oninput="memoPreviewActualizar()">
+      <label class="lbl" style="margin-top:10px">Cuerpo del memorándum</label>
+      <!-- Barra de herramientas del editor -->
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;padding:4px 6px;background:var(--surface2);border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0">
+        <button type="button" class="btn btn-sm" style="padding:2px 8px;min-height:28px;font-weight:700" onclick="memoCmd('bold')" title="Negrita"><b>N</b></button>
+        <button type="button" class="btn btn-sm" style="padding:2px 8px;min-height:28px;font-style:italic" onclick="memoCmd('italic')" title="Cursiva"><i>K</i></button>
+        <button type="button" class="btn btn-sm" style="padding:2px 8px;min-height:28px;text-decoration:underline" onclick="memoCmd('underline')" title="Subrayado"><u>S</u></button>
+        <span style="width:1px;background:var(--border);margin:2px 2px"></span>
+        <button type="button" class="btn btn-sm" style="padding:2px 8px;min-height:28px" onclick="memoInsertarTabla()" title="Insertar tabla">⊞ Tabla</button>
+        <button type="button" class="btn btn-sm" style="padding:2px 8px;min-height:28px" onclick="memoCmd('insertUnorderedList')" title="Lista">≡ Lista</button>
+      </div>
+      <div id="memo-cuerpo"
+        contenteditable="true"
+        style="min-height:140px;padding:10px 12px;border:1px solid var(--border);border-radius:0 0 6px 6px;background:#fff;font-family:Arial,sans-serif;font-size:11pt;line-height:1.65;outline:none;overflow-y:auto"
+        oninput="memoPreviewActualizar()"
+        data-placeholder="Redacta el texto del memorándum..."></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="memoGuardar()">💾 Guardar</button>
+        <button class="btn btn-sm" id="memo-btn-qualyrar" onclick="memoAyudaQualiRAR()" title="Que QualiRAR redacte el cuerpo">🤖 Ayuda de QualiRAR</button>
+      </div>
+      <div id="memo-form-msg" style="margin-top:8px"></div>
+    </div>
+
+    <!-- Preview (visible junto al formulario) -->
+    <div id="memo-preview-wrap" style="display:none;margin-top:1rem">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:6px;text-align:center" class="no-print">Vista previa del memorándum</p>
+
+      <!-- Fondo membrete fijo — se repite en cada página al imprimir -->
+      <div class="memo-print-bg-fixed" aria-hidden="true">
+        <img src="memo_logo_enufc.jpg" alt="" style="width:100%;height:100%;object-fit:fill;-webkit-print-color-adjust:exact;print-color-adjust:exact">
+      </div>
+      <!-- Encabezado fijo para impresión multi-página -->
+      <div class="memo-print-header-fixed">
+        <div class="memo-overlay-inst-fixed">
+          <div><b>DIRECCIÓN:</b> Dirección de Educación Secundaria</div>
+          <div><b>ÁREA:</b> Departamento de Normales</div>
+          <div><b>UNIDAD:</b> Escuela Normal Urbana Federal Cuautla</div>
+          <div><b>OFICINA:</b> Coordinación de Calidad ISO 9001:2015</div>
+          <div style="margin-top:4px;font-style:italic" id="prev-lema-fixed"></div>
+          <div style="margin-top:2px" id="prev-fecha-fixed"></div>
+          <div style="margin-top:5px;border-top:1px solid #ccc;padding-top:3px">
+            <b>ASUNTO:</b> <span id="prev-asunto-fixed"></span>
+          </div>
+        </div>
+      </div>
+      <!-- Pie fijo para impresión multi-página -->
+      <div class="memo-print-footer-fixed">
+        <div>Av. Normal de Maestros No.1 Col. Gabriel Tepepa &nbsp;|&nbsp; C.P. 62742</div>
+        <div style="text-align:right">
+          Tel: (735) 35 8-40-19 y 4-03-00 &nbsp; Cuautla, Mor.<br>
+          Correo: 17dnl0004a@iebem.edu.mx<br>
+          <span id="prev-iniciales-fixed" style="font-style:italic"></span>
+        </div>
+      </div>
+      <!-- Código del documento — centrado, pie de cada página -->
+      <div class="memo-print-doccode-fixed" id="prev-doccode-fixed">R-74/01 Rev. 00</div>
+
+      <div class="memo-sheet" id="memo-preview-sheet">
+        <!-- Membrete IEBEM — fondo de página completa -->
+        <img class="memo-bg" src="memo_logo_enufc.jpg" alt="" aria-hidden="true" onerror="this.style.display='none'">
+
+        <!-- Overlay: info institucional + lema + fecha -->
+        <div class="memo-overlay-inst">
+          <div><b>DIRECCIÓN:</b> Dirección de Educación Secundaria</div>
+          <div><b>ÁREA:</b> Departamento de Normales</div>
+          <div><b>UNIDAD:</b> Escuela Normal Urbana Federal Cuautla</div>
+          <div><b>OFICINA:</b> Coordinación de Calidad ISO 9001:2015</div>
+          <div style="margin-top:5px;font-style:italic" id="prev-lema">"2026, Año de Margarita Maza Parada"</div>
+          <div style="margin-top:3px" id="prev-fecha-lugar">HH. Cuautla Morelos a — de — 2026</div>
+        </div>
+
+        <!-- Cuerpo del memorándum -->
+        <div class="memo-body">
+          <!-- Títulos -->
+          <div class="memo-title-block">
+            <div class="mt">MEMORÁNDUM</div>
+            <div class="ms">COORDINACIÓN DE CALIDAD ISO 9001:2015</div>
+            <div class="mp" id="prev-ciclo">2025-2026</div>
+          </div>
+          <hr class="memo-divider">
+
+          <!-- A / DE -->
+          <table class="memo-fields-table">
+            <tr>
+              <td class="mlbl">A:</td>
+              <td class="mval">
+                <div id="prev-para-nombre" style="font-weight:700"></div>
+                <div id="prev-para-cargo"></div>
+              </td>
+            </tr>
+            <tr>
+              <td class="mlbl">DE:</td>
+              <td class="mval">
+                <div id="prev-de-nombre" style="font-weight:700"></div>
+                <div id="prev-de-cargo"></div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Asunto -->
+          <div class="memo-asunto"><b>ASUNTO:</b> <span id="prev-asunto"></span></div>
+
+          <!-- Cuerpo -->
+          <div class="memo-cuerpo" id="prev-cuerpo"></div>
+
+          <!-- Pie de dirección -->
+          <div class="memo-footer-table">
+            <div>Av. Normal de Maestros No.1 Col. Gabriel Tepepa<br>C.P. 62742</div>
+            <div>
+              Tel: (735) 35 8-40-19 y 4-03-00 &nbsp;&nbsp; Cuautla, Mor.<br>
+              Correo: 17dnl0004a@iebem.edu.mx<br>
+              <span id="prev-iniciales" style="font-size:7pt;font-style:italic;color:#555">RCAP*rjta</span>
+            </div>
+          </div>
+        </div>
+        <!-- Código de documento — pie de página centrado -->
+        <div style="position:absolute;bottom:22mm;left:0;right:0;text-align:center;font-size:7pt;color:#555;z-index:2" id="prev-doccode">R-74/01 Rev. 00</div>
+      </div>
     </div>
   </div>
 
@@ -4237,7 +4549,7 @@ function rolUsuarioActual(){
 }
 function seccionesPermitidas(){
   const rol=rolUsuarioActual();
-  if(['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rol))return ['inicio','aud-nueva','aud-registro','aud-plan','ind-captura','ind-historial','informes','nc','eficacia','plan','solicitud','documentos','sol-cambios','r7503','drive','revision','satisfaccion','calendario','manual','politica','foda','objetivos','admin','prov-lista','prov-eval','prov-sol'];
+  if(['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rol))return ['inicio','aud-nueva','aud-registro','aud-plan','ind-captura','ind-historial','informes','nc','eficacia','plan','solicitud','documentos','sol-cambios','r7503','drive','revision','satisfaccion','calendario','manual','politica','foda','objetivos','admin','prov-lista','prov-eval','prov-sol','memorandum'];
   if(['auditor','auditor_lider','auditor interno'].includes(rol))return ['inicio','aud-nueva','aud-plan','documentos','r7503','drive','revision','calendario','manual','politica','foda','objetivos'];
   if(['area','responsable_area','responsable'].includes(rol))return ['inicio','ind-captura','ind-historial','nc','eficacia','solicitud','documentos','sol-cambios','r7503','drive'];
   return ['inicio'];
@@ -4357,6 +4669,7 @@ async function arrancarApp(){
       withTimeout(loadPlanesAuditoria(),'planes de auditoria'),
       withTimeout(cargarUsuarios(),'usuarios'),
       withTimeout(loadDocumentos(),'documentos'),
+      withTimeout(loadMemorandums(),'memorandums'),
       withTimeout(loadSolicitudesCambio(),'solicitudes cambio'),
       withTimeout(loadAsignaciones(),'asignaciones'),
       withTimeout(satLoad().then(d=>{_satDataCache=d;}),'satisfaccion'),
@@ -4380,6 +4693,7 @@ async function arrancarApp(){
     cargarDriveSupabase();
     cargarRevisionSupabase();
     loadDocumentos();
+    loadMemorandums();
     initNavGroups();
     renderNCs(); renderPlanes(); renderSolicitudes(); renderPlanesAuditoria(); renderDashboardMejorado(); renderProximosEventosInicio();
     aplicarPermisos();
@@ -4419,6 +4733,7 @@ window.goto=function(sec,navEl){
   if(sec==='admin'){fillSelects();renderAreasAdmin();renderIndCatalogo();renderUsuarios();renderConfigInstitucional();renderAdminIA();loadAsignaciones().then(renderAdminAsignaciones);}
   if(sec==='aud-nueva'||sec==='ind-captura'){fillSelects();aplicarConfigAuditoria();aplicarPermisos();loadAsignaciones().then(renderIndLista);}
   if(sec==='documentos'){fillDocAreaSelect();docDiagnosticarSync();withTimeout(loadDocumentos(),'documentos').then(renderDocs);}
+  if(sec==='memorandum'){withTimeout(loadMemorandums(),'memorandums').then(renderMemorandum);}
   if(sec==='sol-cambios'){fillSelectSC();withTimeout(loadSolicitudesCambio(),'sol-cambios').then(renderSolicitudesCambio);sc_nueva();}
   if(sec==='solicitud'){withTimeout(loadSolicitudes(),'solicitudes').then(renderSolicitudes);}
   if(sec==='plan'){withTimeout(loadPlanes(),'planes').then(renderPlanes);}
@@ -6802,6 +7117,436 @@ function htmlSolFormato(s){
 window.sol_vistaPrevia=function(){activarVistaFormato('sol-preview-card',htmlSolFormato(leerSolActual()));};
 window.sol_imprimirFormato=function(){imprimirSoloFormato('sec-solicitud',sol_vistaPrevia);};
 
+/* ══════════════════════════════════════════════════════
+   MEMORÁNDUM — R-74/01
+══════════════════════════════════════════════════════ */
+function memoGetConfig(){
+  return{
+    lema:localStorage.getItem('sgc_memo_lema')||'2026, Año de Margarita Maza Parada',
+    codigo:localStorage.getItem('sgc_memo_codigo')||'R-74/01 Rev. 00',
+    iniciales:localStorage.getItem('sgc_memo_iniciales')||'RCAP*rjta',
+    de_nombre:localStorage.getItem('sgc_memo_de_nombre')||'MTRO. ROBERTO CARLOS AGUILAR PEDROZA',
+    de_cargo:localStorage.getItem('sgc_memo_de_cargo')||'COORDINADOR DE CALIDAD ISO 9001:2015'
+  };
+}
+function memoGetMemos(){
+  try{return JSON.parse(localStorage.getItem('sgc_memorandums')||'[]');}catch{return[];}
+}
+function memoSaveMemos(list){localStorage.setItem('sgc_memorandums',JSON.stringify(list));}
+function memoFechaLarga(iso){
+  if(!iso)return'—';
+  const[y,m,d]=iso.split('-');
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${parseInt(d)} de ${meses[parseInt(m)-1]} ${y}`;
+}
+
+function renderMemorandum(){
+  const list=memoGetMemos();
+  const el=document.getElementById('memo-lista');
+  const cnt=document.getElementById('memo-list-count');
+  if(cnt)cnt.textContent=list.length?`${list.length} memorándum${list.length!==1?'s':''}`:' ';
+  if(!el)return;
+  if(!list.length){
+    el.innerHTML='<p style="font-size:13px;color:var(--muted);text-align:center;padding:18px 0">No hay memorándums guardados. Crea uno nuevo.</p>';
+    return;
+  }
+  el.innerHTML=list.slice().reverse().map(m=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+      <div style="flex:1;min-width:180px">
+        <div style="font-weight:600;font-size:13px">${esc(m.folio||'Sin folio')} — ${esc(m.asunto||'Sin asunto')}</div>
+        <div style="font-size:12px;color:var(--muted)">Para: ${esc((m.destinatarios&&m.destinatarios.map(d=>d.nombre).filter(Boolean).join(', '))||m.para_nombre||'—')} &nbsp;|&nbsp; ${esc(memoFechaLarga(m.fecha))}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="memoEditar('${m.id}')">✏️ Editar</button>
+        <button class="btn btn-sm" onclick="memoEliminar('${m.id}')" style="color:var(--red)">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+window.memoNuevo=function(){
+  const cfg=memoGetConfig();
+  document.getElementById('memo-id').value='memo_'+Date.now();
+  document.getElementById('memo-folio').value='';
+  document.getElementById('memo-fecha').value=new Date().toISOString().slice(0,10);
+  _memoDestBuffer=[{nombre:'',cargo:''}];
+  memoRenderDestinatariosFromBuffer();
+  document.getElementById('memo-de-nombre').value=cfg.de_nombre;
+  document.getElementById('memo-de-cargo').value=cfg.de_cargo;
+  document.getElementById('memo-asunto').value='';
+  document.getElementById('memo-cuerpo').innerHTML='';
+  document.getElementById('memo-form-card').style.display='block';
+  document.getElementById('memo-preview-wrap').style.display='block';
+  document.getElementById('memo-form-msg').innerHTML='';
+  memoPreviewActualizar();
+  document.getElementById('memo-form-card').scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+window.memoEditar=function(id){
+  const m=memoGetMemos().find(x=>x.id===id);
+  if(!m)return;
+  document.getElementById('memo-id').value=m.id;
+  document.getElementById('memo-folio').value=m.folio||'';
+  document.getElementById('memo-fecha').value=m.fecha||'';
+  _memoDestBuffer=m.destinatarios&&m.destinatarios.length?m.destinatarios:[{nombre:m.para_nombre||'',cargo:m.para_cargo||''}];
+  memoRenderDestinatariosFromBuffer();
+  document.getElementById('memo-de-nombre').value=m.de_nombre||'';
+  document.getElementById('memo-de-cargo').value=m.de_cargo||'';
+  document.getElementById('memo-asunto').value=m.asunto||'';
+  document.getElementById('memo-cuerpo').innerHTML=m.cuerpo||'';
+  document.getElementById('memo-form-card').style.display='block';
+  document.getElementById('memo-preview-wrap').style.display='block';
+  document.getElementById('memo-form-msg').innerHTML='';
+  memoPreviewActualizar();
+  document.getElementById('memo-form-card').scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+window.memoFormCerrar=function(){
+  document.getElementById('memo-form-card').style.display='none';
+  document.getElementById('memo-preview-wrap').style.display='none';
+};
+
+window.memoGuardar=async function(){
+  const id=document.getElementById('memo-id').value;
+  const dest=memoGetDestinatarios();
+  const m={
+    id,
+    folio:document.getElementById('memo-folio').value.trim(),
+    fecha:document.getElementById('memo-fecha').value,
+    destinatarios:dest,
+    para_nombre:dest[0]?.nombre||'',
+    para_cargo:dest[0]?.cargo||'',
+    de_nombre:document.getElementById('memo-de-nombre').value.trim(),
+    de_cargo:document.getElementById('memo-de-cargo').value.trim(),
+    asunto:document.getElementById('memo-asunto').value.trim(),
+    cuerpo:document.getElementById('memo-cuerpo').innerHTML.trim(),
+    updated_at:new Date().toISOString()
+  };
+  if(!m.asunto){showMsg('memo-form-msg','err','El asunto es requerido.');return;}
+  const list=memoGetMemos();
+  const idx=list.findIndex(x=>x.id===id);
+  if(idx>=0)list[idx]=m; else list.push(m);
+  memoSaveMemos(list);
+  // Sincronizar con Supabase
+  try{
+    const payload={
+      local_id:id,
+      folio:m.folio||'',
+      fecha:m.fecha||null,
+      destinatarios:m.destinatarios||[],
+      para_nombre:m.para_nombre||'',
+      para_cargo:m.para_cargo||'',
+      de_nombre:m.de_nombre||'',
+      de_cargo:m.de_cargo||'',
+      asunto:m.asunto||'',
+      cuerpo:m.cuerpo||'',
+      updated_at:m.updated_at
+    };
+    const{error}=await sb.from('memorandums_sgc').upsert(payload,{onConflict:'local_id'});
+    if(error){
+      console.error('memo upsert error:',error);
+      showMsg('memo-form-msg','warn','Guardado local OK — error al sincronizar: '+error.message);
+      setTimeout(()=>renderMemorandum(),1500);return;
+    }
+    showMsg('memo-form-msg','ok','Memorándum guardado y sincronizado ✓');
+  }catch(e){
+    console.error('memo sync excepción:',e);
+    showMsg('memo-form-msg','warn','Guardado local OK — sin conexión a Supabase');
+  }
+  renderMemorandum();
+};
+
+window.memoEliminar=async function(id){
+  if(!confirm('¿Eliminar este memorándum?'))return;
+  memoSaveMemos(memoGetMemos().filter(x=>x.id!==id));
+  try{await sb.from('memorandums_sgc').delete().eq('local_id',id);}
+  catch(e){console.error('memo delete error:',e);}
+  renderMemorandum();
+};
+
+window.memoPreviewActualizar=function(){
+  const cfg=memoGetConfig();
+  const fecha=document.getElementById('memo-fecha').value;
+  const ahora=new Date();
+  const cicloA=ahora.getMonth()<6?ahora.getFullYear()-1:ahora.getFullYear();
+  // Fecha larga
+  const fechaLarga=fecha?memoFechaLarga(fecha):'—';
+  const ye=fecha?fecha.slice(0,4):ahora.getFullYear();
+  // Actualizar campos preview
+  const set=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt;};
+  const setH=(id,html)=>{const e=document.getElementById(id);if(e)e.innerHTML=html;};
+  set('prev-lema',`"${cfg.lema}"`);
+  set('prev-fecha-lugar',`HH. Cuautla Morelos a ${fechaLarga}`);
+  // Sincronizar en header/footer fijo (multi-página impresión)
+  set('prev-lema-fixed',`"${cfg.lema}"`);
+  set('prev-fecha-fixed',`HH. Cuautla Morelos a ${fechaLarga}`);
+  set('prev-asunto-fixed',document.getElementById('memo-asunto')?.value||'');
+  set('prev-iniciales',cfg.iniciales);
+  set('prev-iniciales-fixed',cfg.iniciales);
+  set('prev-doccode-fixed',cfg.codigo);
+  set('prev-ciclo',`${cicloA}-${parseInt(cicloA)+1}`);
+  // Destinatarios múltiples
+  const destList=memoGetDestinatarios().filter(d=>d.nombre||d.cargo);
+  const destHtml=destList.length
+    ?destList.map(d=>`<div style="font-weight:700">${esc(d.nombre||'')}</div><div>${esc(d.cargo||'')}</div>`).join('<div style="margin-top:3px"></div>')
+    :'<span>—</span>';
+  setH('prev-para-nombre',destHtml);
+  const prevPC=document.getElementById('prev-para-cargo');if(prevPC)prevPC.style.display='none';
+  set('prev-de-nombre',document.getElementById('memo-de-nombre').value||cfg.de_nombre);
+  set('prev-de-cargo',document.getElementById('memo-de-cargo').value||cfg.de_cargo);
+  set('prev-asunto',document.getElementById('memo-asunto').value||'—');
+  // El cuerpo es contenteditable — renderizar HTML directo
+  const cuerpoEl=document.getElementById('memo-cuerpo');
+  setH('prev-cuerpo',cuerpoEl?cuerpoEl.innerHTML:'');
+  set('prev-doccode',cfg.codigo);
+};
+
+window.memoImprimirPreview=function(){
+  document.body.classList.add('memo-print');
+  window.print();
+  document.body.classList.remove('memo-print');
+};
+
+window.memoConfigAbrir=function(){
+  const cfg=memoGetConfig();
+  document.getElementById('memo-cfg-lema').value=cfg.lema;
+  document.getElementById('memo-cfg-codigo').value=cfg.codigo;
+  document.getElementById('memo-cfg-iniciales').value=cfg.iniciales;
+  document.getElementById('memo-cfg-de-nombre').value=cfg.de_nombre;
+  document.getElementById('memo-cfg-de-cargo').value=cfg.de_cargo;
+  document.getElementById('memo-config-card').style.display='block';
+  document.getElementById('memo-config-card').scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+window.memoConfigGuardar=function(){
+  localStorage.setItem('sgc_memo_lema',document.getElementById('memo-cfg-lema').value.trim());
+  localStorage.setItem('sgc_memo_codigo',document.getElementById('memo-cfg-codigo').value.trim());
+  localStorage.setItem('sgc_memo_iniciales',document.getElementById('memo-cfg-iniciales').value.trim());
+  localStorage.setItem('sgc_memo_de_nombre',document.getElementById('memo-cfg-de-nombre').value.trim());
+  localStorage.setItem('sgc_memo_de_cargo',document.getElementById('memo-cfg-de-cargo').value.trim());
+  showMsg('memo-cfg-msg','ok','Configuración guardada ✓');
+  setTimeout(()=>{document.getElementById('memo-config-card').style.display='none';memoPreviewActualizar();},900);
+};
+
+/* ── QualiRAR: ayuda para redactar el cuerpo ── */
+window.memoAyudaQualiRAR=function(){
+  const asunto=document.getElementById('memo-asunto').value.trim();
+  const para=document.getElementById('memo-para-nombre').value.trim();
+  const de=document.getElementById('memo-de-nombre').value.trim()||memoGetConfig().de_nombre;
+  // Abrir panel de QualiRAR
+  const panel=document.getElementById('chat-panel');
+  if(panel&&!panel.classList.contains('open'))panel.classList.add('open');
+  setTimeout(()=>{
+    const inp=document.getElementById('chat-input');
+    if(inp){
+      inp.value=`Redacta el cuerpo de un memorándum institucional de la ENUFC. `+
+        `Remitente: ${de||'Coordinador de Calidad'}. `+
+        `Destinatario: ${para||'Director'}. `+
+        `Asunto: ${asunto||'(sin asunto definido)'}. `+
+        `Usa lenguaje formal, breve y respetuoso. Escribe solo el cuerpo del texto (no el encabezado ni datos del destinatario).`;
+      inp.focus();
+    }
+  },300);
+};
+
+/* ── Descargar DOCX ── */
+window.memoGenerarDocx=async function(){
+  const btn=document.querySelector('[onclick="memoGenerarDocx()"]');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Generando...';}
+  try{
+    // Cargar docx.js si no está disponible
+    if(!window.docx){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js';
+        s.onload=res; s.onerror=rej;
+        document.head.appendChild(s);
+      });
+    }
+    const{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,
+          Header,Footer,AlignmentType,BorderStyle,WidthType,ShadingType,
+          VerticalAlign,ImageRun,TabStopType,PageNumber}=window.docx;
+
+    const cfg=memoGetConfig();
+    const fecha=document.getElementById('memo-fecha').value;
+    const ahora=new Date();
+    const cicloA=ahora.getMonth()<6?ahora.getFullYear()-1:ahora.getFullYear();
+    const ciclo=`${cicloA}-${parseInt(cicloA)+1}`;
+    const paraNombre=document.getElementById('memo-para-nombre').value.trim();
+    const paraCargo=document.getElementById('memo-para-cargo').value.trim();
+    const deNombre=document.getElementById('memo-de-nombre').value.trim()||cfg.de_nombre;
+    const deCargo=document.getElementById('memo-de-cargo').value.trim()||cfg.de_cargo;
+    const asunto=document.getElementById('memo-asunto').value.trim();
+    const cuerpo=document.getElementById('memo-cuerpo').innerText.trim(); // texto plano para DOCX
+    const folio=document.getElementById('memo-folio').value.trim();
+
+    // Fetch membrete e imágenes
+    let membreteData=null, sepLogoData=null;
+    try{const r=await fetch('memo_logo_enufc.jpg');if(r.ok)membreteData=await r.arrayBuffer();}catch{}
+    try{const r=await fetch('memo_logo_sep.png');if(r.ok)sepLogoData=await r.arrayBuffer();}catch{}
+
+    // Helpers
+    const arial=(text,opts={})=>new TextRun({text,font:'Arial',...opts});
+    const noBorder={style:BorderStyle.NONE,size:0,color:'FFFFFF'};
+    const noBorders={top:noBorder,bottom:noBorder,left:noBorder,right:noBorder,insideH:noBorder,insideV:noBorder};
+
+    // HEADER — membrete como imagen de página completa (behindDoc) + info institucional
+    const headerChildren=[];
+
+    // Membrete de fondo (imagen de página completa, igual que el original)
+    if(membreteData){
+      headerChildren.push(new Paragraph({
+        children:[new ImageRun({
+          type:'jpeg', data:membreteData,
+          // 8.5" × 11" en píxeles a 96dpi
+          transformation:{width:816,height:1056},
+          floating:{
+            horizontalPosition:{relative:'page',offset:-243840},
+            verticalPosition:{relative:'page',offset:-457200},
+            behindDocument:true,
+            wrap:{type:'none',side:'bothSides'},
+            zIndex:1,
+            allowOverlap:true
+          },
+          altText:{title:'Membrete',description:'Membrete IEBEM',name:'Membrete'}
+        })]
+      }));
+    }
+
+    // Info institucional (lado derecho del header, igual que el original)
+    const instRightTable=new Table({
+      width:{size:9360,type:WidthType.DXA},
+      columnWidths:[5040,4320],
+      borders:{top:noBorder,bottom:noBorder,left:noBorder,right:noBorder,insideH:noBorder,insideV:noBorder},
+      rows:[new TableRow({children:[
+        new TableCell({width:{size:5040,type:WidthType.DXA},borders:noBorders,children:[new Paragraph({children:[]})]}),
+        new TableCell({width:{size:4320,type:WidthType.DXA},borders:noBorders,children:[
+          new Paragraph({children:[arial('DIRECCIÓN: ',{bold:true,size:14}),arial('Dirección de Educación Secundaria',{size:14})]}),
+          new Paragraph({children:[arial('ÁREA: ',{bold:true,size:14}),arial('Departamento de Normales',{size:14})]}),
+          new Paragraph({children:[arial('UNIDAD: ',{bold:true,size:14}),arial('Escuela Normal Urbana Federal Cuautla',{size:14})]}),
+          new Paragraph({children:[arial('OFICINA: ',{bold:true,size:14}),arial('Coordinación de Calidad ISO 9001:2015',{size:14})]}),
+          new Paragraph({children:[]}),
+          new Paragraph({children:[arial(`"${cfg.lema}"`,{italics:true,size:14})]}),
+          new Paragraph({children:[]}),
+          new Paragraph({children:[arial(`HH. Cuautla Morelos a ${memoFechaLarga(fecha)}`,{size:14})]}),
+        ]})
+      ]})]
+    });
+    headerChildren.push(instRightTable);
+    const headerTable=instRightTable; // alias para compatibilidad
+
+    // A/DE table
+    const fieldTable=new Table({
+      width:{size:9360,type:WidthType.DXA},
+      columnWidths:[600,8760],
+      borders:{top:noBorder,bottom:noBorder,left:noBorder,right:noBorder,insideH:noBorder,insideV:noBorder},
+      rows:[
+        new TableRow({children:[
+          new TableCell({width:{size:600,type:WidthType.DXA},borders:noBorders,verticalAlign:VerticalAlign.TOP,
+            children:[new Paragraph({children:[arial('A:',{bold:true,size:22})]})] }),
+          new TableCell({width:{size:8760,type:WidthType.DXA},borders:noBorders,verticalAlign:VerticalAlign.TOP,
+            children:[
+              new Paragraph({children:[arial(paraNombre,{bold:true,size:22})]}),
+              new Paragraph({children:[arial(paraCargo,{size:22})]}),
+            ]})
+        ]}),
+        new TableRow({children:[
+          new TableCell({width:{size:600,type:WidthType.DXA},borders:noBorders,verticalAlign:VerticalAlign.TOP,
+            children:[new Paragraph({children:[arial('DE:',{bold:true,size:22})]})] }),
+          new TableCell({width:{size:8760,type:WidthType.DXA},borders:noBorders,verticalAlign:VerticalAlign.TOP,
+            children:[
+              new Paragraph({children:[arial(deNombre,{bold:true,size:22})]}),
+              new Paragraph({children:[arial(deCargo,{size:22})]}),
+            ]})
+        ]})
+      ]
+    });
+
+    // Cuerpo lines
+    const cuerpoParas=cuerpo.split('\n').map(line=>
+      new Paragraph({alignment:AlignmentType.BOTH,children:[arial(line,{size:22})]})
+    );
+
+    // Footer address table
+    const addrTable=new Table({
+      width:{size:9360,type:WidthType.DXA},
+      columnWidths:[5200,4160],
+      borders:{top:{style:BorderStyle.SINGLE,size:4,color:'999999'},bottom:noBorder,left:noBorder,right:noBorder,insideH:noBorder,insideV:noBorder},
+      rows:[new TableRow({children:[
+        new TableCell({width:{size:5200,type:WidthType.DXA},
+          borders:{top:{style:BorderStyle.SINGLE,size:4,color:'999999'},bottom:noBorder,left:noBorder,right:noBorder},
+          children:[
+            new Paragraph({children:[arial('Av. Normal de Maestros No.1 Col. Gabriel Tepepa',{size:14})]}),
+            new Paragraph({children:[arial('C.P. 62742',{size:14})]}),
+          ]}),
+        new TableCell({width:{size:4160,type:WidthType.DXA},
+          borders:{top:{style:BorderStyle.SINGLE,size:4,color:'999999'},bottom:noBorder,left:noBorder,right:noBorder},
+          children:[
+            new Paragraph({alignment:AlignmentType.RIGHT,children:[arial('Tel: (735) 35 8-40-19 y 4-03-00    Cuautla, Mor.',{size:14})]}),
+            new Paragraph({alignment:AlignmentType.RIGHT,children:[arial('Correo Electrónico: 17dnl0004a@iebem.edu.mx',{size:14})]}),
+          ]}),
+      ]})]
+    });
+
+    const doc=new Document({
+      sections:[{
+        properties:{
+          page:{
+            size:{width:12240,height:15840},
+            margin:{top:1080,right:1080,bottom:1080,left:1080}
+          }
+        },
+        headers:{
+          default:new Header({children:headerChildren})
+        },
+        footers:{
+          default:new Footer({children:[
+            new Paragraph({alignment:AlignmentType.RIGHT,children:[arial(cfg.codigo,{size:14,color:'666666'})]})
+          ]})
+        },
+        children:[
+          new Paragraph({children:[]}),
+          // Title
+          new Paragraph({alignment:AlignmentType.CENTER,children:[arial('MEMORÁNDUM',{bold:true,size:26})]}),
+          new Paragraph({alignment:AlignmentType.CENTER,children:[arial('COORDINACIÓN DE CALIDAD ISO 9001:2015',{bold:true,size:22})]}),
+          new Paragraph({alignment:AlignmentType.CENTER,children:[arial(ciclo,{bold:true,size:22})],
+            border:{bottom:{style:BorderStyle.SINGLE,size:8,color:'4472C4',space:4}}}),
+          new Paragraph({children:[]}),
+          fieldTable,
+          new Paragraph({children:[]}),
+          new Paragraph({children:[arial('ASUNTO',{bold:true,size:22}),arial(': ',{bold:true,size:22}),arial(asunto,{size:22})]}),
+          new Paragraph({children:[]}),
+          ...cuerpoParas,
+          new Paragraph({children:[]}),
+          addrTable,
+          folio?new Paragraph({alignment:AlignmentType.RIGHT,children:[arial(`No. ${folio}`,{size:14,color:'555555'})]}):new Paragraph({children:[]}),
+        ]
+      }]
+    });
+
+    const blob=await Packer.toBlob(doc);
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`Memorandum${folio?'_'+folio:''}_${fecha||'sin-fecha'}.docx`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }catch(e){
+    alert('Error al generar el DOCX: '+e.message);
+    console.error(e);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='⬇ Descargar DOCX';}
+  }
+};
+
+// Inicializar memorándum al entrar a la sección
+const _memoGotoOrig=window.goto;
+(function(){
+  const _origGoto=window.goto;
+  window.goto=function(sec,el){
+    _origGoto(sec,el);
+    if(sec==='memorandum')renderMemorandum();
+  };
+})();
+
 const SGC_BACKUP_KEYS=[
   'sgc_nc',
   'sgc_planes',
@@ -6809,6 +7554,11 @@ const SGC_BACKUP_KEYS=[
   'sgc_planes_auditoria',
   'sgc_config_institucional',
   'sgc_mediciones_meta',
+  'sgc_memorandums',
+  'sgc_memo_lema',
+  'sgc_memo_codigo',
+  'sgc_memo_de_nombre',
+  'sgc_memo_de_cargo',
   'sb_email'
 ];
 window.exportarRespaldoSGC=function(){
@@ -7284,6 +8034,31 @@ async function docDiagnosticarSync(){
     diag.style.background='#FEE2E2';diag.style.color='#7F1D1D';diag.style.border='1px solid #FECACA';
     diag.innerHTML='❌ <b>Excepción al conectar:</b> '+e.message;
   }
+}
+
+/* ── Sync Memorándums con Supabase ── */
+async function loadMemorandums(){
+  try{
+    const{data,error}=await sb.from('memorandums_sgc').select('*').order('updated_at',{ascending:false});
+    if(error){console.warn('memo sync load:',error);return;}
+    if(!data||!data.length)return;
+    const local=memoGetMemos();
+    const localById={};local.forEach(m=>{localById[m.id]=m;});
+    const remoteIds=new Set(data.map(r=>r.local_id));
+    const soloLocales=local.filter(m=>!remoteIds.has(m.id));
+    const merged=[
+      ...data.map(r=>{
+        const loc=localById[r.local_id]||{};
+        return{
+          ...loc,...r,
+          id:r.local_id,
+          destinatarios:r.destinatarios||loc.destinatarios||[{nombre:r.para_nombre||'',cargo:r.para_cargo||''}]
+        };
+      }),
+      ...soloLocales
+    ];
+    memoSaveMemos(merged);
+  }catch(e){console.warn('memo sync excepción:',e);}
 }
 
 async function loadDocumentos(){
@@ -9397,6 +10172,195 @@ function renderActionCard(action){
   return '';
 }
 
+/* ── Destinatarios múltiples del memorándum ── */
+function memoRenderDestinatarios(){
+  const cont=document.getElementById('memo-destinatarios');
+  if(!cont)return;
+  const dest=memoGetDestinatarios();
+  cont.innerHTML=dest.map((d,i)=>`
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px" id="memo-dest-row-${i}">
+      <div style="flex:1">
+        <input type="text" class="memo-dest-nombre" data-idx="${i}" value="${esc(d.nombre||'')}"
+          placeholder="Nombre (Ej. MTRO. SAMIR GÓMEZ CALDERÓN)"
+          oninput="memoPreviewActualizar()" style="margin-bottom:4px">
+        <input type="text" class="memo-dest-cargo" data-idx="${i}" value="${esc(d.cargo||'')}"
+          placeholder="Cargo (Ej. DIRECTOR DE LA ENUFC)"
+          oninput="memoPreviewActualizar()">
+      </div>
+      ${dest.length>1?`<button type="button" class="btn btn-sm" onclick="memoQuitarDestinatario(${i})"
+        style="color:var(--red);padding:2px 8px;min-height:28px;flex-shrink:0" title="Quitar">✕</button>`:''}
+    </div>`).join('');
+  memoPreviewActualizar();
+}
+function memoGetDestinatarios(){
+  const rows=document.querySelectorAll('#memo-destinatarios [id^="memo-dest-row-"]');
+  if(!rows.length)return[{nombre:'',cargo:''}];
+  return Array.from(document.querySelectorAll('.memo-dest-nombre')).map((el,i)=>({
+    nombre:el.value.trim(),
+    cargo:(document.querySelectorAll('.memo-dest-cargo')[i]?.value||'').trim()
+  }));
+}
+window.memoAgregarDestinatario=function(){
+  // Leer estado actual, añadir vacío y re-renderizar
+  const dest=memoGetDestinatarios();
+  dest.push({nombre:'',cargo:''});
+  _memoDestBuffer=dest;
+  memoRenderDestinatariosFromBuffer();
+};
+window.memoQuitarDestinatario=function(idx){
+  const dest=memoGetDestinatarios().filter((_,i)=>i!==idx);
+  _memoDestBuffer=dest.length?dest:[{nombre:'',cargo:''}];
+  memoRenderDestinatariosFromBuffer();
+};
+let _memoDestBuffer=null;
+function memoRenderDestinatariosFromBuffer(){
+  const cont=document.getElementById('memo-destinatarios');
+  if(!cont)return;
+  const dest=_memoDestBuffer||[{nombre:'',cargo:''}];
+  cont.innerHTML=dest.map((d,i)=>`
+    <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:6px" id="memo-dest-row-${i}">
+      <div style="flex:1">
+        <input type="text" class="memo-dest-nombre" data-idx="${i}" value="${esc(d.nombre||'')}"
+          placeholder="Nombre (Ej. MTRO. SAMIR GÓMEZ CALDERÓN)"
+          oninput="memoPreviewActualizar()" style="margin-bottom:4px">
+        <input type="text" class="memo-dest-cargo" data-idx="${i}" value="${esc(d.cargo||'')}"
+          placeholder="Cargo (Ej. DIRECTOR DE LA ENUFC)"
+          oninput="memoPreviewActualizar()">
+      </div>
+      ${dest.length>1?`<button type="button" class="btn btn-sm" onclick="memoQuitarDestinatario(${i})"
+        style="color:var(--red);padding:2px 8px;min-height:28px;flex-shrink:0;margin-top:4px" title="Quitar">✕</button>`:''}
+    </div>`).join('');
+  _memoDestBuffer=null;
+  memoPreviewActualizar();
+}
+
+/* ── Editor de cuerpo de memorándum ── */
+window.memoCmd=function(cmd){document.execCommand(cmd,false,null);document.getElementById('memo-cuerpo')?.focus();memoPreviewActualizar();};
+window.memoInsertarTabla=function(){
+  const filas=parseInt(prompt('¿Cuántas filas?','3')||0);
+  const cols=parseInt(prompt('¿Cuántas columnas?','3')||0);
+  if(!filas||!cols||filas<1||cols<1)return;
+  let html='<table><thead><tr>'+Array(cols).fill(0).map((_,i)=>`<th>Columna ${i+1}</th>`).join('')+'</tr></thead><tbody>';
+  for(let r=0;r<filas-1;r++){html+='<tr>'+Array(cols).fill('<td>&nbsp;</td>').join('')+'</tr>';}
+  html+='</tbody></table><p></p>';
+  document.execCommand('insertHTML',false,html);
+  memoPreviewActualizar();
+};
+
+/* ── Calcular indicadores 01-03 desde encuesta/ficha y mostrar tarjetas ── */
+window.chatCalcularIndicadoresEncuesta=function(){
+  const messages=document.getElementById('chat-messages');
+  if(!messages)return;
+  if(!_satDataCache||(!_satDataCache.ficha.length&&!_satDataCache.encuesta.length)){
+    const d=document.createElement('div');
+    d.className='chat-msg chat-msg-bot';
+    d.innerHTML='Para calcular los indicadores desde la encuesta necesito que primero vayas a <b>Satisfacción del Alumno</b> e importes los CSV de Ficha y Encuesta. Una vez cargados, regresa aquí y vuelve a pedirlo.';
+    messages.appendChild(d);messages.scrollTop=messages.scrollHeight;
+    return;
+  }
+  const{ficha,encuesta}=_satDataCache;
+  const docFields=['doc_dominio_materia','doc_estrategias_ensenanza','doc_recursos_didacticos','doc_estrategias_eval','doc_asesoria_academica'];
+  const periodos=[...new Set([...ficha,...encuesta].map(r=>satPeriodo(r.marca_temporal)).filter(Boolean))]
+    .sort((a,b)=>satPeriodoSortKey(a).localeCompare(satPeriodoSortKey(b)));
+  const periodo=periodos[periodos.length-1]||'Sin período';
+  const eR=encuesta.filter(r=>satPeriodo(r.marca_temporal)===periodo);
+  const fR=ficha.filter(r=>satPeriodo(r.marca_temporal)===periodo);
+
+  // Ind 01: Percepción de clases (docFields → % positivos ≥4)
+  const docScores=eR.flatMap(r=>docFields.map(f=>satScore(r[f])).filter(v=>v!==null));
+  const ind01Pct=docScores.length?+(docScores.filter(v=>v>=4).length/docScores.length*100).toFixed(1):null;
+
+  // Ind 02: Actividades culturales (participa_cultural + satisfaccion_cultural)
+  const cultSi=eR.filter(r=>/s[ií]/i.test(r.participa_cultural||'')).length;
+  const cultTotal=eR.filter(r=>(r.participa_cultural||'').trim()!=='').length;
+  const cultAvg=satAvg(eR.filter(r=>/s[ií]/i.test(r.participa_cultural||'')),['satisfaccion_cultural']);
+  const ind02Pct=cultTotal>0?+(cultSi/cultTotal*100).toFixed(1):(cultAvg!=null?+(cultAvg/5*100).toFixed(1):null);
+
+  // Ind 03: Formación y experiencia docentes (% con promedio docFields ≥3.75 = 75% de 5)
+  const docPositivos=eR.filter(r=>{
+    const vals=docFields.map(f=>satScore(r[f])).filter(v=>v!==null);
+    if(!vals.length)return false;
+    return vals.reduce((a,b)=>a+b,0)/vals.length>=3.75;
+  }).length;
+  const ind03Pct=eR.length>0?+(docPositivos/eR.length*100).toFixed(1):null;
+
+  const sem=v=>v===null?'—':(v>=75?'🟢':v>=60?'🟡':'🔴');
+  const noData='<span style="color:#9CA3AF">Sin datos suficientes</span>';
+
+  // Mensaje resumen
+  const botMsg=document.createElement('div');
+  botMsg.className='chat-msg chat-msg-bot';
+  botMsg.innerHTML=`Con los datos del período <b>${esc(periodo)}</b> (${eR.length} encuestas, ${fR.length} fichas) calculé los valores para los indicadores 01, 02 y 03. Revisa cada tarjeta y haz clic en <b>"Aplicar a indicador"</b> para pre-llenar el formulario.`;
+  messages.appendChild(botMsg);
+
+  // Tarjetas para cada indicador
+  const indicadores=[
+    {num:'01',nombre:'Percepción de clases',resultado:ind01Pct,
+     obs:`Período: ${periodo} | Respuestas encuesta: ${eR.length} | Calificaciones ≥4 en áreas docentes: ${docScores.filter(v=>v>=4).length}/${docScores.length}`},
+    {num:'02',nombre:'Actividades culturales',resultado:ind02Pct,
+     obs:`Período: ${periodo} | Participaron en actividades culturales: ${cultSi}/${cultTotal} | Promedio satisfacción cultural: ${cultAvg??'—'}/5`},
+    {num:'03',nombre:'Formación y experiencia docentes',resultado:ind03Pct,
+     obs:`Período: ${periodo} | Alumnos con percepción positiva (≥75%): ${docPositivos}/${eR.length}`}
+  ];
+
+  indicadores.forEach(({num,nombre,resultado,obs})=>{
+    const dataStr=encodeURIComponent(JSON.stringify({numero:num,periodo,resultado:resultado??'',obs}));
+    const wrap=document.createElement('div');
+    wrap.innerHTML=`<div class="chat-action-card" style="border-color:#0C447C">
+      <div class="chat-action-header">
+        <span class="chat-action-badge obs" style="background:#0C447C">📊 Indicador ${num}</span>
+        <span class="chat-action-title">${esc(nombre)}</span>
+      </div>
+      <div class="chat-action-field"><b>Período:</b> ${esc(periodo)}</div>
+      <div class="chat-action-field"><b>Resultado calculado:</b> <strong>${resultado!==null?resultado+'%':noData}</strong> ${sem(resultado)}</div>
+      <div class="chat-action-field" style="font-size:11.5px;color:#6B7280">${esc(obs)}</div>
+      <div class="chat-action-btns">
+        ${resultado!==null
+          ?`<button class="chat-action-btn chat-action-btn-apply" onclick="chatAplicarIndicadorR44('${dataStr}')">✏️ Aplicar a indicador ${num}</button>`
+          :`<span style="font-size:12px;color:#9CA3AF">Sin datos suficientes para este indicador</span>`}
+        <button class="chat-action-btn chat-action-btn-edit" onclick="this.closest('.chat-action-card').style.display='none'">Descartar</button>
+      </div>
+    </div>`;
+    if(wrap.firstElementChild)messages.appendChild(wrap.firstElementChild);
+  });
+  messages.scrollTop=messages.scrollHeight;
+};
+
+window.chatAplicarIndicadorR44=function(dataStr){
+  try{
+    const c=JSON.parse(decodeURIComponent(dataStr));
+    const num=String(c.numero||'01').padStart(2,'0');
+    const ind=(S.indicadores||[]).find(i=>String(i.numero||i.id||'').padStart(2,'0')===num);
+    const hoy=new Date().toISOString().slice(0,10);
+    goto('ind-captura',null);
+    setTimeout(()=>{
+      const selSem=document.getElementById('ind-semestre');
+      if(selSem&&c.periodo){selSem.value=c.periodo;}
+      const fechaEl=document.getElementById('ind-fecha');if(fechaEl)fechaEl.value=hoy;
+      const respEl=document.getElementById('ind-responsable');if(respEl&&!respEl.value)respEl.value='Coordinación de Calidad';
+      if(ind){
+        setTimeout(()=>{
+          window.seleccionarIndicador&&window.seleccionarIndicador(ind.id);
+          setTimeout(()=>{
+            if(ind.tipo==='directo'){
+              const el=document.getElementById('ind-resultado-directo');if(el&&c.resultado)el.value=c.resultado;
+            }
+            const obs=document.getElementById('ind-obs');if(obs&&c.obs)obs.value=c.obs;
+            const fuente=document.getElementById('ind-fuente');
+            if(fuente)fuente.value='R-91/01 Ficha de Satisfacción del Alumno · R-91/02 Encuesta de Satisfacción';
+            const esp=document.getElementById('ind-esperado');if(esp&&!esp.value)esp.value='75';
+            window.calcularIndicador&&window.calcularIndicador();
+            // Scroll al formulario
+            document.getElementById('ind-paso2')?.scrollIntoView({behavior:'smooth',block:'start'});
+          },300);
+        },300);
+      }else{
+        alert('No se encontró el indicador '+num+' en el catálogo. Verifica que esté registrado en Administrar → Indicadores.');
+      }
+    },400);
+  }catch(err){console.error('chatAplicarIndicadorR44',err);}
+};
+
 window.chatAplicarIndicador=function(dataStr){
   try{
     const c=JSON.parse(decodeURIComponent(dataStr));
@@ -9524,6 +10488,43 @@ window.chatEnviar=async function(){
   typingDiv.textContent='QualiRAR está analizando...';
   messages.appendChild(typingDiv);
   messages.scrollTop=messages.scrollHeight;
+
+  // ── Detección local de intenciones (sin API) ──────────────────
+  {
+    const t=texto.toLowerCase();
+    const esIndicadores=/indicador|indicadores/.test(t);
+    const esLlenar=/llen|calcul|complet|obtén|obten|sac|muestra|dame|genera/.test(t);
+    const esSat=/encuesta|ficha|satisfacci|alumno|estudiante/.test(t);
+    if(esIndicadores&&(esLlenar||esSat)){
+      typingDiv.remove();
+      sendBtn.disabled=false;
+      chatCalcularIndicadoresEncuesta();
+      return;
+    }
+    // Memorándum
+    const esMemo=/memo|memorand/.test(t);
+    const esRedactar=/redact|escri|ayuda|crea|nuev|haz/.test(t);
+    if(esMemo&&esRedactar){
+      typingDiv.remove();
+      sendBtn.disabled=false;
+      // Navegar a memorándum y abrir formulario, luego regresar al chat
+      goto('memorandum',null);
+      setTimeout(()=>{
+        renderMemorandum();
+        memoNuevo();
+      },300);
+      setTimeout(()=>{
+        const panel=document.getElementById('chat-panel');
+        if(panel&&!panel.classList.contains('open'))panel.classList.add('open');
+        const d=document.createElement('div');
+        d.className='chat-msg chat-msg-bot';
+        d.innerHTML='Te abrí el formulario de <b>Memorándum</b>. Llena los campos de Para, Asunto y Cuerpo del texto. Cuando quieras que redacte el cuerpo automáticamente, usa el botón <b>"🤖 Ayuda de QualiRAR"</b> en el formulario.';
+        const msgs=document.getElementById('chat-messages');
+        if(msgs){msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
+      },600);
+      return;
+    }
+  }
 
   if(!apiKey){
     typingDiv.textContent='⚠ Ve a Administrar → Asistente IA, pega tu API Key y haz clic en Guardar.';
