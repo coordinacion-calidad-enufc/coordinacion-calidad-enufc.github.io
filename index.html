@@ -847,6 +847,67 @@ textarea{resize:vertical;min-height:70px}
   body.only-print-preview #ind-preview-card{display:block!important;margin:0!important}
   body.only-print-preview #ind-preview-card .card{display:block!important}
 }
+/* ── Informe General SGC ─────────────────────────── */
+.sgc-informe-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:3000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.sgc-informe-container{background:#fff;width:100%;max-width:900px;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.25);overflow:hidden;font-family:Arial,sans-serif;color:#1a1a1a}
+.sgc-informe-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#1e3a8a;color:#fff;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:10}
+.sgc-informe-topbar h2{margin:0;font-size:14px;font-weight:700}
+.sgc-informe-btns{display:flex;gap:6px;flex-wrap:wrap}
+.sgc-informe-btns button{padding:6px 12px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
+.sgc-inf-print{background:#fff;color:#1e3a8a}
+.sgc-inf-ai{background:#4ade80;color:#14532d}
+.sgc-inf-close{background:rgba(255,255,255,.2);color:#fff}
+.sgc-informe-body{padding:0;font-size:10.5pt;line-height:1.65}
+/* Membrete institucional */
+.sgc-inf-membrete{position:relative;width:100%;min-height:90px;overflow:hidden;margin-bottom:0}
+.sgc-inf-membrete-bg{width:100%;display:block;object-fit:fill}
+.sgc-inf-membrete-overlay{position:absolute;top:0;right:0;width:46%;padding:6px 10px;font-size:7.5pt;line-height:1.4;text-align:right;color:#000}
+/* Portada */
+.sgc-inf-portada{text-align:center;padding:20px 32px 16px;border-bottom:3px solid #1e3a8a}
+.sgc-inf-portada h1{font-size:15pt;font-weight:700;color:#1e3a8a;margin:0 0 4px;text-transform:uppercase}
+.sgc-inf-portada h2{font-size:11pt;font-weight:600;color:#374151;margin:0 0 6px}
+.sgc-inf-portada p{font-size:9.5pt;color:#6b7280;margin:2px 0}
+.sgc-inf-portada-meta{display:flex;justify-content:center;gap:24px;margin-top:10px;flex-wrap:wrap;font-size:9pt}
+.sgc-inf-portada-meta span{padding:3px 12px;border-radius:12px;background:#eff6ff;color:#1e3a8a;font-weight:600}
+/* Contenido */
+.sgc-informe-content{padding:24px 32px}
+.sgc-inf-seccion{margin-bottom:28px;break-inside:avoid}
+.sgc-inf-seccion h3{font-size:11.5pt;font-weight:700;color:#fff;background:#1e3a8a;padding:6px 12px;border-radius:4px;margin:0 0 12px}
+.sgc-inf-seccion h4{font-size:10pt;font-weight:700;color:#1e3a8a;margin:12px 0 6px;border-left:4px solid #3b82f6;padding-left:8px}
+.sgc-inf-analisis{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;font-size:9.5pt;color:#0c4a6e;line-height:1.6;margin:8px 0;white-space:pre-wrap}
+.sgc-inf-analisis-loading{background:#f8fafc;border:1px dashed #94a3b8;border-radius:8px;padding:10px 14px;font-size:9.5pt;color:#94a3b8;text-align:center}
+.sgc-inf-tabla{width:100%;border-collapse:collapse;font-size:9pt;margin-bottom:8px}
+.sgc-inf-tabla th{background:#1e3a8a;color:#fff;padding:5px 8px;text-align:left;font-weight:600;font-size:8.5pt}
+.sgc-inf-tabla td{padding:4px 8px;border-bottom:1px solid #e2e8f0;vertical-align:top}
+.sgc-inf-tabla tr:nth-child(even) td{background:#f8fafc}
+.sgc-inf-chip{display:inline-block;padding:2px 8px;border-radius:12px;font-size:8pt;font-weight:700}
+.sgc-inf-verde{background:#dcfce7;color:#166534}
+.sgc-inf-amarillo{background:#fef9c3;color:#854d0e}
+.sgc-inf-rojo{background:#fee2e2;color:#991b1b}
+.sgc-inf-azul{background:#dbeafe;color:#1e40af}
+.sgc-inf-gris{background:#f1f5f9;color:#64748b}
+.sgc-inf-resumen-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.sgc-inf-kpi{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;text-align:center}
+.sgc-inf-kpi .valor{font-size:20pt;font-weight:700;color:#1e3a8a;line-height:1}
+.sgc-inf-kpi .etiq{font-size:8pt;color:#64748b;margin-top:3px}
+.sgc-inf-nota{font-size:8.5pt;color:#64748b;font-style:italic;margin:4px 0}
+.sgc-inf-grafica-wrap{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin:8px 0}
+.sgc-inf-grafica-titulo{font-size:9pt;font-weight:700;color:#374151;text-align:center;margin-bottom:8px}
+.sgc-inf-leyenda{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:6px;font-size:8pt;color:#6b7280}
+.sgc-inf-leyenda span{display:flex;align-items:center;gap:4px}
+.sgc-inf-leyenda i{width:12px;height:12px;border-radius:2px;flex-shrink:0;display:inline-block}
+.sgc-inf-semaforo-ref{display:flex;gap:8px;font-size:8pt;margin:6px 0;flex-wrap:wrap}
+@media print{
+  body.sgc-printing *{visibility:hidden}
+  body.sgc-printing .sgc-informe-overlay,body.sgc-printing .sgc-informe-overlay *{visibility:visible}
+  body.sgc-printing .sgc-informe-overlay{position:absolute;top:0;left:0;width:100%;padding:0;background:white}
+  body.sgc-printing .sgc-informe-container{max-width:100%;border-radius:0;box-shadow:none}
+  body.sgc-printing .sgc-informe-topbar{display:none!important}
+  .sgc-informe-content{padding:8mm 12mm}
+  .sgc-inf-tabla th,.sgc-inf-kpi,.sgc-inf-chip,.sgc-inf-analisis,.sgc-inf-seccion h3{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .sgc-inf-membrete-bg{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .sgc-inf-seccion{break-inside:avoid}
+}
 /* ── Memorándum preview ─────────────────────────── */
 .memo-sheet{
   position:relative;width:100%;max-width:740px;margin:0 auto;
@@ -2811,7 +2872,10 @@ Coordinacion de Calidad</textarea>
       </div>
     </div>
 
-    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
+      <button class="btn btn-sm" style="background:#1e3a8a;color:#fff" onclick="sgcGenerarInforme()" title="Genera un informe completo del SGC con todos los módulos">
+        📄 Generar Informe General del SGC
+      </button>
       <button class="btn btn-primary btn-sm" data-admin-only onclick="revNuevo()">+ Nueva Revisión</button>
     </div>
     <div id="rev-lista"></div>
@@ -2928,8 +2992,11 @@ Coordinacion de Calidad</textarea>
           </div>
           <button class="btn btn-sm" style="margin-top:6px" data-admin-only onclick="revAddDecision()">+ Agregar decisión</button>
 
-          <div class="rev-modal-actions">
-            <button class="btn btn-sm btn-secondary" onclick="revImprimirReporte()">Imprimir R-93/02</button>
+          <div class="rev-modal-actions" style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" style="background:#0C447C;color:#fff;gap:5px" onclick="revGenerarInformeAutomatico()" title="Pre-llena agenda y decisiones con los datos reales del SGC">
+              🤖 Pre-llenar con datos del SGC
+            </button>
+            <button class="btn btn-sm btn-secondary" onclick="revImprimirReporte()">🖨 Imprimir R-93/02</button>
           </div>
         </div>
 
@@ -3799,7 +3866,7 @@ Coordinacion de Calidad</textarea>
     <button class="chat-close" onclick="toggleChat()">×</button>
   </div>
   <div class="chat-messages" id="chat-messages">
-    <div class="chat-msg chat-msg-bot">¡Hola! Soy <strong>QualiRAR</strong>, tu asistente inteligente del SGC de la ENUFC. Conozco toda la información del sistema: no conformidades, indicadores, auditorías, documentos, proveedores, planes de acción, revisiones por la dirección y más. También puedo ayudarte a generar y completar diagramas Ishikawa, redactar análisis de 5 porqués y capturar registros directamente en la app. ¿En qué te ayudo?</div>
+    <div class="chat-msg chat-msg-bot" id="chat-bienvenida">Bienvenido, <strong>Coordinador de Calidad</strong>. Soy <strong>QualiRAR</strong> — Auditor Líder Internacional ISO 9001:2015 con más de 30 años de experiencia, asesor permanente del SGC de la ENUFC.<br><br>Tengo acceso completo a todos los registros del sistema: no conformidades, indicadores, auditorías, documentos, proveedores, planes de acción, revisiones por la dirección y satisfacción del alumno.<br><br>Puedo orientarte sobre cualquier requisito normativo, redactar documentos oficiales, analizar no conformidades, completar diagramas Ishikawa, aplicar los 5 Porqués y capturar registros directamente en la app.<br><br>¿En qué te puedo asesorar hoy?</div>
   </div>
   <p class="chat-api-note" id="chat-api-note" style="display:none">⚠ Configura tu API Key en Administrar → IA para habilitar respuestas inteligentes.</p>
   <div class="chat-input-row">
@@ -4697,6 +4764,7 @@ async function arrancarApp(){
     initNavGroups();
     renderNCs(); renderPlanes(); renderSolicitudes(); renderPlanesAuditoria(); renderDashboardMejorado(); renderProximosEventosInicio();
     aplicarPermisos();
+    chatActualizarBienvenida();
     cargarNotificaciones();
     renderTareasPendientes();
     verificarAsignacionesProximas();
@@ -9412,6 +9480,21 @@ function renderDashboardMejorado(){
    ASISTENTE IA (CHATBOT)
 ═══════════════════════════════════════ */
 let _chatHistory=[];
+
+/* Actualiza el saludo del chat con el nombre del coordinador una vez cargado */
+function chatActualizarBienvenida(){
+  const el=document.getElementById('chat-bienvenida');
+  if(!el)return;
+  const nombre=S.config?.auditor_lider||S.currentUser?.nombre||'';
+  // Extraer título y primeros dos nombres
+  const tituloMatch=nombre.match(/^(Mtro?\.|Mtra?\.|Lic\.|Dr\.|Dra\.|MTRO?\.|MTRA?\.|LIC\.|DR\.|DRA\.)\s*/i);
+  const titulo=tituloMatch?tituloMatch[0].trim().replace(/^(MTRO?|MTRA?|LIC|DR|DRA)\.$/i,m=>m.charAt(0).toUpperCase()+m.slice(1).toLowerCase()):'';
+  const sinTitulo=nombre.replace(/^(Mtro?\.|Mtra?\.|Lic\.|Dr\.|Dra\.|MTRO?\.|MTRA?\.|LIC\.|DR\.|DRA\.)\s*/i,'');
+  const primerosDos=sinTitulo.split(' ').slice(0,2).join(' ');
+  const nombreFormato=nombre?(titulo?titulo+' '+primerosDos:primerosDos):'';
+  el.innerHTML=`Bienvenido${nombreFormato?', <strong>'+esc(nombreFormato)+'</strong>':''} — <strong>Coordinador de Calidad</strong>. Soy <strong>QualiRAR</strong>, Auditor Líder Internacional ISO 9001:2015 con más de 30 años de experiencia, asesor permanente del SGC de la ENUFC.<br><br>Tengo acceso completo a todos los registros del sistema: no conformidades, indicadores, auditorías, documentos, proveedores, planes de acción, revisiones por la dirección y satisfacción del alumno.<br><br>Puedo orientarte sobre cualquier requisito normativo, redactar documentos oficiales, analizar no conformidades, completar diagramas Ishikawa, aplicar los 5 Porqués y capturar registros directamente en la app.<br><br>¿En qué te puedo asesorar hoy?`;
+}
+
 window.toggleChat=function(){
   const panel=document.getElementById('chat-panel');
   panel.classList.toggle('open');
@@ -9608,20 +9691,87 @@ function chatGetContexto(){
   const manualHistorial=manualRevs.map(r=>`  • Rev.${r.num} (${r.fecha}): ${r.desc||'—'} | Elaboró: ${r.elaboro||'—'} | Revisó: ${r.reviso||'—'}`).join('\n');
   const manualCapsEditados=MANUAL_CAPS.filter(c=>manualData['cap_'+c.id]).map(c=>`  • Cap.${c.num} "${c.titulo}": editado y personalizado`).join('\n');
 
-  return `Eres QualiRAR — el asistente inteligente del Sistema de Gestión de Calidad (SGC) de la Escuela Normal Urbana Federal Cuautla (ENUFC). Tienes el perfil de un Auditor Líder certificado ISO 9001:2015 con más de 20 años de experiencia en implementación, auditoría y mejora continua de SGC en instituciones educativas del sector público en México.
+  return `Eres QualiRAR — Auditor Líder Internacional experto en Sistemas de Gestión de la Calidad bajo la Norma ISO 9001:2015, con más de 30 años de experiencia en implementación, mantenimiento, auditoría y mejora continua de SGC en instituciones educativas, universidades, escuelas normales y organismos públicos.
 
 Tu nombre es QualiRAR. Cuando te pregunten cómo te llamas, responde que eres QualiRAR.
 
-Tu perfil y forma de actuar:
-- Tienes dominio absoluto de la norma ISO 9001:2015 en sus 10 cláusulas: contexto (4), liderazgo (5), planificación (6), apoyo (7), operación (8), evaluación del desempeño (9) y mejora continua (10).
-- Conoces a profundidad el contexto educativo normalista mexicano: procesos académicos, administrativos y de gestión de las Escuelas Normales, requisitos SEP/DGESPE y organismos acreditadores.
-- Tienes acceso COMPLETO a todos los registros del SGC de la ENUFC: no conformidades (con su diagrama Ishikawa completo), indicadores, auditorías, documentos, proveedores, planes de acción, eficacia de acciones correctivas, revisiones por la dirección, solicitudes de cambio, solicitudes de servicio, satisfacción del alumno, FODA, objetivos de calidad, calendario SGC y más. Cuando el usuario pregunte sobre algún dato, lo buscas en el contexto y respondes con información real.
-- Puedes ACTUAR en la app: generar no conformidades completas, llenar el análisis de 5 porqués, completar el diagrama Ishikawa (con las 5 categorías: Personal, Procesos/Métodos, Recursos, Información/Datos, Entorno/Contexto Organizacional), registrar indicadores de satisfacción. Cuando el usuario pida capturar, llenar o generar alguno de estos registros, incluyes el bloque <sgc-action> correspondiente.
-- Hablas con autoridad y precisión técnica. Das respuestas concretas fundamentadas en la norma, citando cláusulas cuando aplica. No das respuestas genéricas.
-- Cuando detectas áreas de mejora en los registros, las señalas con criterio de auditor: hallazgo, cláusula, riesgo y acción correctiva recomendada.
-- Usas terminología ISO correcta: no conformidad, evidencia objetiva, acción correctiva, riesgo, oportunidad, parte interesada, criterio de auditoría, hallazgo, conclusión de auditoría.
-- Corriges errores conceptuales con amabilidad pero con firmeza técnica.
-- Respondes siempre en español, con tono profesional, directo y constructivo.
+═══════════════════════════════════════
+FUNCIÓN PRINCIPAL
+═══════════════════════════════════════
+Actúas como asesor permanente del Sistema de Gestión de la Calidad (SGC) de la Escuela Normal Urbana Federal Cuautla (ENUFC), proporcionando orientación técnica, análisis normativo, interpretación de requisitos, apoyo documental y recomendaciones de mejora continua.
+
+═══════════════════════════════════════
+DOMINIO TÉCNICO
+═══════════════════════════════════════
+Dominas completamente:
+• Norma ISO 9001:2015 (todos sus numerales y cláusulas).
+• ISO 19011 (Directrices para auditorías de sistemas de gestión).
+• Gestión de riesgos y oportunidades (cláusula 6.1).
+• Auditorías internas y externas.
+• Acciones correctivas y análisis de causa raíz.
+• Método de los 5 Porqués.
+• Diagrama de Ishikawa (categorías: Personal, Procesos/Métodos, Recursos, Información/Datos, Entorno/Contexto).
+• Gestión documental (cláusula 7.5).
+• Indicadores de calidad y seguimiento del desempeño (cláusula 9.1).
+• Revisión por la Dirección (cláusula 9.3).
+• Planeación estratégica y análisis FODA (cláusula 4).
+• Gestión de proveedores externos (cláusula 8.4).
+• Satisfacción del cliente/alumno (cláusula 9.1.2).
+• Control de procesos y operaciones (cláusula 8).
+• Mejora continua (cláusula 10).
+• Educación Superior y Escuelas Normales en México (contexto SEP/DGESPE).
+
+═══════════════════════════════════════
+CONTEXTO INSTITUCIONAL — ENUFC
+═══════════════════════════════════════
+Conoces el contexto institucional de la Escuela Normal Urbana Federal Cuautla y sus procesos certificados:
+• Dirección.
+• Subdirección Académica.
+• Docencia.
+• Control Escolar.
+• Coordinación de Calidad.
+
+Procedimientos y registros institucionales que conoces y puedes orientar:
+• P-43/01 Alcance del SGC.
+• P-44/01 Indicadores de Calidad | R-44/01 Ficha del Indicador de Calidad.
+• P-50/01 Responsabilidades y Compromiso de la Dirección.
+• P-75/01 Control de Información Documentada.
+• P-84/01 Gestión de Proveedores Externos | R-84/01 Listado de Proveedores Aceptados | R-84/02 Evaluación de Proveedores.
+• P-91/01 Seguimiento, Medición, Análisis y Evaluación | R-91/01 Ficha de Satisfacción del Alumno | R-91/02 Encuesta de Satisfacción.
+• P-92/02 Auditorías Internas | R-92/02 Informe de Auditoría Interna.
+• P-102/01 No Conformidad y Acción Correctiva | R-102/02 Informe de No Conformidad y Acción Correctiva.
+• R-93/03 Plan de Acción | R-93/04 Seguimiento de Acciones Correctivas.
+• Procedimientos y registros de Control Escolar, Dirección y Subdirección Académica.
+
+═══════════════════════════════════════
+REGLAS DE RESPUESTA — SIEMPRE
+═══════════════════════════════════════
+• Basa cada respuesta en la Norma ISO 9001:2015 y en buenas prácticas de auditoría. NUNCA des respuestas genéricas.
+• Cita el numeral específico de la norma cuando sea posible (ej. "cláusula 8.4.1").
+• Diferencia siempre: No conformidad mayor / No conformidad menor / Observación / Área de oportunidad.
+• Piensa como auditor externo certificado: evalúa evidencia objetiva, analiza riesgos.
+• Evita interpretaciones subjetivas. Justifica técnicamente cada recomendación.
+• Propón acciones correctivas realistas y verificables, con evidencias objetivas para demostrar cumplimiento.
+• Usa terminología ISO correcta: no conformidad, evidencia objetiva, criterio de auditoría, hallazgo, conclusión de auditoría, parte interesada, riesgo, oportunidad.
+• Cuando el usuario no sea experto, explica los requisitos en lenguaje claro SIN perder rigor técnico.
+• Responde siempre en español, con tono profesional, directo y constructivo.
+• Corrige errores conceptuales con firmeza técnica y respeto.
+
+SI EL USUARIO SOLICITA AYUDA CON AUDITORÍAS:
+1. Analiza la evidencia presentada.
+2. Identifica el requisito normativo aplicable.
+3. Determina si existe incumplimiento y su tipo.
+4. Fundamenta la conclusión con la cláusula correspondiente.
+5. Propón corrección inmediata.
+6. Propón acción correctiva sistémica.
+7. Propón método de verificación de eficacia.
+
+SI EL USUARIO SOLICITA ELABORAR DOCUMENTOS:
+• Usa lenguaje formal de auditoría ISO 9001:2015.
+• Redacta como profesional certificado: memorándums, informes, no conformidades, análisis de causa raíz, planes de acción, reportes de auditoría, indicadores.
+• Puedes ACTUAR en la app: generar NC completas, llenar Ishikawa, 5 Porqués, registrar indicadores — incluye el bloque <sgc-action> cuando el usuario lo pida.
+
+Tu prioridad es mantener la conformidad del SGC de la ENUFC, fomentar la mejora continua y asegurar el cumplimiento eficaz de la Norma ISO 9001:2015.
 
 Institución: Escuela Normal Urbana Federal Cuautla (ENUFC), Cuautla, Morelos, México.
 Tipo: Institución de educación superior pública, formadora de docentes de educación básica.
@@ -9735,9 +9885,24 @@ ${eficDetalle||'  (sin verificaciones registradas)'}
 ${areasDetalle||'  (sin áreas configuradas)'}
 
 ══════════════════════════════════════
-INDICADORES DE CALIDAD — DEFINICIONES (R-44/01)
+INDICADORES DE CALIDAD — CATÁLOGO R-44/01 (13 INDICADORES)
 ══════════════════════════════════════
-${indDefDetalle||'  (sin indicadores definidos)'}
+FUENTE DE DATOS POR INDICADOR:
+• Ind 01 — Campo: porcentaje_clases (R-91/02 preg.6) | Fórmula: promedio ponderado de % de clases impartidas percibido por alumnos | Valores: 'menos de 70%'=65, '70%'=70, '80%'=80, '90%'=90, '100%'=100 | Meta: ≥75%
+• Ind 02 — Campo: satisfaccion_cultural (R-91/02) | Fórmula: (respuestas BIEN o MUY BIEN / total) × 100 | Meta: ≥75%
+• Ind 03 — Campo: doc_satisfaccion_formacion (R-91/02) | Fórmula: (% Satisfecho+Muy satisfecho / total) × 100 | Fallback: promedio docFields ≥4 | Meta: ≥75%
+• Ind 04 al 10 — Datos de Docencia/Subdirección/Dirección (fracciones manuales, no vienen de encuesta)
+• Ind 11 al 13 — Datos de Control Escolar (fracciones manuales)
+
+CUANDO EL USUARIO PIDA CALCULAR INDICADORES DE ENCUESTA (01, 02 ó 03):
+1. Usa el botón "Calcular indicadores de satisfacción" o diles que escriban "calcula los indicadores".
+2. Los valores se obtienen automáticamente de los datos cargados en la sección Satisfacción del Alumno.
+3. Proporciona el análisis cualitativo: si el resultado ≥75 🟢, entre 60-74 🟡, <60 🔴, con recomendaciones.
+
+CUANDO EL USUARIO PIDA LLENAR INDICADORES 04-13 (datos manuales):
+Pregunta al usuario: ¿cuántos [planes/informes/horarios/etc.] entregados y cuántos esperados? Calcula: (entregados/esperados)×100 y genera la tarjeta de acción con los datos.
+
+${indDefDetalle||'  (sin indicadores definidos en catálogo)'}
 
 ══════════════════════════════════════
 MANUAL DEL SISTEMA DE GESTIÓN DE LA CALIDAD (MC-01/01 · Cláusulas 4–10)
@@ -9982,16 +10147,33 @@ Cuando el usuario pida CAPTURAR, LLENAR o REGISTRAR el indicador de satisfacció
 </sgc-action>
 El campo "resultado" es el promedio global convertido a porcentaje (promedio/5×100). Usa los valores reales de los datos cargados. Si no hay datos para el período solicitado, indícalo.
 
-Cuando el usuario pida REDACTAR, GENERAR, CREAR o COMPLETAR una No Conformidad, un hallazgo, un análisis de 5 porqués, o acciones de plan, DEBES incluir al FINAL de tu respuesta un bloque JSON entre las etiquetas <sgc-action> y </sgc-action>.
+══════════════════════════════════════
+ACCIONES QUE PUEDES EJECUTAR EN LA APP
+══════════════════════════════════════
+Cuando el usuario pida CAPTURAR, LLENAR, GENERAR, CREAR, REGISTRAR o COMPLETAR cualquiera de los siguientes, DEBES incluir al FINAL de tu respuesta el bloque <sgc-action> correspondiente. NUNCA des solo texto si el usuario pidió capturar — siempre incluye la acción.
 
-REGLAS DE CLASIFICACIÓN:
-- NC Mayor: incumplimiento TOTAL o SISTEMÁTICO de un requisito ISO; pone en riesgo la eficacia del SGC o la satisfacción del cliente
-- NC Menor: incumplimiento PUNTUAL o PARCIAL de un requisito; no afecta sistémicamente
-- Observación: situación que PODRÍA convertirse en NC si no se atiende; no es incumplimiento actual
-- Oportunidad de mejora (op): no hay incumplimiento, pero existe potencial de mejora demostrable
+TIPOS DE ACCIÓN DISPONIBLES:
+1. "nc" — Crear/completar una No Conformidad (R-102/02)
+2. "ishikawa" — Llenar el diagrama Ishikawa de una NC
+3. "indicador-r44" — Capturar una medición de indicador de calidad (cualquiera del 01 al 13)
+4. "indicador-satisfaccion" — Capturar indicadores derivados de encuesta (automático)
+
+REGLAS DE CLASIFICACIÓN DE NC:
+- NC Mayor: incumplimiento TOTAL o SISTEMÁTICO de un requisito ISO; pone en riesgo la eficacia del SGC o la satisfacción del cliente.
+- NC Menor: incumplimiento PUNTUAL o PARCIAL; no afecta sistémicamente.
+- Observación: situación que PODRÍA convertirse en NC; no es incumplimiento actual.
+- Oportunidad de mejora (op): sin incumplimiento, pero con potencial de mejora demostrable.
 
 SIEMPRE incluye análisis completo de 5 porqués cuando redactes una NC.
-SIEMPRE proporciona al menos 2 acciones en el PAC con responsable, fechas y evidencia.
+SIEMPRE proporciona al menos 2 acciones en el PAC con responsable, fechas y evidencia objetiva.
+El JSON DEBE ser válido (sin comentarios, sin texto extra dentro del bloque).
+
+PARA INDICADORES MANUALES (04-13): Si el usuario pide ayuda, pregúntale: "¿Cuántos [planes/informes/horarios/etc.] se entregaron?" y "¿Cuántos eran esperados?". Calcula (entregados/esperados)×100 y genera el bloque indicador-r44.
+
+NUNCA inventes datos de encuesta. Si no hay datos cargados, díselo y pídele que abra la sección "Satisfacción del Alumno" para cargarlos.
+
+Cuando el usuario pida REDACTAR, GENERAR, CREAR o COMPLETAR una No Conformidad, un hallazgo, un análisis de 5 porqués, o acciones de plan, DEBES incluir al FINAL de tu respuesta un bloque JSON entre las etiquetas <sgc-action> y </sgc-action>.
+
 El JSON DEBE ser válido (sin comentarios, sin texto extra dentro del bloque).
 
 Estructura obligatoria para NC:
@@ -10169,6 +10351,28 @@ function renderActionCard(action){
       </div>
     </div>`;
   }
+  if(action.tipo==='indicador-r44'){
+    // Indicador manual del catálogo R-44/01 (cualquiera del 01 al 13)
+    const c=action.campos||{};
+    const num=String(c.numero||c.indicador||'').padStart(2,'0');
+    const def=INDICADORES_R44[num]||{};
+    const dataStr=encodeURIComponent(JSON.stringify({numero:num,...c}));
+    const sem=v=>v===null||v===undefined?'—':(parseFloat(v)>=75?'🟢':parseFloat(v)>=60?'🟡':'🔴');
+    return `<div class="chat-action-card" style="border-color:#0C447C">
+      <div class="chat-action-header">
+        <span class="chat-action-badge obs" style="background:#0C447C">📊 Indicador ${num}</span>
+        <span class="chat-action-title">${esc(def.nombre||c.nombre||'Indicador de calidad')}</span>
+      </div>
+      <div class="chat-action-field"><b>Período:</b> ${esc(c.periodo||c.semestre||'—')}</div>
+      <div class="chat-action-field"><b>Resultado:</b> <strong>${esc(String(c.resultado||'—'))}${c.resultado?'%':''}</strong> ${sem(c.resultado)} &nbsp;|&nbsp; <b>Meta:</b> ≥${def.esperado||75}%</div>
+      ${c.numerador!==undefined?`<div class="chat-action-field"><b>Datos:</b> ${esc(String(c.numerador))} de ${esc(String(c.denominador))} ${esc(c.unidad||'')}</div>`:''}
+      ${c.observaciones?`<div class="chat-action-field"><b>Observaciones:</b> ${esc(c.observaciones)}</div>`:''}
+      <div class="chat-action-btns">
+        <button class="chat-action-btn chat-action-btn-apply" onclick="chatAplicarIndicadorManual('${dataStr}')">✏️ Aplicar a indicador ${num}</button>
+        <button class="chat-action-btn chat-action-btn-edit" onclick="this.closest('.chat-action-card').style.display='none'">Descartar</button>
+      </div>
+    </div>`;
+  }
   return '';
 }
 
@@ -10259,30 +10463,55 @@ window.chatCalcularIndicadoresEncuesta=function(){
     return;
   }
   const{ficha,encuesta}=_satDataCache;
-  const docFields=['doc_dominio_materia','doc_estrategias_ensenanza','doc_recursos_didacticos','doc_estrategias_eval','doc_asesoria_academica'];
   const periodos=[...new Set([...ficha,...encuesta].map(r=>satPeriodo(r.marca_temporal)).filter(Boolean))]
     .sort((a,b)=>satPeriodoSortKey(a).localeCompare(satPeriodoSortKey(b)));
   const periodo=periodos[periodos.length-1]||'Sin período';
   const eR=encuesta.filter(r=>satPeriodo(r.marca_temporal)===periodo);
   const fR=ficha.filter(r=>satPeriodo(r.marca_temporal)===periodo);
 
-  // Ind 01: Percepción de clases (docFields → % positivos ≥4)
-  const docScores=eR.flatMap(r=>docFields.map(f=>satScore(r[f])).filter(v=>v!==null));
-  const ind01Pct=docScores.length?+(docScores.filter(v=>v>=4).length/docScores.length*100).toFixed(1):null;
+  // ── IND 01: Percepción de clases impartidas ──────────────────────────────
+  // Campo: porcentaje_clases → valores: 'menos de 70%','70%','80%','90%','100%'
+  // Fórmula: promedio ponderado de % de clases percibidas como impartidas
+  const pctMap={'100%':100,'90%':90,'80%':80,'70%':70,'menos de 70%':65};
+  const pctClasesVals=eR.map(r=>pctMap[r.porcentaje_clases]).filter(v=>v!==undefined);
+  const ind01Pct=pctClasesVals.length
+    ?+(pctClasesVals.reduce((a,b)=>a+b,0)/pctClasesVals.length).toFixed(1)
+    :null;
+  const pctAltoClases=pctClasesVals.filter(v=>v>=80).length;
 
-  // Ind 02: Actividades culturales (participa_cultural + satisfaccion_cultural)
-  const cultSi=eR.filter(r=>/s[ií]/i.test(r.participa_cultural||'')).length;
-  const cultTotal=eR.filter(r=>(r.participa_cultural||'').trim()!=='').length;
-  const cultAvg=satAvg(eR.filter(r=>/s[ií]/i.test(r.participa_cultural||'')),['satisfaccion_cultural']);
-  const ind02Pct=cultTotal>0?+(cultSi/cultTotal*100).toFixed(1):(cultAvg!=null?+(cultAvg/5*100).toFixed(1):null);
+  // ── IND 02: Percepción de actividades culturales ─────────────────────────
+  // Campo: satisfaccion_cultural → escala Muy satisfecho/Satisfecho/Bien/Muy bien/Mal/No participó
+  // Fórmula: % de respuestas POSITIVAS (Satisfecho o Muy satisfecho ≥4, o BIEN/MUY BIEN)
+  const cultResp=eR.map(r=>r.satisfaccion_cultural||'').filter(Boolean);
+  const esPositivaCult=v=>{
+    const s=satScore(v);
+    if(s!==null)return s>=4;
+    return /^(muy\s*bien|bien|muy\s*satisf)/i.test(v.trim());
+  };
+  const cultPos=cultResp.filter(esPositivaCult).length;
+  // Si no hay campo satisfaccion_cultural, usar tasa de participación
+  const cultSi=eR.filter(r=>/^s[ií]/i.test(r.participa_cultural||'')).length;
+  const cultTotal=eR.filter(r=>(r.participa_cultural||'').trim()).length;
+  const ind02Pct=cultResp.length>0
+    ?+(cultPos/cultResp.length*100).toFixed(1)
+    :(cultTotal>0?+(cultSi/cultTotal*100).toFixed(1):null);
 
-  // Ind 03: Formación y experiencia docentes (% con promedio docFields ≥3.75 = 75% de 5)
-  const docPositivos=eR.filter(r=>{
-    const vals=docFields.map(f=>satScore(r[f])).filter(v=>v!==null);
-    if(!vals.length)return false;
-    return vals.reduce((a,b)=>a+b,0)/vals.length>=3.75;
-  }).length;
-  const ind03Pct=eR.length>0?+(docPositivos/eR.length*100).toFixed(1):null;
+  // ── IND 03: Formación y experiencia docentes ──────────────────────────────
+  // Campo principal: doc_satisfaccion_formacion (pregunta directa sobre formación/experiencia)
+  // Fórmula: % de respuestas positivas (Satisfecho o Muy satisfecho ≥4)
+  const formScores=eR.map(r=>satScore(r.doc_satisfaccion_formacion)).filter(v=>v!==null);
+  let ind03Pct=formScores.length
+    ?+(formScores.filter(v=>v>=4).length/formScores.length*100).toFixed(1)
+    :null;
+  // Fallback: si no hay doc_satisfaccion_formacion, usar promedio general de campos docentes
+  if(ind03Pct===null){
+    const docFields=['doc_dominio_materia','doc_estrategias_ensenanza','doc_recursos_didacticos','doc_estrategias_eval','doc_asesoria_academica'];
+    const docPos=eR.filter(r=>{
+      const vals=docFields.map(f=>satScore(r[f])).filter(v=>v!==null);
+      return vals.length>0&&vals.reduce((a,b)=>a+b,0)/vals.length>=4;
+    }).length;
+    if(eR.length>0)ind03Pct=+(docPos/eR.length*100).toFixed(1);
+  }
 
   const sem=v=>v===null?'—':(v>=75?'🟢':v>=60?'🟡':'🔴');
   const noData='<span style="color:#9CA3AF">Sin datos suficientes</span>';
@@ -10290,17 +10519,23 @@ window.chatCalcularIndicadoresEncuesta=function(){
   // Mensaje resumen
   const botMsg=document.createElement('div');
   botMsg.className='chat-msg chat-msg-bot';
-  botMsg.innerHTML=`Con los datos del período <b>${esc(periodo)}</b> (${eR.length} encuestas, ${fR.length} fichas) calculé los valores para los indicadores 01, 02 y 03. Revisa cada tarjeta y haz clic en <b>"Aplicar a indicador"</b> para pre-llenar el formulario.`;
+  botMsg.innerHTML=`Con los datos del período <b>${esc(periodo)}</b> (${eR.length} encuestas, ${fR.length} fichas) calculé los indicadores 01, 02 y 03 conforme a sus fórmulas reales. Revisa cada tarjeta y haz clic en <b>"✏️ Aplicar"</b> para pre-llenar el formulario.`;
   messages.appendChild(botMsg);
 
-  // Tarjetas para cada indicador
+  // Tarjetas
   const indicadores=[
-    {num:'01',nombre:'Percepción de clases',resultado:ind01Pct,
-     obs:`Período: ${periodo} | Respuestas encuesta: ${eR.length} | Calificaciones ≥4 en áreas docentes: ${docScores.filter(v=>v>=4).length}/${docScores.length}`},
-    {num:'02',nombre:'Actividades culturales',resultado:ind02Pct,
-     obs:`Período: ${periodo} | Participaron en actividades culturales: ${cultSi}/${cultTotal} | Promedio satisfacción cultural: ${cultAvg??'—'}/5`},
-    {num:'03',nombre:'Formación y experiencia docentes',resultado:ind03Pct,
-     obs:`Período: ${periodo} | Alumnos con percepción positiva (≥75%): ${docPositivos}/${eR.length}`}
+    {num:'01',
+     nombre:'Percepción de clases durante el semestre',
+     resultado:ind01Pct,
+     obs:`Fórmula: promedio ponderado de % clases impartidas (R-91/02 preg.6) | n=${pctClasesVals.length} | Con ≥80%: ${pctAltoClases} alumnos | Período: ${periodo}`},
+    {num:'02',
+     nombre:'Percepción de actividades culturales',
+     resultado:ind02Pct,
+     obs:`Fórmula: % respuestas positivas (Bien/Muy bien) en satisfacción cultural | n=${cultResp.length||cultTotal} | Positivos: ${cultPos||cultSi} | Período: ${periodo}`},
+    {num:'03',
+     nombre:'Formación y experiencia docentes',
+     resultado:ind03Pct,
+     obs:`Fórmula: % alumnos con percepción positiva (≥Satisfecho) sobre formación docente | n=${formScores.length||eR.length} | Período: ${periodo}`}
   ];
 
   indicadores.forEach(({num,nombre,resultado,obs})=>{
@@ -10361,6 +10596,47 @@ window.chatAplicarIndicadorR44=function(dataStr){
   }catch(err){console.error('chatAplicarIndicadorR44',err);}
 };
 
+/* Llenar indicador manual (04-13) desde acción de QualiRAR */
+window.chatAplicarIndicadorManual=function(dataStr){
+  try{
+    const c=JSON.parse(decodeURIComponent(dataStr));
+    const num=String(c.numero||'01').padStart(2,'0');
+    const ind=(S.indicadores||[]).find(i=>String(i.numero||i.id||'').padStart(2,'0')===num);
+    const hoy=new Date().toISOString().slice(0,10);
+    goto('ind-captura',null);
+    setTimeout(()=>{
+      const selSem=document.getElementById('ind-semestre');
+      if(selSem&&selSem.tagName==='SELECT'&&c.periodo){
+        const opts=Array.from(selSem.options);
+        if(!opts.some(o=>o.value===c.periodo)){const o=document.createElement('option');o.value=c.periodo;o.textContent=c.periodo;selSem.appendChild(o);}
+        selSem.value=c.periodo;
+      }
+      const fechaEl=document.getElementById('ind-fecha');if(fechaEl)fechaEl.value=c.fecha||hoy;
+      const respEl=document.getElementById('ind-responsable');if(respEl&&!respEl.value)respEl.value=c.responsable||'Coordinación de Calidad';
+      if(ind){
+        setTimeout(()=>{
+          window.seleccionarIndicador&&window.seleccionarIndicador(ind.id);
+          setTimeout(()=>{
+            // Resultado directo o fracción
+            if(c.resultado!==undefined){
+              const elDir=document.getElementById('ind-resultado-directo');if(elDir)elDir.value=c.resultado;
+            }
+            if(c.numerador!==undefined){
+              const elNum=document.getElementById('ind-numerador');if(elNum)elNum.value=c.numerador;
+            }
+            if(c.denominador!==undefined){
+              const elDen=document.getElementById('ind-denominador');if(elDen)elDen.value=c.denominador;
+            }
+            const obsEl=document.getElementById('ind-obs');if(obsEl&&c.observaciones)obsEl.value=c.observaciones;
+            const fuenteEl=document.getElementById('ind-fuente');if(fuenteEl&&c.fuente)fuenteEl.value=c.fuente;
+            window.calcularIndicador&&window.calcularIndicador();
+          },300);
+        },300);
+      }
+    },600);
+  }catch(e){alert('Error al aplicar indicador: '+e.message);}
+};
+
 window.chatAplicarIndicador=function(dataStr){
   try{
     const c=JSON.parse(decodeURIComponent(dataStr));
@@ -10375,9 +10651,10 @@ window.chatAplicarIndicador=function(dataStr){
     setTimeout(()=>{
       const selSem=document.getElementById('ind-semestre');
       if(selSem&&periodo){
-        let found=false;
-        for(const opt of selSem.options){if(opt.value===periodo){selSem.value=periodo;found=true;break;}}
-        if(!found){const opt=document.createElement('option');opt.value=periodo;opt.textContent=periodo;selSem.appendChild(opt);selSem.value=periodo;}
+        const opts=selSem.tagName==='SELECT'?Array.from(selSem.options):[];
+        const found=opts.some(o=>o.value===periodo);
+        if(!found&&selSem.tagName==='SELECT'){const o=document.createElement('option');o.value=periodo;o.textContent=periodo;selSem.appendChild(o);}
+        if(selSem.tagName==='SELECT')selSem.value=periodo;
       }
       const fechaEl=document.getElementById('ind-fecha');if(fechaEl)fechaEl.value=hoy;
       const respEl=document.getElementById('ind-responsable');if(respEl&&!respEl.value)respEl.value='Coordinación de Calidad';
@@ -10562,11 +10839,13 @@ window.chatEnviar=async function(){
           if(m.includes('API_KEY_INVALID')||m.includes('invalid')||m.includes('INVALID')){
             throw new Error('❌ API Key incorrecta. Cópiala completa desde aistudio.google.com/app/apikey');
           }
+          // 503 / overloaded / unavailable → intentar siguiente modelo
+          if(d.error.code===503||m.includes('503')||m.includes('overload')||m.includes('unavailable')||m.includes('UNAVAILABLE')){continue;}
           throw new Error(m);
         }
         geminiData=d; modelUsado=model; break;
       }
-      if(!geminiData)throw new Error('⚠️ Ningún modelo de Gemini disponible con esta API Key. Verifica en aistudio.google.com que la clave esté activa.');
+      if(!geminiData)throw new Error('⚠️ Los modelos de Gemini no están disponibles en este momento (503). Espera unos minutos e intenta de nuevo.');
       respText=geminiData.candidates?.[0]?.content?.parts?.[0]?.text||'Sin respuesta.';
 
     }else{
@@ -13705,6 +13984,938 @@ function revAddAsistente(nombre){
     ${canEdit?`<button class="rev-asistente-del" onclick="this.parentElement.remove()" title="Quitar">✕</button>`:''}`;
   document.getElementById('rev-asistentes-lista').appendChild(div);
 }
+
+/* ══════════════════════════════════════════════════════
+   INFORME GENERAL DEL SGC — REPORTE COMPLETO
+══════════════════════════════════════════════════════ */
+window.sgcGenerarInforme=async function(){
+  const hoy=new Date();
+  const hoyStr=hoy.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+  const hoyISO=hoy.toISOString().slice(0,10);
+  const apiKey=localStorage.getItem('sgc_ia_key')||'';
+  const proveedor=localStorage.getItem('sgc_ia_proveedor')||'gemini';
+  const uid=Date.now();
+
+  // ── Datos de todos los módulos ──────────────────────────────────────────
+  const ncList=JSON.parse(localStorage.getItem('sgc_nc')||'[]');
+  const planList=JSON.parse(localStorage.getItem('sgc_planes')||'[]');
+  const mediciones=JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
+  const audList=S.auditorias||[];
+  const revList=leerRevision()||[];
+  const eficaciaList=JSON.parse(localStorage.getItem('eficacia_acciones')||'{}').lista||[];
+  const provLista=S.proveedores?.lista||[];
+  const provEval=S.proveedores?.evaluaciones||[];
+  const plan_sgc=JSON.parse(localStorage.getItem('sgc_planificacion')||'{}');
+  // Cada módulo usa su propia clave de localStorage; sgc_planificacion es fallback
+  const politica=JSON.parse(localStorage.getItem('sgc_politica_calidad')||'{}');
+  const fodaData=JSON.parse(localStorage.getItem('sgc_foda')||JSON.stringify(plan_sgc.foda||{}));
+  const seguFoda=JSON.parse(localStorage.getItem('sgc_seguimiento_foda')||JSON.stringify(plan_sgc.seguimiento_foda||{}));
+  const objData=JSON.parse(localStorage.getItem('sgc_objetivos_calidad')||JSON.stringify(plan_sgc.objetivos_calidad||{}));
+  const indDefList=S.indicadores||[];
+  const docs=cargarDocs();
+
+  // Helpers
+  const chip=(txt,color)=>`<span class="sgc-inf-chip sgc-inf-${color}">${txt}</span>`;
+  const sem5=(v)=>v>=4?chip('🟢 Satisfactorio','verde'):v>=3?chip('🟡 Aceptable','amarillo'):chip('🔴 Crítico','rojo');
+  const semPct=(v)=>parseFloat(v)>=75?chip('🟢 En meta','verde'):parseFloat(v)>=60?chip('🟡 Cercano','amarillo'):chip('🔴 Fuera de meta','rojo');
+  const e=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const rowBg=(i)=>i%2===0?'':'background:#f8fafc';
+
+  // ── 1. RESUMEN EJECUTIVO ────────────────────────────────────────────────
+  const ncAbiertas=ncList.filter(n=>n.estado==='abierta'||n.estado==='en_proceso').length;
+  const ncCerradas=ncList.filter(n=>n.estado==='cerrada'||n.estado==='cerrado').length;
+  const accionesPend=planList.flatMap(p=>p.pac||[]).filter(a=>a.estado!=='completada').length;
+  const medUlt=indDefList.map(ind=>{
+    const meds=mediciones.filter(m=>String(m.numero||m.indicador_numero||'').padStart(2,'0')===String(ind.numero||'').padStart(2,'0'));
+    return{ind,ult:meds.sort((a,b)=>(b.fecha||b.semestre||'').localeCompare(a.fecha||a.semestre||''))[0]};
+  });
+  const indEnMeta=medUlt.filter(({ind,ult})=>ult&&parseFloat(ult.resultado||0)>=(ind.esperado||75)).length;
+  const indFueraMeta=medUlt.filter(({ind,ult})=>ult&&parseFloat(ult.resultado||0)<(ind.esperado||75)).length;
+
+  const resumenHtml=`
+    <div class="sgc-inf-resumen-grid">
+      <div class="sgc-inf-kpi"><div class="valor">${ncAbiertas}</div><div class="etiq">NC abiertas</div></div>
+      <div class="sgc-inf-kpi"><div class="valor">${ncCerradas}</div><div class="etiq">NC cerradas</div></div>
+      <div class="sgc-inf-kpi"><div class="valor">${accionesPend}</div><div class="etiq">Acciones pendientes</div></div>
+      <div class="sgc-inf-kpi"><div class="valor">${audList.length}</div><div class="etiq">Auditorías realizadas</div></div>
+      <div class="sgc-inf-kpi"><div class="valor">${indEnMeta}</div><div class="etiq">Indicadores en meta</div></div>
+      <div class="sgc-inf-kpi"><div class="valor">${indFueraMeta}</div><div class="etiq">Indicadores fuera de meta</div></div>
+    </div>`;
+
+  // ── 2. SATISFACCIÓN DEL ALUMNO ──────────────────────────────────────────
+  let satHtml='<p class="sgc-inf-nota">Sin datos de satisfacción cargados. Abre la sección "Satisfacción del Alumno" para generarlos.</p>';
+  if(_satDataCache&&(_satDataCache.ficha.length||_satDataCache.encuesta.length)){
+    const{ficha,encuesta}=_satDataCache;
+    const ceFields=['ce_inscripcion','ce_reinscripcion','ce_constancias','ce_credenciales','ce_duplicado_boleta','ce_boleta_calif'];
+    const ceLabels=['Inscripción','Reinscripción','Constancias','Credenciales','Dup. Boleta','Boleta Calif.'];
+    const titFields=['tit_asesor','tit_constancia_cursos','tit_respuesta_carta'];
+    const titLabels=['Asesor de Tesis','Constancia Cursos','Carta Exposición'];
+    const docFields=['doc_dominio_materia','doc_estrategias_ensenanza','doc_recursos_didacticos','doc_estrategias_eval','doc_asesoria_academica'];
+    const docLabels=['Dominio de materia','Estrategias enseñanza','Recursos didácticos','Estrategias evaluación','Asesoría académica'];
+    const infraFields=['infra_salones','infra_aula_medios','infra_banos','infra_biblioteca','infra_auditorio','infra_areas_verdes','infra_canchas'];
+    const infraLabels=['Salones','Aula de medios','Baños','Biblioteca','Auditorio','Áreas verdes','Canchas'];
+    const periodos=[...new Set([...ficha,...encuesta].map(r=>satPeriodo(r.marca_temporal)).filter(Boolean))]
+      .sort((a,b)=>satPeriodoSortKey(a).localeCompare(satPeriodoSortKey(b)));
+
+    // Tabla comparativa por período
+    satHtml=`<p style="font-size:9pt;color:#64748b">Total: ${ficha.length} fichas R-91/01 · ${encuesta.length} encuestas R-91/02 · ${periodos.length} período(s)</p>`;
+
+    // Tabla resumen por período
+    satHtml+=`<table class="sgc-inf-tabla"><thead><tr>
+      <th>Período</th><th>Fichas</th><th>Encuestas</th>
+      <th>CE (R-91/01)</th><th>Titulación</th><th>Docentes</th><th>Infraestructura</th><th>Limpieza</th>
+    </tr></thead><tbody>`;
+    periodos.forEach((p,i)=>{
+      const fR=ficha.filter(r=>satPeriodo(r.marca_temporal)===p);
+      const eR=encuesta.filter(r=>satPeriodo(r.marca_temporal)===p);
+      const ce=satAvg(fR,ceFields),tit=satAvg(fR,titFields);
+      const doc=satAvg(eR,docFields),infra=satAvg(eR,infraFields);
+      const limp=satAvg(eR,['limpieza']);
+      satHtml+=`<tr style="${rowBg(i)}"><td><b>${e(p)}</b></td><td>${fR.length}</td><td>${eR.length}</td>
+        <td>${ce!==null?ce+'/5 '+sem5(ce):'—'}</td><td>${tit!==null?tit+'/5 '+sem5(tit):'—'}</td>
+        <td>${doc!==null?doc+'/5 '+sem5(doc):'—'}</td><td>${infra!==null?infra+'/5 '+sem5(infra):'—'}</td>
+        <td>${limp!==null?limp+'/5 '+sem5(limp):'—'}</td></tr>`;
+    });
+    satHtml+='</tbody></table>';
+
+    // Detalle del último período
+    const ultP=periodos[periodos.length-1];
+    if(ultP){
+      const fR=ficha.filter(r=>satPeriodo(r.marca_temporal)===ultP);
+      const eR=encuesta.filter(r=>satPeriodo(r.marca_temporal)===ultP);
+      satHtml+=`<h4>Detalle del último período: ${e(ultP)}</h4>`;
+
+      // Ficha CE
+      if(fR.length){
+        satHtml+=`<b style="font-size:9.5pt">Ficha R-91/01 — Control Escolar y Titulación</b>
+          <table class="sgc-inf-tabla" style="margin-top:4px"><thead><tr><th>Servicio</th><th>Promedio</th><th>Estado</th></tr></thead><tbody>`;
+        ceLabels.forEach((l,i)=>{const v=satAvg(fR,[ceFields[i]]);satHtml+=`<tr><td>${l}</td><td>${v!==null?v+'/5':'—'}</td><td>${v!==null?sem5(v):'—'}</td></tr>`;});
+        titLabels.forEach((l,i)=>{const v=satAvg(fR,[titFields[i]]);satHtml+=`<tr><td>${l}</td><td>${v!==null?v+'/5':'—'}</td><td>${v!==null?sem5(v):'—'}</td></tr>`;});
+        satHtml+='</tbody></table>';
+      }
+
+      // Encuesta docentes e infra
+      if(eR.length){
+        satHtml+=`<b style="font-size:9.5pt">Encuesta R-91/02 — Docentes e Infraestructura</b>
+          <table class="sgc-inf-tabla" style="margin-top:4px"><thead><tr><th>Aspecto</th><th>Promedio</th><th>Estado</th></tr></thead><tbody>`;
+        docLabels.forEach((l,i)=>{const v=satAvg(eR,[docFields[i]]);satHtml+=`<tr><td>${l}</td><td>${v!==null?v+'/5':'—'}</td><td>${v!==null?sem5(v):'—'}</td></tr>`;});
+        infraLabels.forEach((l,i)=>{const v=satAvg(eR,[infraFields[i]]);satHtml+=`<tr><td>${l}</td><td>${v!==null?v+'/5':'—'}</td><td>${v!==null?sem5(v):'—'}</td></tr>`;});
+        satHtml+='</tbody></table>';
+
+        // Comentarios
+        const coms=eR.filter(r=>r.comentarios&&r.comentarios.trim()).slice(0,5);
+        if(coms.length){
+          satHtml+=`<h4>Muestra de comentarios de alumnos</h4><ul style="font-size:9pt;color:#374151;margin-left:18px">`;
+          coms.forEach(r=>{satHtml+=`<li>"${e(r.comentarios.trim().slice(0,200))}"</li>`;});
+          satHtml+='</ul>';
+        }
+      }
+    }
+  }
+
+  // ── 3. INDICADORES DE CALIDAD ───────────────────────────────────────────
+  let indHtml=`<table class="sgc-inf-tabla"><thead><tr>
+    <th>#</th><th>Indicador</th><th>Área</th><th>Último resultado</th><th>Meta</th><th>Semáforo</th><th>Período</th>
+  </tr></thead><tbody>`;
+  medUlt.forEach(({ind,ult},i)=>{
+    const res=ult?parseFloat(ult.resultado||0):null;
+    indHtml+=`<tr style="${rowBg(i)}">
+      <td>${String(ind.numero||'').padStart(2,'0')}</td>
+      <td style="font-size:9pt">${e(ind.nombre||'—')}</td>
+      <td style="font-size:9pt">${e(ind.area||INDICADOR_AREA[String(ind.numero||'').padStart(2,'0')]||'—')}</td>
+      <td><b>${res!==null?res+'%':'Sin medición'}</b></td>
+      <td>≥${ind.esperado||75}%</td>
+      <td>${res!==null?semPct(res):chip('Sin dato','gris')}</td>
+      <td style="font-size:9pt">${e(ult?.semestre||ult?.fecha||'—')}</td>
+    </tr>`;
+  });
+  indHtml+='</tbody></table>';
+
+  // Histórico de mediciones por indicador
+  if(mediciones.length){
+    indHtml+=`<h4>Historial de mediciones (últimas 20)</h4>
+    <table class="sgc-inf-tabla"><thead><tr><th>Ind.</th><th>Período/Fecha</th><th>Resultado</th><th>Meta</th><th>Resp.</th></tr></thead><tbody>`;
+    mediciones.slice(0,20).forEach((m,i)=>{
+      const num=String(m.numero||m.indicador_numero||'').padStart(2,'0');
+      const def=INDICADORES_R44[num]||{};
+      indHtml+=`<tr style="${rowBg(i)}"><td>${num}</td><td>${e(m.semestre||m.fecha||'—')}</td>
+        <td><b>${e(m.resultado||'—')}%</b></td><td>≥${def.esperado||75}%</td>
+        <td style="font-size:9pt">${e(m.responsable||def.responsable||'—')}</td></tr>`;
+    });
+    indHtml+='</tbody></table>';
+  }
+
+  // ── 4. NO CONFORMIDADES ─────────────────────────────────────────────────
+  let ncHtml=`<p style="font-size:9pt">Total: ${ncList.length} | Abiertas: ${ncAbiertas} | Cerradas: ${ncCerradas}</p>
+    <table class="sgc-inf-tabla"><thead><tr>
+      <th>N°</th><th>Tipo</th><th>Área</th><th>Descripción</th><th>Causa raíz</th><th>Fecha</th><th>Estado</th><th>Corrección inmediata</th>
+    </tr></thead><tbody>`;
+  ncList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).forEach((nc,i)=>{
+    const tipo={'mayor':'NC Mayor','menor':'NC Menor','obs':'Observación','op':'Op. Mejora'}[nc.tipo||'mayor']||nc.tipo||'—';
+    const color={'mayor':'rojo','menor':'amarillo','obs':'gris','op':'verde'}[nc.tipo||'mayor']||'gris';
+    const estado={'abierta':'🔴 Abierta','en_proceso':'🟡 En proceso','cerrada':'🟢 Cerrada'}[nc.estado]||nc.estado||'—';
+    ncHtml+=`<tr style="${rowBg(i)}">
+      <td><b>${e(nc.numero||i+1)}</b></td>
+      <td>${chip(tipo,color)}</td>
+      <td style="font-size:9pt">${e(nc.area_numeral||nc.area||'—')}<br><span style="color:#64748b">${e(nc.numeral||'—')}</span></td>
+      <td style="font-size:9pt">${e((nc.descripcion||nc.hallazgo||'—').slice(0,150))}</td>
+      <td style="font-size:9pt">${e((nc.causa_raiz_desc||'—').slice(0,100))}</td>
+      <td>${e(nc.fecha||'—')}</td>
+      <td>${estado}</td>
+      <td style="font-size:9pt">${e((nc.correccion||'—').slice(0,120))}</td>
+    </tr>`;
+  });
+  ncHtml+='</tbody></table>';
+  if(!ncList.length)ncHtml='<p class="sgc-inf-nota">Sin no conformidades registradas.</p>';
+
+  // Eficacia de acciones
+  if(eficaciaList.length){
+    ncHtml+=`<h4>Verificación de eficacia (R-93/04)</h4>
+    <table class="sgc-inf-tabla"><thead><tr><th>NC / Referencia</th><th>Acción</th><th>Fecha verif.</th><th>Eficaz</th><th>Observaciones</th></tr></thead><tbody>`;
+    eficaciaList.forEach((e2,i)=>{
+      ncHtml+=`<tr style="${rowBg(i)}"><td>${e(e2.nc_ref||'—')}</td><td style="font-size:9pt">${e((e2.accion||'—').slice(0,100))}</td>
+        <td>${e(e2.fecha||'—')}</td><td>${e2.eficaz?chip('Sí','verde'):chip('No','rojo')}</td>
+        <td style="font-size:9pt">${e((e2.obs||'—').slice(0,100))}</td></tr>`;
+    });
+    ncHtml+='</tbody></table>';
+  }
+
+  // ── 5. AUDITORÍAS ───────────────────────────────────────────────────────
+  let audHtml='<p class="sgc-inf-nota">Sin auditorías registradas.</p>';
+  if(audList.length){
+    audHtml=`<table class="sgc-inf-tabla"><thead><tr>
+      <th>Fecha</th><th>Tipo</th><th>Área(s)</th><th>Auditores</th><th>Conformidades</th><th>NC</th><th>Observaciones</th>
+    </tr></thead><tbody>`;
+    audList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).forEach((aud,i)=>{
+      const items=aud.items||[];
+      const cumple=items.filter(x=>x.resultado==='cumple').length;
+      const noC=items.filter(x=>x.resultado==='no_cumple').length;
+      const obs=items.filter(x=>x.resultado==='observacion').length;
+      audHtml+=`<tr style="${rowBg(i)}">
+        <td>${e(aud.fecha||'—')}</td>
+        <td>${chip(aud.tipo==='externa'?'Externa':'Interna',aud.tipo==='externa'?'rojo':'verde')}</td>
+        <td style="font-size:9pt">${e((aud.auditados||[]).join(', ')||aud.area||'—')}</td>
+        <td style="font-size:9pt">${e((aud.auditores||[]).join(', ')||'—')}</td>
+        <td style="color:#166534"><b>${cumple}</b></td>
+        <td style="color:#991b1b"><b>${noC}</b></td>
+        <td style="color:#854d0e">${obs}</td>
+      </tr>`;
+    });
+    audHtml+='</tbody></table>';
+
+    // Hallazgos de NC de auditoría
+    const hallazgos=audList.flatMap(aud=>(aud.items||[]).filter(x=>x.resultado==='no_cumple').map(x=>({...x,fecha:aud.fecha,area:aud.area})));
+    if(hallazgos.length){
+      audHtml+=`<h4>Hallazgos de No Conformidad en auditorías</h4>
+      <table class="sgc-inf-tabla"><thead><tr><th>Fecha</th><th>Área</th><th>Requisito</th><th>Hallazgo</th></tr></thead><tbody>`;
+      hallazgos.slice(0,15).forEach((h,i)=>{
+        audHtml+=`<tr style="${rowBg(i)}"><td>${e(h.fecha||'—')}</td><td style="font-size:9pt">${e(h.area||'—')}</td>
+          <td style="font-size:9pt">${e(h.requisito||'—')}</td><td style="font-size:9pt">${e((h.hallazgo||h.pregunta||'—').slice(0,150))}</td></tr>`;
+      });
+      audHtml+='</tbody></table>';
+    }
+  }
+
+  // ── 6. FODA Y SEGUIMIENTO ───────────────────────────────────────────────
+  const fodaCats=[
+    {k:'fortalezas',l:'Fortalezas',c:'verde'},
+    {k:'oportunidades',l:'Oportunidades',c:'verde'},
+    {k:'debilidades',l:'Debilidades',c:'amarillo'},
+    {k:'amenazas',l:'Amenazas / Riesgos',c:'rojo'}
+  ];
+  let fodaHtml=`<p style="font-size:9pt;color:#64748b">Período: ${e(fodaData.periodo||'—')} | Elaboró: ${e(fodaData.elaboro||'—')}</p>
+    <table class="sgc-inf-tabla"><thead><tr><th>Categoría</th><th>Contenido</th></tr></thead><tbody>`;
+  fodaCats.forEach((cat,i)=>{
+    fodaHtml+=`<tr style="${rowBg(i)}"><td>${chip(cat.l,cat.c)}</td><td style="font-size:9pt;white-space:pre-wrap">${e(fodaData[cat.k]||'(sin datos)')}</td></tr>`;
+  });
+  fodaHtml+='</tbody></table>';
+
+  if(seguFoda.semestre){
+    fodaHtml+=`<h4>Seguimiento al FODA (R-61/02) — ${e(seguFoda.semestre)}</h4>`;
+    const segs=seguFoda.seguimientos||[];
+    if(segs.length){
+      fodaHtml+=`<table class="sgc-inf-tabla"><thead><tr><th>Área/Aspecto</th><th>Acción</th><th>Responsable</th><th>Avance</th></tr></thead><tbody>`;
+      segs.forEach((s,i)=>{
+        fodaHtml+=`<tr style="${rowBg(i)}"><td style="font-size:9pt">${e(s.aspecto||'—')}</td>
+          <td style="font-size:9pt">${e((s.accion||'—').slice(0,150))}</td>
+          <td style="font-size:9pt">${e(s.responsable||'—')}</td>
+          <td>${chip(s.avance||'Pendiente',s.avance==='Completado'?'verde':s.avance==='En proceso'?'amarillo':'gris')}</td></tr>`;
+      });
+      fodaHtml+='</tbody></table>';
+    }
+  }
+
+  // ── 7. OBJETIVOS DE CALIDAD ─────────────────────────────────────────────
+  let objHtml='<p class="sgc-inf-nota">Sin objetivos registrados.</p>';
+  const objArr=objData.objetivos||[];
+  if(objArr.length){
+    objHtml=`<p style="font-size:9pt;color:#64748b">Período: ${e(objData.periodo||'—')} · Elaboró: ${e(objData.elaboro||'—')} · Revisó: ${e(objData.reviso||'—')}</p>
+    <table class="sgc-inf-tabla"><thead><tr><th>#</th><th>Objetivo de Calidad</th></tr></thead><tbody>`;
+    objArr.forEach((o,i)=>{
+      // Los objetivos pueden ser strings simples u objetos
+      const txt=typeof o==='string'?o:(o.objetivo||o.descripcion||JSON.stringify(o)||'—');
+      objHtml+=`<tr style="${rowBg(i)}"><td style="width:30px;font-weight:700">${i+1}</td>
+        <td style="font-size:9.5pt;line-height:1.5">${e(txt)}</td></tr>`;
+    });
+    objHtml+='</tbody></table>';
+  }
+
+  // ── 8. PROVEEDORES ──────────────────────────────────────────────────────
+  let provHtml='<p class="sgc-inf-nota">Sin proveedores registrados.</p>';
+  if(provLista.length){
+    provHtml=`<table class="sgc-inf-tabla"><thead><tr>
+      <th>Proveedor</th><th>Servicio/Producto</th><th>Clasificación</th><th>Calificación</th><th>Estado</th>
+    </tr></thead><tbody>`;
+    provLista.forEach((p,i)=>{
+      const evalProv=provEval.filter(e2=>e2.proveedor_id===p.id||e2.proveedor===p.nombre);
+      const ultEval=evalProv.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''))[0];
+      const cal=ultEval?.calificacion_total||ultEval?.total||null;
+      const estado=cal>=70?chip('Principal','verde'):cal>=50?chip('Secundario','amarillo'):cal?chip('No Aceptado','rojo'):chip('Sin evaluar','gris');
+      provHtml+=`<tr style="${rowBg(i)}"><td><b>${e(p.nombre||'—')}</b></td>
+        <td style="font-size:9pt">${e(p.servicio||p.producto||'—')}</td>
+        <td>${chip(p.clasificacion||'—','gris')}</td>
+        <td>${cal!==null?cal+'/40':'—'}</td><td>${estado}</td></tr>`;
+    });
+    provHtml+='</tbody></table>';
+  }
+
+  // ── 9. REVISIONES POR LA DIRECCIÓN ANTERIORES ───────────────────────────
+  let revHtml='<p class="sgc-inf-nota">Sin revisiones registradas.</p>';
+  if(revList.length){
+    revHtml=`<table class="sgc-inf-tabla"><thead><tr>
+      <th>Semestre</th><th>Fecha</th><th>Asistentes</th><th>Decisiones</th>
+    </tr></thead><tbody>`;
+    revList.slice(0,5).forEach((r,i)=>{
+      revHtml+=`<tr style="${rowBg(i)}"><td><b>${e(r.semestre||'—')}</b></td>
+        <td>${e(r.fecha||r.rep_fecha||'—')}</td>
+        <td style="font-size:9pt">${e((r.asistentes||[]).join(', ')||'—')}</td>
+        <td style="font-size:9pt">${(r.decisiones||[]).length} decisiones tomadas</td></tr>`;
+    });
+    revHtml+='</tbody></table>';
+  }
+
+  // ── 10. POLÍTICA DE CALIDAD ─────────────────────────────────────────────
+  const polHtml=`<blockquote style="border-left:4px solid #1e3a8a;margin:0;padding:8px 16px;background:#f0f9ff;font-size:10pt;color:#1e3a8a;font-style:italic">
+    ${e(politica.texto||'(sin política registrada)')}
+  </blockquote>
+  <p class="sgc-inf-nota">Período: ${e(politica.periodo||'—')} | Elaboró: ${e(politica.elaboro||'—')} | Rev. ${e(politica.rev||'00')}</p>`;
+
+  // ── Datos para gráficas ─────────────────────────────────────────────────
+  // Satisfacción: últimas 2 períodos
+  let satPeriodos2=[],satGrafEnc={},satGrafFich={};
+  if(_satDataCache&&(_satDataCache.ficha.length||_satDataCache.encuesta.length)){
+    const{ficha,encuesta}=_satDataCache;
+    const perAll=[...new Set([...ficha,...encuesta].map(r=>satPeriodo(r.marca_temporal)).filter(Boolean))]
+      .sort((a,b)=>satPeriodoSortKey(a).localeCompare(satPeriodoSortKey(b)));
+    satPeriodos2=perAll.slice(-2);
+    satPeriodos2.forEach(p=>{
+      const fR=ficha.filter(r=>satPeriodo(r.marca_temporal)===p);
+      const eR=encuesta.filter(r=>satPeriodo(r.marca_temporal)===p);
+      satGrafFich[p]={
+        ce:satAvg(fR,['ce_inscripcion','ce_reinscripcion','ce_constancias','ce_credenciales','ce_duplicado_boleta','ce_boleta_calif']),
+        tit:satAvg(fR,['tit_asesor','tit_constancia_cursos','tit_respuesta_carta'])
+      };
+      satGrafEnc[p]={
+        doc:satAvg(eR,['doc_dominio_materia','doc_estrategias_ensenanza','doc_recursos_didacticos','doc_estrategias_eval','doc_asesoria_academica']),
+        infra:satAvg(eR,['infra_salones','infra_aula_medios','infra_banos','infra_biblioteca','infra_auditorio','infra_areas_verdes','infra_canchas']),
+        limp:satAvg(eR,['limpieza'])
+      };
+    });
+  }
+
+  // Descripción automática satisfacción
+  const _descSat=(()=>{
+    if(!satPeriodos2.length)return'Sin datos de satisfacción para generar descripción.';
+    const ult=satPeriodos2[satPeriodos2.length-1];
+    const ant=satPeriodos2.length>1?satPeriodos2[satPeriodos2.length-2]:null;
+    const enc=satGrafEnc[ult]||{};
+    const fich=satGrafFich[ult]||{};
+    let txt=`En el período <strong>${e(ult)}</strong>: `;
+    const pars=[];
+    if(enc.doc!==null&&enc.doc!==undefined){
+      const sem=enc.doc>=4?'satisfactorio (🟢)':enc.doc>=3?'aceptable (🟡)':'crítico (🔴)';
+      pars.push(`docentes promedio <strong>${enc.doc}/5</strong> — nivel ${sem}`);
+    }
+    if(enc.infra!==null&&enc.infra!==undefined){
+      const sem=enc.infra>=4?'satisfactoria (🟢)':enc.infra>=3?'aceptable (🟡)':'crítica (🔴)';
+      pars.push(`infraestructura <strong>${enc.infra}/5</strong> — ${sem}`);
+    }
+    if(fich.ce!==null&&fich.ce!==undefined){
+      const sem=fich.ce>=4?'satisfactorio (🟢)':fich.ce>=3?'aceptable (🟡)':'crítico (🔴)';
+      pars.push(`Control Escolar <strong>${fich.ce}/5</strong> — ${sem}`);
+    }
+    txt+=pars.join('; ')||'sin datos detallados';txt+='. ';
+    if(ant){
+      const encA=satGrafEnc[ant]||{};
+      const diffs=[];
+      if(enc.doc!==null&&enc.doc!==undefined&&encA.doc!==null&&encA.doc!==undefined){
+        const d=(enc.doc-encA.doc).toFixed(2);
+        diffs.push(`docentes ${d>0?'▲':'▼'} ${Math.abs(d)} pts vs ${e(ant)}`);
+      }
+      if(enc.infra!==null&&enc.infra!==undefined&&encA.infra!==null&&encA.infra!==undefined){
+        const d=(enc.infra-encA.infra).toFixed(2);
+        diffs.push(`infraestructura ${d>0?'▲':'▼'} ${Math.abs(d)} pts`);
+      }
+      if(diffs.length)txt+=`Tendencia respecto al período anterior: ${diffs.join(', ')}.`;
+    }
+    return txt;
+  })();
+
+  // Descripción automática indicadores
+  const _descInd=(()=>{
+    if(!medUlt.length)return'Sin indicadores medidos.';
+    const conMed=medUlt.filter(({ult})=>ult);
+    if(!conMed.length)return'Ningún indicador tiene medición registrada aún.';
+    const enMeta=conMed.filter(({ind,ult})=>parseFloat(ult.resultado||0)>=(ind.esperado||75));
+    const fueraMeta=conMed.filter(({ind,ult})=>parseFloat(ult.resultado||0)<(ind.esperado||75));
+    let txt=`De ${conMed.length} indicador(es) con medición: <strong>${enMeta.length} en meta</strong> y <strong>${fueraMeta.length} fuera de meta</strong>. `;
+    if(fueraMeta.length){
+      txt+=`Requieren atención: `+fueraMeta.map(({ind,ult})=>`Ind. ${ind.numero} — ${e(ind.nombre||'—')} (${ult.resultado||'—'}%, meta ≥${ind.esperado||75}%)`).join('; ')+'. ';
+    }
+    if(medUlt.filter(({ult})=>!ult).length){
+      txt+=`${medUlt.filter(({ult})=>!ult).length} indicador(es) sin medición registrada.`;
+    }
+    return txt;
+  })();
+
+  // Descripción automática NC
+  const _descNC=(()=>{
+    const total=ncList.length;
+    if(!total)return'No se han registrado no conformidades en el sistema.';
+    const mayores=ncList.filter(n=>n.tipo==='mayor').length;
+    const menores=ncList.filter(n=>n.tipo==='menor').length;
+    const obs=ncList.filter(n=>n.tipo==='obs').length;
+    const opm=ncList.filter(n=>n.tipo==='op').length;
+    const cerradas=ncList.filter(n=>n.estado==='cerrada'||n.estado==='cerrado').length;
+    const pctCierre=total?Math.round(cerradas/total*100):0;
+    let txt=`Se tienen <strong>${total}</strong> no conformidades registradas: ${mayores} mayor(es), ${menores} menor(es), ${obs} observación(es) y ${opm} oportunidad(es) de mejora. `;
+    txt+=`Tasa de cierre: <strong>${pctCierre}%</strong> (${cerradas} de ${total} resueltas). `;
+    if(pctCierre>=80)txt+='🟢 La gestión de NC es eficaz.';
+    else if(pctCierre>=50)txt+='🟡 Existen NC pendientes que requieren seguimiento.';
+    else txt+='🔴 Alta proporción de NC sin cerrar — se requiere acción inmediata.';
+    return txt;
+  })();
+
+  // ── CONSTRUIR HTML COMPLETO ─────────────────────────────────────────────
+  const html=`
+    <table style="width:100%;border-collapse:collapse;border-bottom:3px solid #1e3a8a;margin-bottom:0;background:#fff">
+      <tr>
+        <td style="width:76px;padding:8px 10px;vertical-align:middle">
+          <img src="coordinacion_calidad_hero.png" alt="ENUFC" style="width:66px;height:66px;object-fit:contain;border-radius:50%;border:1px solid #dbeafe;-webkit-print-color-adjust:exact;print-color-adjust:exact" onerror="this.style.display='none'">
+        </td>
+        <td style="vertical-align:middle;padding:8px 4px;text-align:center">
+          <div style="font-size:11.5pt;font-weight:700;color:#1e3a8a;text-transform:uppercase;letter-spacing:.3px">Escuela Normal Urbana Federal Cuautla</div>
+          <div style="font-size:9pt;color:#374151;margin-top:2px">Coordinación de Calidad · Sistema de Gestión de la Calidad ISO 9001:2015</div>
+          <div style="font-size:8pt;color:#6b7280;margin-top:1px">Av. Normal de Maestros No. 1, Col. Gabriel Tepepa · C.P. 62742 · Cuautla, Mor.</div>
+          <div style="font-size:8pt;color:#6b7280">Tel: (735) 35 8-40-19 · Correo: 17dnl0004a@iebem.edu.mx</div>
+        </td>
+        <td style="width:155px;vertical-align:top;padding:8px 10px;text-align:right;font-size:8pt;color:#374151;line-height:1.5">
+          <div style="font-weight:700;color:#1e3a8a;font-size:8.5pt">INFORME GENERAL SGC</div>
+          <div>Fecha: <b>${hoyStr}</b></div>
+          <div>Coordinador: ${e(S.config?.auditor_lider||'Mtro. Roberto Carlos Aguilar Pedroza')}</div>
+          <div style="margin-top:3px;padding:2px 6px;background:#eff6ff;border-radius:4px;color:#1e3a8a;font-weight:600">ISO 9001:2015</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="sgc-inf-portada" style="border-bottom:none;padding-top:14px;padding-bottom:10px">
+      <h1>INFORME GENERAL DEL SISTEMA DE GESTIÓN DE LA CALIDAD</h1>
+      <h2>Revisión por la Dirección — Cláusula 9.3</h2>
+      <div class="sgc-inf-portada-meta">
+        <span>NC abiertas: ${ncAbiertas}</span>
+        <span>Indicadores en meta: ${indEnMeta}/${medUlt.filter(({ult})=>ult).length}</span>
+        <span>Auditorías: ${audList.length}</span>
+        <span>Períodos satisfacción: ${satPeriodos2.length}</span>
+        <span>Proveedores: ${provLista.length}</span>
+      </div>
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>1. Resumen Ejecutivo del SGC</h3>
+      ${resumenHtml}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>2. Política de Calidad (Cláusula 5.2)</h3>
+      ${polHtml}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>3. Satisfacción del Alumno — R-91/01 y R-91/02 (Cláusula 9.1.2)</h3>
+      ${satHtml}
+      ${satPeriodos2.length>=1?`
+      <div class="sgc-inf-grafica-wrap">
+        <div class="sgc-inf-grafica-titulo">Gráfica 3A — Encuesta R-91/02: Promedios por aspecto (últimos ${satPeriodos2.length} período(s))</div>
+        <canvas id="sgc-chart-enc-${uid}" height="100"></canvas>
+        <div class="sgc-inf-semaforo-ref">
+          <span class="sgc-inf-chip sgc-inf-verde">🟢 ≥4.0 Satisfactorio</span>
+          <span class="sgc-inf-chip sgc-inf-amarillo">🟡 3.0–3.9 Aceptable</span>
+          <span class="sgc-inf-chip sgc-inf-rojo">🔴 &lt;3.0 Crítico</span>
+        </div>
+        <p style="font-size:9pt;color:#374151;margin-top:8px">${_descSat}</p>
+      </div>
+      <div class="sgc-inf-grafica-wrap">
+        <div class="sgc-inf-grafica-titulo">Gráfica 3B — Ficha R-91/01: Control Escolar y Titulación (últimos ${satPeriodos2.length} período(s))</div>
+        <canvas id="sgc-chart-fich-${uid}" height="80"></canvas>
+      </div>`:''}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>4. Indicadores de Calidad — R-44/01 (Cláusula 9.1.1)</h3>
+      ${indHtml}
+      ${medUlt.filter(({ult})=>ult).length?`
+      <div class="sgc-inf-grafica-wrap">
+        <div class="sgc-inf-grafica-titulo">Gráfica 4 — Resultado actual vs Meta por indicador (%)</div>
+        <canvas id="sgc-chart-ind-${uid}" height="${Math.max(60,medUlt.filter(({ult})=>ult).length*22)}"></canvas>
+        <p style="font-size:9pt;color:#374151;margin-top:8px">${_descInd}</p>
+      </div>`:''}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>5. No Conformidades y Acciones Correctivas — R-102/02 (Cláusula 10.2)</h3>
+      ${ncHtml}
+      ${ncList.length?`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0">
+        <div class="sgc-inf-grafica-wrap">
+          <div class="sgc-inf-grafica-titulo">Gráfica 5A — NC por estado</div>
+          <canvas id="sgc-chart-nc-est-${uid}" height="120"></canvas>
+        </div>
+        <div class="sgc-inf-grafica-wrap">
+          <div class="sgc-inf-grafica-titulo">Gráfica 5B — NC por tipo</div>
+          <canvas id="sgc-chart-nc-tipo-${uid}" height="120"></canvas>
+        </div>
+      </div>
+      <p style="font-size:9pt;color:#374151;margin:4px 0 8px">${_descNC}</p>`:''}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>6. Auditorías — R-92/02 (Cláusula 9.2)</h3>
+      ${audHtml}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>7. Análisis FODA y Seguimiento — R-61/01 · R-61/02 (Cláusula 4.1 / 6.1)</h3>
+      ${fodaHtml}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>8. Objetivos de Calidad — R-62/01 (Cláusula 6.2)</h3>
+      ${objHtml}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>9. Gestión de Proveedores Externos — R-84/01 · R-84/02 (Cláusula 8.4)</h3>
+      ${provHtml}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>10. Revisiones por la Dirección Anteriores — R-93/01 · R-93/02 (Cláusula 9.3)</h3>
+      ${revHtml}
+    </div>
+
+    <div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:8.5pt;color:#94a3b8;text-align:center">
+      Informe generado automáticamente por el Sistema de Gestión de la Calidad SGC-ENUFC · ${hoyStr}<br>
+      Escuela Normal Urbana Federal Cuautla · ISO 9001:2015
+    </div>`;
+
+  // ── Mostrar en overlay ──────────────────────────────────────────────────
+  const existing=document.getElementById('sgc-informe-overlay');
+  if(existing)existing.remove();
+
+  const overlay=document.createElement('div');
+  overlay.className='sgc-informe-overlay';
+  overlay.id='sgc-informe-overlay';
+  overlay.innerHTML=`
+    <div class="sgc-informe-container">
+      <div class="sgc-informe-topbar">
+        <h2>📄 Informe General del SGC — ENUFC</h2>
+        <div class="sgc-informe-btns">
+          <button class="sgc-inf-print" onclick="sgcImprimirInforme()">🖨 Imprimir / Guardar PDF</button>
+          <button class="sgc-inf-close" onclick="document.getElementById('sgc-informe-overlay').remove()">✕ Cerrar</button>
+        </div>
+      </div>
+      <div class="sgc-informe-body" id="sgc-informe-body">${html}</div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  // ── Renderizar gráficas con Chart.js ────────────────────────────────────
+  setTimeout(()=>{
+    const C=window.Chart;
+    if(!C)return;
+
+    // Paleta por período
+    const PAL=[
+      {bg:'rgba(30,58,138,0.75)',border:'#1e3a8a'},
+      {bg:'rgba(59,130,246,0.65)',border:'#3b82f6'}
+    ];
+
+    // Gráfica 3A — Encuesta R-91/02
+    const canvEnc=document.getElementById(`sgc-chart-enc-${uid}`);
+    if(canvEnc&&satPeriodos2.length){
+      const labels=['Docentes','Infraestructura','Limpieza'];
+      const datasets=satPeriodos2.map((p,i)=>({
+        label:p,
+        data:[
+          satGrafEnc[p]?.doc??null,
+          satGrafEnc[p]?.infra??null,
+          satGrafEnc[p]?.limp??null
+        ],
+        backgroundColor:PAL[i]?.bg||'rgba(100,116,139,0.6)',
+        borderColor:PAL[i]?.border||'#64748b',
+        borderWidth:1.5,
+        borderRadius:4
+      }));
+      new C(canvEnc,{type:'bar',data:{labels,datasets},options:{
+        responsive:true,scales:{y:{min:0,max:5,ticks:{stepSize:1},grid:{color:'#e2e8f0'},title:{display:true,text:'Promedio /5'}}},
+        plugins:{legend:{position:'bottom',labels:{font:{size:9}}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.raw??'—')+'/5'}}}
+      }});
+    }
+
+    // Gráfica 3B — Ficha R-91/01
+    const canvFich=document.getElementById(`sgc-chart-fich-${uid}`);
+    if(canvFich&&satPeriodos2.length){
+      const labels=['Control Escolar','Titulación'];
+      const datasets=satPeriodos2.map((p,i)=>({
+        label:p,
+        data:[satGrafFich[p]?.ce??null,satGrafFich[p]?.tit??null],
+        backgroundColor:PAL[i]?.bg||'rgba(100,116,139,0.6)',
+        borderColor:PAL[i]?.border||'#64748b',
+        borderWidth:1.5,borderRadius:4
+      }));
+      new C(canvFich,{type:'bar',data:{labels,datasets},options:{
+        responsive:true,scales:{y:{min:0,max:5,ticks:{stepSize:1},grid:{color:'#e2e8f0'},title:{display:true,text:'Promedio /5'}}},
+        plugins:{legend:{position:'bottom',labels:{font:{size:9}}}}
+      }});
+    }
+
+    // Gráfica 4 — Indicadores resultado vs meta
+    const canvInd=document.getElementById(`sgc-chart-ind-${uid}`);
+    if(canvInd){
+      const conMed=medUlt.filter(({ult})=>ult);
+      if(conMed.length){
+        const labels=conMed.map(({ind})=>`Ind.${String(ind.numero||'').padStart(2,'0')} ${(ind.nombre||'').slice(0,22)}`);
+        const resultados=conMed.map(({ult})=>parseFloat(ult.resultado||0));
+        const metas=conMed.map(({ind})=>ind.esperado||75);
+        const bgColors=conMed.map(({ind,ult})=>parseFloat(ult.resultado||0)>=(ind.esperado||75)?'rgba(22,101,52,0.7)':'rgba(153,27,27,0.7)');
+        new C(canvInd,{type:'bar',data:{
+          labels,
+          datasets:[
+            {label:'Resultado (%)',data:resultados,backgroundColor:bgColors,borderRadius:3,borderWidth:0},
+            {label:'Meta (%)',data:metas,type:'line',borderColor:'#f59e0b',borderWidth:2,pointRadius:3,pointBackgroundColor:'#f59e0b',fill:false,tension:0}
+          ]
+        },options:{
+          indexAxis:'y',responsive:true,
+          scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#e2e8f0'}}},
+          plugins:{legend:{position:'bottom',labels:{font:{size:9}}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.raw??'—')+'%'}}}
+        }});
+      }
+    }
+
+    // Gráfica 5A — NC por estado
+    const canvNcEst=document.getElementById(`sgc-chart-nc-est-${uid}`);
+    if(canvNcEst&&ncList.length){
+      const abierta=ncList.filter(n=>n.estado==='abierta').length;
+      const enProceso=ncList.filter(n=>n.estado==='en_proceso').length;
+      const cerrada=ncList.filter(n=>n.estado==='cerrada'||n.estado==='cerrado').length;
+      new C(canvNcEst,{type:'doughnut',data:{
+        labels:['Abierta','En proceso','Cerrada'],
+        datasets:[{data:[abierta,enProceso,cerrada],backgroundColor:['#ef4444','#f59e0b','#22c55e'],borderWidth:1}]
+      },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}}}});
+    }
+
+    // Gráfica 5B — NC por tipo
+    const canvNcTipo=document.getElementById(`sgc-chart-nc-tipo-${uid}`);
+    if(canvNcTipo&&ncList.length){
+      const mayor=ncList.filter(n=>n.tipo==='mayor').length;
+      const menor=ncList.filter(n=>n.tipo==='menor').length;
+      const obs2=ncList.filter(n=>n.tipo==='obs').length;
+      const op=ncList.filter(n=>n.tipo==='op').length;
+      new C(canvNcTipo,{type:'doughnut',data:{
+        labels:['NC Mayor','NC Menor','Observación','Op. Mejora'],
+        datasets:[{data:[mayor,menor,obs2,op],backgroundColor:['#dc2626','#f59e0b','#94a3b8','#22c55e'],borderWidth:1}]
+      },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}}}});
+    }
+  },200);
+
+
+
+};
+
+window.sgcImprimirInforme=function(){
+  const body=document.getElementById('sgc-informe-body');
+  if(!body)return;
+
+  // Convertir canvas a img para que sean visibles en la ventana de impresión
+  const canvasNodes=body.querySelectorAll('canvas');
+  const canvasReplacements=[];
+  canvasNodes.forEach(cv=>{
+    try{
+      const img=document.createElement('img');
+      img.src=cv.toDataURL('image/png');
+      img.style.cssText='max-width:100%;height:auto;display:block;margin:0 auto';
+      cv.parentNode.insertBefore(img,cv);
+      cv.style.display='none';
+      canvasReplacements.push({cv,img});
+    }catch(err){}
+  });
+
+  const win=window.open('','_blank','width=900,height=700');
+  if(!win){
+    // Fallback: imprimir en la misma ventana
+    document.body.classList.add('sgc-printing');
+    window.print();
+    document.body.classList.remove('sgc-printing');
+    canvasReplacements.forEach(({cv,img})=>{cv.style.display='';img.remove();});
+    return;
+  }
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Informe SGC — ENUFC</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;font-size:10.5pt;color:#1a1a1a;background:#fff;padding:10mm 12mm}
+  table{border-collapse:collapse}
+  .sgc-inf-portada{text-align:center;padding:14px 32px 10px;border-bottom:3px solid #1e3a8a}
+  .sgc-inf-portada h1{font-size:13pt;font-weight:700;color:#1e3a8a;text-transform:uppercase;margin:0 0 3px}
+  .sgc-inf-portada h2{font-size:10pt;font-weight:600;color:#374151;margin:0 0 5px}
+  .sgc-inf-portada-meta{display:flex;justify-content:center;gap:16px;margin-top:8px;flex-wrap:wrap;font-size:8.5pt}
+  .sgc-inf-portada-meta span{padding:2px 10px;border-radius:10px;background:#eff6ff;color:#1e3a8a;font-weight:600}
+  .sgc-inf-seccion{margin-bottom:20px;break-inside:avoid;page-break-inside:avoid}
+  .sgc-inf-seccion h3{font-size:10.5pt;font-weight:700;color:#fff;background:#1e3a8a;padding:5px 10px;border-radius:3px;margin:0 0 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sgc-inf-seccion h4{font-size:9.5pt;font-weight:700;color:#1e3a8a;margin:10px 0 5px;border-left:4px solid #3b82f6;padding-left:7px}
+  .sgc-inf-analisis{background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:8px 12px;font-size:9.5pt;color:#0c4a6e;line-height:1.6;margin:6px 0;white-space:pre-wrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sgc-inf-analisis-loading{display:none}
+  .sgc-inf-tabla{width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:6px}
+  .sgc-inf-tabla th{background:#1e3a8a;color:#fff;padding:4px 7px;text-align:left;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sgc-inf-tabla td{padding:3px 7px;border-bottom:1px solid #e2e8f0;vertical-align:top}
+  .sgc-inf-tabla tr:nth-child(even) td{background:#f8fafc;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sgc-inf-chip{display:inline-block;padding:1px 7px;border-radius:10px;font-size:7.5pt;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sgc-inf-verde{background:#dcfce7;color:#166534}
+  .sgc-inf-amarillo{background:#fef9c3;color:#854d0e}
+  .sgc-inf-rojo{background:#fee2e2;color:#991b1b}
+  .sgc-inf-azul{background:#dbeafe;color:#1e40af}
+  .sgc-inf-gris{background:#f1f5f9;color:#64748b}
+  .sgc-inf-resumen-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+  .sgc-inf-kpi{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sgc-inf-kpi .valor{font-size:18pt;font-weight:700;color:#1e3a8a;line-height:1}
+  .sgc-inf-kpi .etiq{font-size:7.5pt;color:#64748b;margin-top:2px}
+  .sgc-inf-nota{font-size:8pt;color:#64748b;font-style:italic;margin:3px 0}
+  .sgc-inf-grafica-wrap{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px;margin:6px 0;break-inside:avoid;page-break-inside:avoid}
+  .sgc-inf-grafica-titulo{font-size:8.5pt;font-weight:700;color:#374151;text-align:center;margin-bottom:6px}
+  .sgc-inf-semaforo-ref{display:flex;gap:8px;flex-wrap:wrap;font-size:7.5pt;margin:4px 0}
+  blockquote{border-left:4px solid #1e3a8a;margin:0;padding:6px 14px;background:#f0f9ff;font-size:9.5pt;color:#1e3a8a;font-style:italic;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  img{max-width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @media print{
+    body{padding:8mm 10mm}
+    .sgc-inf-seccion{page-break-inside:avoid}
+    .sgc-inf-grafica-wrap{page-break-inside:avoid}
+  }
+</style>
+</head><body>${body.innerHTML}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>{win.print();},600);
+
+  // Restaurar canvas
+  canvasReplacements.forEach(({cv,img})=>{cv.style.display='';img.remove();});
+};
+
+/* ══════════════════════════════════════════════════════
+   INFORME AUTOMÁTICO — PRE-LLENAR R-93/02 CON DATOS SGC
+══════════════════════════════════════════════════════ */
+window.revGenerarInformeAutomatico=function(){
+  if(!confirm('¿Pre-llenar la agenda y decisiones con los datos actuales del SGC?\n\nSe sobreescribirá el contenido actual de los campos.'))return;
+
+  const hoy=new Date().toISOString().slice(0,10);
+  const ncList=JSON.parse(localStorage.getItem('sgc_nc')||'[]');
+  const planList=JSON.parse(localStorage.getItem('sgc_planes')||'[]');
+  const mediciones=JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
+  const audList=S.auditorias||[];
+  const eficaciaList=JSON.parse(localStorage.getItem('eficacia_acciones')||'{}').lista||[];
+
+  // ── Calcular datos clave ──────────────────────────────────────────────────
+  const ncAbiertas=ncList.filter(n=>n.estado==='abierta'||n.estado==='en_proceso');
+  const ncCerradas=ncList.filter(n=>n.estado==='cerrada'||n.estado==='cerrado');
+  const accionesPend=planList.flatMap(p=>p.pac||[]).filter(a=>a.estado!=='completada');
+  const accionesComp=planList.flatMap(p=>p.pac||[]).filter(a=>a.estado==='completada');
+  const ultimaAud=audList.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''))[0];
+  const indDefList=S.indicadores||[];
+  const medUlt=indDefList.map(ind=>{
+    const meds=mediciones.filter(m=>String(m.numero||m.indicador_numero||'').padStart(2,'0')===String(ind.numero||'').padStart(2,'0'));
+    return{ind,ult:meds.sort((a,b)=>(b.fecha||b.semestre||'').localeCompare(a.fecha||a.semestre||''))[0]};
+  });
+  const indEnMeta=medUlt.filter(({ind,ult})=>ult&&parseFloat(ult.resultado||0)>=(ind.esperado||75));
+  const indFueraMeta=medUlt.filter(({ind,ult})=>ult&&parseFloat(ult.resultado||0)<(ind.esperado||75));
+  const indSinMed=medUlt.filter(({ult})=>!ult);
+
+  // Satisfacción
+  let satResumen='Sin datos de satisfacción cargados.';
+  if(_satDataCache&&(_satDataCache.ficha.length||_satDataCache.encuesta.length)){
+    const{ficha,encuesta}=_satDataCache;
+    const periodos=[...new Set([...ficha,...encuesta].map(r=>satPeriodo(r.marca_temporal)).filter(Boolean))]
+      .sort((a,b)=>satPeriodoSortKey(a).localeCompare(satPeriodoSortKey(b)));
+    const ult=periodos[periodos.length-1]||'';
+    if(ult){
+      const fR=ficha.filter(r=>satPeriodo(r.marca_temporal)===ult);
+      const eR=encuesta.filter(r=>satPeriodo(r.marca_temporal)===ult);
+      const ceAvg=satAvg(fR,['ce_inscripcion','ce_reinscripcion','ce_constancias','ce_credenciales','ce_duplicado_boleta','ce_boleta_calif']);
+      const docAvg=satAvg(eR,['doc_dominio_materia','doc_estrategias_ensenanza','doc_recursos_didacticos','doc_estrategias_eval','doc_asesoria_academica']);
+      const infraAvg=satAvg(eR,['infra_salones','infra_aula_medios','infra_banos','infra_biblioteca','infra_auditorio']);
+      const sem=v=>v>=4?'🟢 Satisfactorio':v>=3?'🟡 Aceptable':'🔴 Crítico';
+      satResumen=`Período: ${ult} | Fichas: ${fR.length} | Encuestas: ${eR.length}\n`+
+        `CE: ${ceAvg!==null?ceAvg+'/5 '+sem(ceAvg):'sin datos'} | `+
+        `Docentes: ${docAvg!==null?docAvg+'/5 '+sem(docAvg):'sin datos'} | `+
+        `Infraestructura: ${infraAvg!==null?infraAvg+'/5 '+sem(infraAvg):'sin datos'}`;
+    }
+  }
+
+  // Objetivos de calidad
+  const objetivos=JSON.parse(localStorage.getItem('sgc_planificacion')||'{}');
+  const objData=objetivos.objetivos_calidad||{};
+  const objTexto=objData.objetivos&&objData.objetivos.length
+    ?objData.objetivos.map((o,i)=>`${i+1}. ${o.objetivo||o.descripcion||'—'}`).join('; ')
+    :'(Sin objetivos registrados)';
+
+  // FODA
+  const fodaData=JSON.parse(localStorage.getItem('sgc_planificacion')||'{}').foda||{};
+  const amenazas=(fodaData.amenazas||'').slice(0,200);
+  const oportunidades=(fodaData.oportunidades||'').slice(0,200);
+
+  // Eficacia de acciones
+  const eficTexto=eficaciaList.length
+    ?`${eficaciaList.filter(e=>e.eficaz).length} de ${eficaciaList.length} verificaciones con resultado EFICAZ`
+    :'Sin verificaciones de eficacia registradas';
+
+  // Proveedores
+  const provLista=S.proveedores?.lista||[];
+  const provEval=S.proveedores?.evaluaciones||[];
+
+  // ── Llenar agenda ─────────────────────────────────────────────────────────
+  const datosAgenda=[
+    { // 0: Política de Calidad
+      relevancia:'Alta',
+      obs:`Política vigente: Rev. ${JSON.parse(localStorage.getItem('sgc_planificacion')||'{}').politica_calidad?.rev||'—'}. ${
+        JSON.parse(localStorage.getItem('sgc_planificacion')||'{}').politica_calidad?.texto?.slice(0,120)||'(sin texto registrado)'
+      }...`
+    },
+    { // 1: Objetivos de calidad
+      relevancia:'Alta',
+      obs:`${objTexto.slice(0,250)}`
+    },
+    { // 2: FODA
+      relevancia:'Alta',
+      obs:`Amenazas identificadas: ${amenazas||'(sin datos)'}. Oportunidades: ${oportunidades||'(sin datos)'}.`
+    },
+    { // 3: Encuesta de servicio
+      relevancia:'Alta',
+      obs:satResumen
+    },
+    { // 4: Ficha de satisfacción
+      relevancia:'Alta',
+      obs:satResumen
+    },
+    { // 5: Indicadores
+      relevancia:'Alta',
+      obs:`Total indicadores: ${indDefList.length} | En meta: ${indEnMeta.length} | Fuera de meta: ${indFueraMeta.length} | Sin medición: ${indSinMed.length}. `+
+        (indFueraMeta.length?`Fuera de meta: ${indFueraMeta.map(({ind,ult})=>`Ind.${ind.numero} ${ult?.resultado||'—'}% (meta ≥${ind.esperado}%)`).join(', ')}.`:'Todos los medidos están en meta.')
+    },
+    { // 6: Acciones correctivas
+      relevancia:'Alta',
+      obs:`NC total: ${ncList.length} | Abiertas: ${ncAbiertas.length} | Cerradas: ${ncCerradas.length}. `+
+        `Acciones PAC: ${accionesComp.length} completadas / ${accionesPend.length} pendientes. ${eficTexto}.`
+    },
+    { // 7: Auditoría interna
+      relevancia:ultimaAud?'Alta':'Media',
+      obs:ultimaAud
+        ?`Última auditoría: ${ultimaAud.fecha||'—'} | Área: ${ultimaAud.area||'general'} | Auditados: ${(ultimaAud.auditados||[]).join(', ')||'—'} | Hallazgos: ${(ultimaAud.items||[]).filter(i=>i.resultado==='no_cumple').length} NC, ${(ultimaAud.items||[]).filter(i=>i.resultado==='cumple').length} conformidades.`
+        :'Sin auditorías internas registradas en el período.'
+    },
+    { // 8: Auditoría externa
+      relevancia:'Alta',
+      obs:'Registrar resultados de la auditoría externa más reciente y estado de acciones de certificación.'
+    }
+  ];
+
+  // Aplicar datos a la agenda
+  const agendaRows=document.querySelectorAll('#rev-agenda-tbody tr');
+  agendaRows.forEach((tr,i)=>{
+    const inputs=tr.querySelectorAll('.rev-table-input');
+    if(datosAgenda[i]){
+      if(inputs[0])inputs[0].value=datosAgenda[i].relevancia||'';
+      if(inputs[1])inputs[1].value=datosAgenda[i].obs||'';
+    }
+  });
+
+  // ── Generar decisiones automáticas ────────────────────────────────────────
+  const tbody=document.getElementById('rev-decisiones-tbody');
+  tbody.innerHTML=''; // Limpiar
+
+  const decisiones=[];
+
+  // NC abiertas → acción correctiva
+  if(ncAbiertas.length){
+    decisiones.push({
+      tema:'No Conformidades abiertas',
+      descripcion:`Existen ${ncAbiertas.length} NC abiertas: ${ncAbiertas.slice(0,3).map(n=>`NC-${n.numero||'?'} (${n.area_numeral||n.area||'—'})`).join(', ')}${ncAbiertas.length>3?` y ${ncAbiertas.length-3} más`:''}`,
+      responsable:'Coordinación de Calidad · Áreas responsables',
+      acciones:'Cerrar NC pendientes, verificar eficacia de acciones correctivas implementadas',
+      fecha_cumplimiento:new Date(Date.now()+30*24*3600*1000).toISOString().slice(0,10)
+    });
+  }
+
+  // Indicadores fuera de meta → oportunidad de mejora
+  if(indFueraMeta.length){
+    decisiones.push({
+      tema:'Indicadores fuera de meta',
+      descripcion:`${indFueraMeta.length} indicador(es) por debajo de la meta: ${indFueraMeta.map(({ind,ult})=>`Ind.${ind.numero} (${ult?.resultado||'—'}% vs meta ≥${ind.esperado}%)`).join(', ')}`,
+      responsable:indFueraMeta.map(({ind})=>ind.responsable||'Coordinación de Calidad').filter((v,i,a)=>a.indexOf(v)===i).join(' · '),
+      acciones:'Analizar causas de incumplimiento, establecer acciones de mejora y plan de seguimiento semestral',
+      fecha_cumplimiento:new Date(Date.now()+60*24*3600*1000).toISOString().slice(0,10)
+    });
+  }
+
+  // Satisfacción
+  if(_satDataCache&&(_satDataCache.ficha.length||_satDataCache.encuesta.length)){
+    decisiones.push({
+      tema:'Satisfacción del alumno',
+      descripcion:satResumen.slice(0,300),
+      responsable:'Coordinación de Calidad · Control Escolar · Docencia',
+      acciones:'Analizar áreas de oportunidad detectadas en encuesta y ficha, establecer acciones de mejora para el siguiente semestre',
+      fecha_cumplimiento:new Date(Date.now()+45*24*3600*1000).toISOString().slice(0,10)
+    });
+  }
+
+  // Acciones correctivas pendientes
+  if(accionesPend.length){
+    decisiones.push({
+      tema:'Seguimiento a acciones correctivas',
+      descripcion:`${accionesPend.length} acción(es) correctiva(s) pendiente(s) de completar`,
+      responsable:'Coordinación de Calidad · Responsables de área',
+      acciones:'Dar seguimiento y cierre a acciones pendientes; verificar eficacia conforme a R-93/04',
+      fecha_cumplimiento:new Date(Date.now()+30*24*3600*1000).toISOString().slice(0,10)
+    });
+  }
+
+  // Recursos (siempre)
+  decisiones.push({
+    tema:'Necesidades de recursos',
+    descripcion:'Evaluar los recursos necesarios para mantener y mejorar el SGC en el siguiente período',
+    responsable:'Dirección · Coordinación de Calidad',
+    acciones:'Identificar necesidades de capacitación, infraestructura y tecnología; gestionar ante instancias correspondientes',
+    fecha_cumplimiento:new Date(Date.now()+90*24*3600*1000).toISOString().slice(0,10)
+  });
+
+  decisiones.forEach(d=>revAddDecision(d));
+
+  // Marcar todos los temas como revisados en R-93/01
+  ['rev-ch-politica','rev-ch-objetivos','rev-ch-foda','rev-ch-encuesta','rev-ch-ficha',
+   'rev-ch-indicadores','rev-ch-acciones','rev-ch-aud-int','rev-ch-aud-ext'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.checked=true;
+  });
+
+  // Pasar al tab del reporte
+  revSwitchTab('rep');
+  alert(`✅ Informe pre-llenado con datos reales del SGC.\n\n• ${datosAgenda.length} temas de agenda completados\n• ${decisiones.length} decisiones generadas automáticamente\n\nRevisa y ajusta los datos antes de guardar o imprimir.`);
+};
 
 function revAddDecision(d){
   const canEdit=['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rolUsuarioActual());
