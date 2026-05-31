@@ -532,6 +532,9 @@ textarea{resize:vertical;min-height:70px}
 .notif-item-msg{font-size:12.5px;color:var(--text);margin-bottom:3px;line-height:1.4}
 .notif-item-time{font-size:11px;color:#888}
 .notif-empty{padding:28px 14px;text-align:center;color:#888;font-size:13px}
+.notif-section-hdr{padding:8px 14px 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#64748b;background:var(--bg);border-bottom:0.5px solid var(--border);position:sticky;top:0;z-index:1}
+.notif-item.alert-vencida{background:#fef2f2}
+.notif-item.alert-urgente{background:#fff7ed}
 /* ── Tareas pendientes / Asignaciones ── */
 .tareas-wrap{margin-bottom:1rem}
 .tarea-item{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
@@ -1269,7 +1272,7 @@ textarea{resize:vertical;min-height:70px}
       </div>
     </div>
   </div>
-  <div class="sync-row">
+  <div class="sync-row" onclick="reintentarSincronizacion()">
     <span class="sync-dot" id="sync-dot"></span>
     <span class="sync-txt" id="sync-txt">Conectado a la nube</span>
   </div>
@@ -1433,7 +1436,7 @@ textarea{resize:vertical;min-height:70px}
     <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
     <h2 id="topbar-title">Inicio</h2>
     <div style="display:flex;align-items:center;gap:4px;margin-left:auto">
-      <span class="sync-dot" id="sync-dot-top"></span>
+      <span class="sync-dot" id="sync-dot-top" onclick="reintentarSincronizacion()" style="cursor:pointer" title="Estado de sincronización (clic para reintentar)"></span>
       <button class="notif-bell-btn" onclick="toggleNotifPanel()" title="Notificaciones">
         🔔<span class="notif-badge" id="notif-badge">0</span>
       </button>
@@ -2343,7 +2346,7 @@ Coordinacion de Calidad</textarea>
     </div>
     <div class="card">
       <h3>Respaldo y traslado de datos</h3>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Usa esta herramienta para pasar datos guardados en esta computadora a la version publicada en Netlify.</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Genera un respaldo <strong>completo</strong> de todo el SGC: configuración, no conformidades, planes, documentos, FODA, objetivos, política, proveedores, memorándums y los datos de la nube (mediciones, auditorías e indicadores). Úsalo para resguardar tu información o trasladarla a otra computadora o a la versión publicada.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button class="btn btn-primary" onclick="exportarRespaldoSGC()">Exportar respaldo</button>
         <label class="btn" style="cursor:pointer">
@@ -4426,6 +4429,62 @@ function setSyncStatus(st,msg){
   ['sync-dot','sync-dot-top'].forEach(id=>{const el=document.getElementById(id);if(el){el.className='sync-dot';el.classList.add(st);}});
   const t=document.getElementById('sync-txt');if(t)t.textContent=msg;
 }
+
+// ── Estado de conexión y sincronización ──────────────────────────────
+// Cuenta registros que quedaron solo en local (sin id de Supabase)
+function contarSinSincronizar(){
+  try{
+    const nc=(JSON.parse(localStorage.getItem('sgc_nc')||'[]')).filter(x=>!x.id).length;
+    const pl=(JSON.parse(localStorage.getItem('sgc_planes')||'[]')).filter(x=>!x.id).length;
+    return nc+pl;
+  }catch(e){return 0;}
+}
+
+// Refleja el estado real: sin conexión / pendientes por subir / sincronizado
+function actualizarEstadoConexion(){
+  const online=navigator.onLine;
+  const pend=contarSinSincronizar();
+  let st,txt,accionable=false;
+  if(!online){st='err';txt='Sin conexión — trabajando local';}
+  else if(pend>0){st='sync';txt=pend+' cambio'+(pend>1?'s':'')+' sin subir · reintentar';accionable=true;}
+  else{st='ok';txt='Conectado a la nube';}
+  ['sync-dot','sync-dot-top'].forEach(id=>{const el=document.getElementById(id);if(el){el.className='sync-dot';el.classList.add(st);}});
+  const t=document.getElementById('sync-txt');if(t)t.textContent=txt;
+  const row=document.querySelector('.sync-row');
+  if(row){row.style.cursor=accionable?'pointer':'default';row.title=accionable?'Clic para reintentar la sincronización':(online?'Conectado a la nube':'Sin conexión a internet');}
+}
+
+// Re-sube registros locales pendientes y recarga desde la nube
+let _reintentandoSync=false;
+async function reintentarSincronizacion(){
+  if(!sb||!S.currentUser||_reintentandoSync)return;
+  if(!navigator.onLine){actualizarEstadoConexion();return;}
+  _reintentandoSync=true;
+  setSyncStatus('sync','Sincronizando…');
+  // 1. Re-empujar lo que quedó solo en local (upsert idempotente por local_id)
+  try{
+    const ncLocal=(typeof leerNCs==='function'?leerNCs():[]).filter(x=>!x.id);
+    for(const nc of ncLocal){try{await guardarNCSupabase(nc);}catch(e){}}
+    const planLocal=(typeof leerPlanes==='function'?leerPlanes():[]).filter(x=>!x.id);
+    for(const pl of planLocal){try{await guardarPlanSupabase(pl);}catch(e){}}
+  }catch(e){console.warn('reintento push',e);}
+  // 2. Recargar desde la nube (asigna los id del servidor a los registros)
+  try{
+    await Promise.all([
+      typeof loadNCs==='function'?loadNCs():null,
+      typeof loadPlanes==='function'?loadPlanes():null,
+      typeof loadAsignaciones==='function'?loadAsignaciones():null
+    ].filter(Boolean));
+  }catch(e){}
+  _reintentandoSync=false;
+  actualizarEstadoConexion();
+  try{actualizarBadgeNotif();}catch(e){}
+}
+window.reintentarSincronizacion=reintentarSincronizacion;
+
+// Detección de cambios de conexión
+window.addEventListener('offline',()=>actualizarEstadoConexion());
+window.addEventListener('online',()=>{actualizarEstadoConexion();reintentarSincronizacion();});
 function showMsg(id,type,txt,ms=3000){
   const el=document.getElementById(id);if(!el)return;
   el.innerHTML=`<div class="alert alert-${type}">${txt}</div>`;
@@ -4768,13 +4827,20 @@ async function arrancarApp(){
     cargarNotificaciones();
     renderTareasPendientes();
     verificarAsignacionesProximas();
-    setInterval(()=>{if(S.currentUser)cargarNotificaciones();},60000);
+    setInterval(()=>{if(S.currentUser){cargarNotificaciones();actualizarEstadoConexion();}},60000);
+    // Auto-refresco de alertas de vencimiento (recarga NC, planes y asignaciones de la nube)
+    setInterval(()=>{if(S.currentUser)refrescarAlertasVencimiento();},180000);
     const audFecha=document.getElementById('aud-fecha');if(audFecha)audFecha.value=hoy();
     const indFecha=document.getElementById('ind-fecha');if(indFecha)indFecha.value=hoy();
     renderIndCatalogo();
     const email=_session?.user?.email||localStorage.getItem('sb_email')||'';
     const rol=rolUsuarioActual();
     setSyncStatus('ok','Conectado - '+email+' ('+rol+')');
+    // Tras estabilizar la carga inicial: si quedaron cambios locales, súbelos solos
+    setTimeout(()=>{
+      if(navigator.onLine&&contarSinSincronizar()>0)reintentarSincronizacion();
+      else actualizarEstadoConexion();
+    },3500);
     if(!puedeVer('inicio'))goto(primeraSeccionPermitida(),null);
   }
 }
@@ -7615,44 +7681,122 @@ const _memoGotoOrig=window.goto;
   };
 })();
 
-const SGC_BACKUP_KEYS=[
-  'sgc_nc',
-  'sgc_planes',
-  'sgc_solicitudes',
-  'sgc_planes_auditoria',
-  'sgc_config_institucional',
-  'sgc_mediciones_meta',
-  'sgc_memorandums',
-  'sgc_memo_lema',
-  'sgc_memo_codigo',
-  'sgc_memo_de_nombre',
-  'sgc_memo_de_cargo',
-  'sb_email'
-];
+// Claves de localStorage que NO empiezan con sgc_/prov_ pero deben respaldarse
+const SGC_BACKUP_EXTRA_KEYS=['sb_email'];
+// Tablas de Supabase que se incluyen en el snapshot del respaldo
+const SGC_BACKUP_SUPABASE=['mediciones','auditorias','indicadores'];
+// Columnas reales por tabla para restaurar de forma segura (auditorias se omite:
+// su forma en memoria es relacional/transformada y no se puede reconstruir aquí)
+const SGC_SUPABASE_COLUMNS={
+  mediciones:['id','indicador_id','indicador_numero','indicador_nombre','tipo','semestre','fecha','responsable','fuente','periodicidad','observaciones','numerador','denominador','resultado','esperado','desviacion','cumple'],
+  indicadores:['id','numero','nombre','tipo','esperado']
+};
+
+// Recolecta TODAS las claves relevantes de localStorage (a prueba de futuro)
+function sgcRecolectarLocalStorage(){
+  const items={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(!k)continue;
+    if(k.startsWith('sgc_')||k.startsWith('prov_')||SGC_BACKUP_EXTRA_KEYS.includes(k)){
+      items[k]=localStorage.getItem(k);
+    }
+  }
+  return items;
+}
+
 window.exportarRespaldoSGC=function(){
-  const data={version:'sgc-enufc-1',exportado:new Date().toISOString(),items:{}};
-  SGC_BACKUP_KEYS.forEach(k=>{data.items[k]=localStorage.getItem(k);});
+  const items=sgcRecolectarLocalStorage();
+  const supabase={
+    mediciones:S.mediciones||[],
+    auditorias:S.auditorias||[],
+    indicadores:S.indicadores||[]
+  };
+  const data={
+    version:'sgc-enufc-2',
+    exportado:new Date().toISOString(),
+    institucion:'Escuela Normal Urbana Federal Cuautla',
+    resumen:{
+      claves_local:Object.keys(items).length,
+      mediciones:supabase.mediciones.length,
+      auditorias:supabase.auditorias.length,
+      indicadores:supabase.indicadores.length
+    },
+    items,
+    supabase
+  };
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download='respaldo_sgc_enufc_'+hoy()+'.json';
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href),500);
-  showMsg('backup-msg','ok','Respaldo generado. Ahora puedes importarlo en Netlify.',4000);
+  const r=data.resumen;
+  showMsg('backup-msg','ok',`Respaldo completo generado: ${r.claves_local} registros locales, ${r.mediciones} mediciones, ${r.auditorias} auditorías, ${r.indicadores} indicadores.`,6000);
 };
+
+// Deja solo las columnas reales de la tabla (evita errores por campos calculados)
+function sgcFiltrarColumnas(fila,cols){
+  const limpio={};
+  cols.forEach(c=>{if(fila[c]!==undefined)limpio[c]=fila[c];});
+  return limpio;
+}
+
+// Restaura los datos de Supabase mediante upsert (fusiona por id, sin duplicar)
+async function sgcRestaurarSupabase(supa){
+  const resumen=[];
+  for(const tabla of Object.keys(SGC_SUPABASE_COLUMNS)){
+    const filas=supa[tabla];
+    if(!Array.isArray(filas)||!filas.length)continue;
+    const cols=SGC_SUPABASE_COLUMNS[tabla];
+    let ok=0,err=0;
+    for(const fila of filas){
+      const limpio=sgcFiltrarColumnas(fila,cols);
+      try{
+        let r=await sb.from(tabla).upsert(limpio,{onConflict:'id'});
+        if(r.error){
+          // Reintentar sin id (inserta como registro nuevo)
+          const {id,...sinId}=limpio;
+          r=await sb.from(tabla).insert(sinId);
+        }
+        if(r.error)err++;else ok++;
+      }catch(e){err++;}
+    }
+    resumen.push(`${tabla}: ${ok} restaurados${err?`, ${err} con error`:''}`);
+  }
+  return resumen;
+}
+
 window.importarRespaldoSGC=function(file){
   if(!file)return;
   const reader=new FileReader();
-  reader.onload=function(){
+  reader.onload=async function(){
     try{
       const data=JSON.parse(reader.result);
       const items=data.items||data;
-      SGC_BACKUP_KEYS.forEach(k=>{
-        if(Object.prototype.hasOwnProperty.call(items,k)&&items[k]!=null)localStorage.setItem(k,items[k]);
+      // 1. Restaurar todas las claves de localStorage
+      let nLocal=0;
+      Object.keys(items).forEach(k=>{
+        if(items[k]!=null){localStorage.setItem(k,items[k]);nLocal++;}
       });
-      showMsg('backup-msg','ok','Respaldo importado. Recargando la app...',2500);
+      // 2. Restaurar datos de Supabase (opcional, requiere confirmación)
+      const supa=data.supabase;
+      const restaurables=Object.keys(SGC_SUPABASE_COLUMNS);
+      const tieneSupa=supa&&restaurables.some(t=>Array.isArray(supa[t])&&supa[t].length);
+      if(tieneSupa&&typeof sb!=='undefined'&&sb){
+        const total=restaurables.reduce((n,t)=>n+((supa[t]||[]).length),0);
+        if(confirm(`Se restaurarán ${nLocal} registros locales.\n\n¿Restaurar también ${total} registros de la nube (mediciones e indicadores) a Supabase?\n\nSe fusionan por ID — no se duplican. (Las auditorías quedan guardadas en el archivo de respaldo).`)){
+          showMsg('backup-msg','info','Restaurando datos de la nube… espera un momento.',0);
+          const res=await sgcRestaurarSupabase(supa);
+          showMsg('backup-msg','ok','Respaldo importado. '+res.join(' · ')+'. Recargando…',4000);
+          setTimeout(()=>location.reload(),2200);
+          return;
+        }
+      }
+      showMsg('backup-msg','ok',`Respaldo importado: ${nLocal} registros locales restaurados. Recargando…`,2500);
       setTimeout(()=>location.reload(),900);
     }catch(e){
+      console.error(e);
       showMsg('backup-msg','err','No se pudo importar el respaldo. Revisa que sea el archivo JSON correcto.',5000);
     }
   };
@@ -8468,10 +8612,83 @@ function misNotificaciones(){
   });
 }
 
+// Genera alertas de vencimiento calculadas de los datos (NC, acciones, asignaciones)
+function generarAlertasVencimiento(){
+  const hoyD=new Date();hoyD.setHours(0,0,0,0);
+  const calcDias=f=>{const d=parseFechaRecordatorio(f);if(!d)return null;d.setHours(0,0,0,0);return Math.ceil((d-hoyD)/86400000);};
+  const rol=rolUsuarioActual();
+  const esAdm=['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rol);
+  const areaU=normTxt(S.currentUser?.area||S.currentUser?.areas?.nombre||'');
+  const VENT=7; // ventana: alertar desde 7 días antes (e incluye vencidas)
+  const alertas=[];
+
+  // 1. No Conformidades abiertas con fecha de verificación
+  const ncList=JSON.parse(localStorage.getItem('sgc_nc')||'[]');
+  ncList.forEach(n=>{
+    if(n.estado==='cerrada'||n.estado==='cerrado')return;
+    if(!esAdm&&normTxt((n.area_numeral||'').split('/')[0])!==areaU)return;
+    const d=calcDias(n.fecha_verif);
+    if(d===null||d>VENT)return;
+    alertas.push({id:'nc-'+(n.numero||n.id||''),dias:d,sec:'nc',icon:'⚠️',
+      mensaje:`NC ${n.numero||'s/n'} — verificación ${d<0?'vencida':d===0?'vence hoy':'por vencer'}`});
+  });
+
+  // 2. Acciones del plan no cumplidas con fecha de revisión
+  const planList=JSON.parse(localStorage.getItem('sgc_planes')||'[]');
+  planList.forEach(p=>['mayor','menor','obs','op'].forEach(t=>(p.items?.[t]||[]).forEach(i=>{
+    if(i.cumplio==='si')return;
+    if(!esAdm&&normTxt(i.responsable||'')!==areaU&&normTxt(i.area||'')!==areaU)return;
+    const d=calcDias(i.fecha_rev);
+    if(d===null||d>VENT)return;
+    alertas.push({id:'acc-'+(p.id||'')+'-'+t+'-'+(i.numeral||''),dias:d,sec:'plan',icon:'📋',
+      mensaje:`Acción ${i.numeral||'(plan)'} — ${d<0?'vencida':d===0?'vence hoy':'por vencer'}`});
+  })));
+
+  // 3. Asignaciones de indicadores pendientes de captura
+  const asigList=(typeof leerAsignaciones==='function'?leerAsignaciones():[]);
+  asigList.forEach(a=>{
+    if(a.completada)return;
+    if(!esAdm&&normTxt(a.area||'')!==areaU)return;
+    const d=calcDias(a.fecha_limite);
+    if(d===null||d>VENT)return;
+    alertas.push({id:'asig-'+(a.id||''),dias:d,sec:'ind-captura',icon:'📊',
+      mensaje:`Capturar "${a.nombre_indicador||'indicador'}" — ${d<0?'vencido':d===0?'vence hoy':'por vencer'}`});
+  });
+
+  return alertas.sort((a,b)=>a.dias-b.dias);
+}
+
+window.irAAlerta=function(sec){
+  const p=document.getElementById('notif-panel');if(p)p.classList.remove('open');
+  goto(sec,null);
+};
+
+// Recarga silenciosa de los datos que alimentan las alertas y refresca la campana
+let _refrescandoAlertas=false;
+async function refrescarAlertasVencimiento(){
+  if(!sb||!S.currentUser||_refrescandoAlertas)return;
+  _refrescandoAlertas=true;
+  try{
+    await Promise.all([
+      typeof loadNCs==='function'?loadNCs():null,
+      typeof loadPlanes==='function'?loadPlanes():null,
+      typeof loadAsignaciones==='function'?loadAsignaciones():null
+    ].filter(Boolean));
+  }catch(e){console.warn('refresco alertas',e);}
+  _refrescandoAlertas=false;
+  try{
+    actualizarBadgeNotif();
+    const panel=document.getElementById('notif-panel');
+    if(panel&&panel.classList.contains('open'))renderNotifPanel();
+  }catch(e){}
+}
+
 function actualizarBadgeNotif(){
   const noLeidas=misNotificaciones().filter(n=>!n.leida).length;
-  const txt=noLeidas>9?'9+':String(noLeidas);
-  const show=noLeidas>0?'flex':'none';
+  const urgentes=generarAlertasVencimiento().filter(a=>a.dias<=3).length; // vencidas + ≤3 días
+  const total=noLeidas+urgentes;
+  const txt=total>9?'9+':String(total);
+  const show=total>0?'flex':'none';
   ['notif-badge','notif-badge-fixed'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.textContent=txt;el.style.display=show;}
@@ -8480,20 +8697,43 @@ function actualizarBadgeNotif(){
 
 function renderNotifPanel(){
   const list=document.getElementById('notif-list');if(!list)return;
+  const alertas=generarAlertasVencimiento();
   const mis=misNotificaciones();
-  if(!mis.length){list.innerHTML='<div class="notif-empty">Sin notificaciones</div>';return;}
+  if(!alertas.length&&!mis.length){list.innerHTML='<div class="notif-empty">Sin notificaciones ni vencimientos pendientes ✓</div>';return;}
   const fmt=d=>{try{return new Date(d).toLocaleString('es-MX',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch{return '';}};
   const icon=t=>t==='nueva_solicitud'?'📋':t==='solicitud_resuelta'?'✅':'🔔';
-  list.innerHTML=mis.map(n=>`<div class="notif-item${n.leida?'':' unread'}" onclick="marcarLeida('${n.id}')">
-    <div class="notif-item-msg">${icon(n.tipo)} ${esc(n.mensaje)}</div>
-    <div class="notif-item-time">${fmt(n.created_at)}</div>
-  </div>`).join('');
+  let html='';
+  // Sección de vencimientos calculados
+  if(alertas.length){
+    html+=`<div class="notif-section-hdr">⏰ Vencimientos (${alertas.length})</div>`;
+    html+=alertas.map(a=>{
+      const sev=a.dias<0?'vencida':a.dias<=3?'urgente':'proxima';
+      const col=a.dias<0?'#dc2626':a.dias<=3?'#d97706':'#2563eb';
+      const etq=a.dias<0?`Vencida hace ${Math.abs(a.dias)}d`:a.dias===0?'Vence hoy':`En ${a.dias}d`;
+      return `<div class="notif-item alert-${sev}" onclick="irAAlerta('${a.sec}')" style="border-left:3px solid ${col}">
+        <div class="notif-item-msg">${a.icon} ${esc(a.mensaje)}</div>
+        <div class="notif-item-time" style="color:${col};font-weight:700">${etq}</div>
+      </div>`;
+    }).join('');
+  }
+  // Sección de notificaciones entre usuarios
+  if(mis.length){
+    html+=`<div class="notif-section-hdr">🔔 Notificaciones</div>`;
+    html+=mis.map(n=>`<div class="notif-item${n.leida?'':' unread'}" onclick="marcarLeida('${n.id}')">
+      <div class="notif-item-msg">${icon(n.tipo)} ${esc(n.mensaje)}</div>
+      <div class="notif-item-time">${fmt(n.created_at)}</div>
+    </div>`).join('');
+  }
+  list.innerHTML=html;
 }
 
 window.toggleNotifPanel=function(){
   const panel=document.getElementById('notif-panel');if(!panel)return;
   const open=panel.classList.toggle('open');
-  if(open)renderNotifPanel();
+  if(open){
+    renderNotifPanel(); // muestra de inmediato con datos actuales
+    refrescarAlertasVencimiento(); // y recarga de la nube en segundo plano
+  }
 };
 
 window.marcarLeida=async function(id){
@@ -9120,13 +9360,16 @@ function renderDashboardArea(){
   const allNc=JSON.parse(localStorage.getItem('sgc_nc')||'[]');
   const ncArea=allNc.filter(n=>normTxt((n.area_numeral||'').split('/')[0])===normA);
   const ncAb=ncArea.filter(n=>n.estado==='abierta'||n.estado==='en_proceso');
-  const ncCe=ncArea.filter(n=>n.estado==='cerrada');
+  const ncCe=ncArea.filter(n=>n.estado==='cerrada'||n.estado==='cerrado');
   const hoyD=new Date();hoyD.setHours(0,0,0,0);
   const ncVenc=ncAb.filter(n=>{const d=n.fecha_verif?new Date(n.fecha_verif+'T00:00:00'):null;return d&&d<hoyD;}).length;
 
   // Indicadores del área
   const indsArea=(S.indicadores||[]).map(indicadorR44).filter(i=>normTxt(i.area)===normA);
-  const medArea=(S.mediciones||[]).filter(m=>indsArea.some(i=>i.id===m.indicador_id||normTxt(i.nombre||'')===normTxt(m.nombre_indicador||'')));
+  const medArea=(S.mediciones||[]).filter(m=>indsArea.some(i=>
+    String(i.id)===String(m.indicador_id)||
+    String(i.numero||'').padStart(2,'0')===String(m.indicador_numero||m.numero||'').padStart(2,'0')||
+    normTxt(i.nombre||'')===normTxt(m.indicador_nombre||m.nombre_indicador||'')));
 
   // Acciones del plan asignadas al área o con NCs del área
   const planList=JSON.parse(localStorage.getItem('sgc_planes')||'[]');
@@ -9138,7 +9381,7 @@ function renderDashboardArea(){
   const accionesVencer=accionesArea.map(a=>({...a,vence:parseFechaRecordatorio(a.fecha_rev)})).filter(a=>a.vence&&a.cumplio!=='si').map(a=>({...a,dias:Math.ceil((a.vence-hoyD)/86400000)})).filter(a=>a.dias<=15).sort((a,b)=>a.dias-b.dias).slice(0,6);
 
   // Últimas mediciones del área
-  const ultMed=medArea.slice().sort((a,b)=>(b.periodo||'').localeCompare(a.periodo||'')).slice(0,4);
+  const ultMed=medArea.slice().sort((a,b)=>String(b.semestre||b.fecha||'').localeCompare(String(a.semestre||a.fecha||''))).slice(0,4);
 
   // Últimas NC del área
   const ultNc=ncAb.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).slice(0,4);
@@ -9232,11 +9475,11 @@ function renderDashboardArea(){
         <button class="btn btn-sm btn-primary" onclick="goto('ind-captura',null)" style="font-size:11px">+ Capturar</button>
       </div>
       ${ultMed.map(m=>{
-        const ind=indsArea.find(i=>i.id===m.indicador_id)||{};
-        const meta=parseFloat(ind.esperado??'0');
+        const ind=indsArea.find(i=>String(i.id)===String(m.indicador_id)||String(i.numero||'').padStart(2,'0')===String(m.indicador_numero||'').padStart(2,'0'))||{};
+        const meta=parseFloat(m.esperado??ind.esperado??75);
         const val=parseFloat(m.resultado??'0');
         const ok=!isNaN(meta)&&!isNaN(val)&&val>=meta;
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border)"><div><div style="font-size:12px;font-weight:500">'+esc(m.nombre_indicador||ind.nombre||'Indicador')+'</div><div style="font-size:11px;color:var(--muted)">Período: '+esc(m.periodo||'—')+'</div></div><div style="font-size:15px;font-weight:700;color:'+(ok?'var(--green)':'var(--red)')+'">'+val+'%</div></div>';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border)"><div><div style="font-size:12px;font-weight:500">'+esc(m.indicador_nombre||ind.nombre||'Indicador')+'</div><div style="font-size:11px;color:var(--muted)">Período: '+esc(m.semestre||m.fecha||'—')+'</div></div><div style="font-size:15px;font-weight:700;color:'+(ok?'var(--green)':'var(--red)')+'">'+val+'%</div></div>';
       }).join('')}
     </div>`:''}
   `;
@@ -9244,6 +9487,8 @@ function renderDashboardArea(){
 
 function renderDashboardMejorado(){
   destroyCharts();
+  try{actualizarBadgeNotif();}catch(e){} // refresca alertas de vencimiento en la campana
+  try{actualizarEstadoConexion();}catch(e){} // refresca el estado de sincronización
   const el=document.getElementById('dashboard-stats');if(!el)return;
   const charts=document.getElementById('dashboard-charts');
 
@@ -9273,7 +9518,7 @@ function renderDashboardMejorado(){
   const solCambios=cargarSolicitudesCambio();
   const docs=cargarDocs();
   const ncAbiertas=ncList.filter(n=>n.estado==='abierta'||n.estado==='en_proceso').length;
-  const ncCerradas=ncList.filter(n=>n.estado==='cerrada').length;
+  const ncCerradas=ncList.filter(n=>n.estado==='cerrada'||n.estado==='cerrado').length;
   const acciones=planList.flatMap(p=>['mayor','menor','obs','op'].flatMap(t=>(p.items?.[t]||[]).map(i=>({...i,tipo:t,plan:p}))));
   const accionesPend=acciones.filter(a=>a.cumplio!=='si').length;
   const accionesCerr=acciones.filter(a=>a.cumplio==='si').length;
@@ -9396,11 +9641,22 @@ function renderDashboardMejorado(){
     // Indicadores últimos valores vs meta
     const medList=S.mediciones&&S.mediciones.length?S.mediciones:JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
     const indLatest={};
-    medList.forEach(m=>{const id=m.indicador_id||m.id;if(!indLatest[id]||m.fecha>indLatest[id].fecha)indLatest[id]=m;});
+    medList.forEach(m=>{
+      const num=String(m.indicador_numero||m.numero||m.indicador_id||'').padStart(2,'0');
+      const fe=m.fecha||m.semestre||'';
+      if(!indLatest[num]||fe>(indLatest[num].fecha||indLatest[num].semestre||''))indLatest[num]=m;
+    });
     const indItems=Object.values(indLatest).slice(0,8);
-    const indLabels=indItems.map(m=>{const ind=INDICADORES_R44?.[m.indicador_id]||{};const n=ind.nombre||m.nombre||('Ind.'+m.indicador_id);return n.length>22?n.substring(0,20)+'…':n;});
-    const indValues=indItems.map(m=>parseFloat(m.resultado??m.valor))||[];
-    const indMetas=indItems.map(m=>{const ind=INDICADORES_R44?.[m.indicador_id]||{};return parseFloat(ind.esperado??m.meta)??null;});
+    const indLabels=indItems.map(m=>{
+      const num=String(m.indicador_numero||m.numero||'').padStart(2,'0');
+      const n=m.indicador_nombre||INDICADORES_R44?.[num]?.nombre||('Ind.'+num);
+      return n.length>22?n.substring(0,20)+'…':n;
+    });
+    const indValues=indItems.map(m=>parseFloat(m.resultado??m.valor)||0);
+    const indMetas=indItems.map(m=>{
+      const num=String(m.indicador_numero||m.numero||'').padStart(2,'0');
+      return parseFloat(m.esperado??INDICADORES_R44?.[num]?.esperado??75)||75;
+    });
 
     charts.innerHTML=`
       <div class="chart-card">
@@ -9521,11 +9777,12 @@ function historialParaGemini(hist){
   }));
 }
 
-function chatGetContexto(){
+function chatGetContexto(userMsg){
   const ncList=JSON.parse(localStorage.getItem('sgc_nc')||'[]');
   const planList=JSON.parse(localStorage.getItem('sgc_planes')||'[]');
   const docs=cargarDocs();
-  const mediciones=JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
+  // Las mediciones viven en S.mediciones (memoria/Supabase); localStorage es solo respaldo
+  const mediciones=(S.mediciones&&S.mediciones.length)?S.mediciones:JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
   const asignaciones=leerAsignaciones();
   const solicCambio=cargarSolicitudesCambio();
   const solicServ=JSON.parse(localStorage.getItem('sgc_solicitudes')||'[]');
@@ -9561,10 +9818,16 @@ function chatGetContexto(){
 
   // ── Indicadores de Calidad ────────────────────────────────────
   const medDetalle=mediciones.map(m=>{
-    const ind=INDICADORES_R44[m.indicador_id]||{};
-    const ok=m.resultado!=null&&ind.esperado!=null?(parseFloat(m.resultado)>=parseFloat(ind.esperado)?'✓ META':'✗ BAJO META'):'?';
-    return `  • Ind.${m.indicador_id} (${ind.nombre||'?'}) = ${m.resultado??'?'}${ind.tipo==='porcentaje'?'%':''} | Esperado: ${ind.esperado??'?'} | ${ok} | Área: ${m.area||'?'} | Período: ${m.periodo||'?'} | Obs: ${m.observacion||'—'}`;
+    const num=String(m.indicador_numero||m.numero||'').padStart(2,'0');
+    const ind=INDICADORES_R44[num]||{};
+    const nombre=m.indicador_nombre||ind.nombre||'?';
+    const esperado=m.esperado??ind.esperado;
+    const res=m.resultado;
+    const ok=(res!=null&&esperado!=null)?(parseFloat(res)>=parseFloat(esperado)?'✓ META':'✗ BAJO META'):(m.cumple===true?'✓ META':m.cumple===false?'✗ BAJO META':'?');
+    return `  • Ind.${num} (${nombre}) = ${res??'?'}% | Esperado: ${esperado??'?'}% | ${ok} | Semestre: ${m.semestre||'?'} | Fecha: ${m.fecha||'?'} | Resp: ${m.responsable||'?'} | Obs: ${m.observaciones||m.observacion||'—'}`;
   }).join('\n');
+  const totalMediciones=mediciones.length;
+  const indicadoresConMedicion=[...new Set(mediciones.map(m=>String(m.indicador_numero||m.numero||'').padStart(2,'0')))].filter(Boolean);
 
   // ── Asignaciones de Indicadores ───────────────────────────────
   const asigDetalle=asignaciones.map(a=>
@@ -9679,10 +9942,13 @@ function chatGetContexto(){
   // ── Áreas configuradas ────────────────────────────────────────
   const areasDetalle=(S.areas||[]).map(a=>`  • ${a.nombre||a} | Responsable: ${a.responsable||'—'}`).join('\n');
 
-  // ── Indicadores definidos ─────────────────────────────────────
-  const indDefDetalle=Object.entries(INDICADORES_R44||{}).map(([id,ind])=>
-    `  • ID:${id} | ${ind.nombre||'?'} | Meta: ${ind.esperado??'?'}${ind.tipo==='porcentaje'?'%':''} | Tipo: ${ind.tipo||'?'} | Área: ${ind.area||'general'}`
-  ).join('\n');
+  // ── Indicadores definidos (catálogo real S.indicadores) ───────
+  const catIndicadores=(S.indicadores||[]).map(indicadorR44);
+  const indDefDetalle=catIndicadores.map(ind=>{
+    const num=String(ind.numero||'').padStart(2,'0');
+    return `  • N°${num} | ${ind.nombre||'?'} | Meta: ${ind.esperado??'?'}% | Tipo: ${ind.tipo||'?'} | Área: ${ind.area||'general'} | Responsable: ${ind.responsable||'—'}`;
+  }).join('\n');
+  const totalIndicadoresDef=catIndicadores.length;
 
   // ── Manual de Calidad (MC-01/01) ──────────────────────────────
   const manualData=leerManual();
@@ -9690,6 +9956,31 @@ function chatGetContexto(){
   const manualUltRev=manualRevs.length?manualRevs[manualRevs.length-1]:{num:'06',fecha:'2025-09-29'};
   const manualHistorial=manualRevs.map(r=>`  • Rev.${r.num} (${r.fecha}): ${r.desc||'—'} | Elaboró: ${r.elaboro||'—'} | Revisó: ${r.reviso||'—'}`).join('\n');
   const manualCapsEditados=MANUAL_CAPS.filter(c=>manualData['cap_'+c.id]).map(c=>`  • Cap.${c.num} "${c.titulo}": editado y personalizado`).join('\n');
+
+  // ── Contexto inteligente: incluir en detalle solo las secciones de referencia
+  //    relevantes a la conversación (las secciones operativas van siempre completas).
+  //    Esto ahorra cuota gratuita de la IA y mejora la precisión de las respuestas.
+  const _msg=String(userMsg||'').toLowerCase();
+  const _hist=(typeof _chatHistory!=='undefined'?_chatHistory.slice(-3):[]).map(m=>String(m.content||'').toLowerCase()).join(' ');
+  const _ctx=_msg+' '+_hist;
+  // Si la conversación es nueva (sin mensaje) o pide un panorama total, incluir todo
+  const _full=!_msg||_rel0(['resumen general','resumen completo','resumen total','todo el sgc','todo el sistema','informe completo','panorama general','estado general','reporte general','revisión completa','auditoría completa']);
+  function _rel0(kws){return kws.some(k=>_ctx.includes(k));}
+  const _rel=kws=>_full||kws.some(k=>_ctx.includes(k));
+  const SECC={
+    audPlan: _rel(['plan de auditor','programa de auditor','planear auditor','planificar auditor','calendario de auditor','agenda de auditor']),
+    docs:    _rel(['documento','control documental','procedimiento','formato','registro vigente','vigencia','versión del doc','listado maestro','repositorio','drive']),
+    sc:      _rel(['solicitud de cambio','cambio documental','r-74','modificar documento','modificación de documento']),
+    ss:      _rel(['solicitud de servicio','servicio solicitado','r-71','requerimiento','requisición']),
+    usuarios:_rel(['usuario','acceso','rol ','roles','permiso','quién tiene','quien tiene','responsable de área']),
+    seguFoda:_rel(['seguimiento foda','seguimiento al foda','avance del foda','avance foda','foda']),
+    manual:  _rel(['manual','mc-01','manual de calidad','manual del sgc']),
+    rev:     _rel(['revisión por la dirección','revision por la direccion','r-93/01','r-93/02','reunión de revisión','reunion de revision','agenda de revisión','agenda de revision']),
+    r7503:   _rel(['r-75/03','listado de registros','maestro de registros','control de registros','registros r-75']),
+    prov:    _rel(['proveedor','r-84','evaluación de proveedor','evaluacion de proveedor','compra','adquisición','adquisicion'])
+  };
+  // Marcador para secciones omitidas (conserva el conteo para que QualiRAR sepa que existen)
+  const _om=(n,label)=>`  (${n} ${label} — detalle no incluido para ahorrar espacio; pídeme específicamente sobre este tema para verlo.)`;
 
   return `Eres QualiRAR — Auditor Líder Internacional experto en Sistemas de Gestión de la Calidad bajo la Norma ISO 9001:2015, con más de 30 años de experiencia en implementación, mantenimiento, auditoría y mejora continua de SGC en instituciones educativas, universidades, escuelas normales y organismos públicos.
 
@@ -9811,7 +10102,8 @@ ${planDetalle||'  (sin planes)'}
 ══════════════════════════════════════
 INDICADORES DE CALIDAD — TODAS LAS MEDICIONES
 ══════════════════════════════════════
-${medDetalle||'  (sin mediciones)'}
+Total de mediciones registradas: ${totalMediciones}. Indicadores con al menos una medición: ${indicadoresConMedicion.length} (N°: ${indicadoresConMedicion.join(', ')||'ninguno'}).
+${medDetalle||'  (sin mediciones registradas todavía)'}
 
 ══════════════════════════════════════
 ASIGNACIONES DE INDICADORES
@@ -9826,27 +10118,27 @@ ${audDetalle||'  (sin auditorías)'}
 ══════════════════════════════════════
 PLANES DE AUDITORÍA
 ══════════════════════════════════════
-${audPlanDetalle||'  (sin planes de auditoría)'}
+${SECC.audPlan?(audPlanDetalle||'  (sin planes de auditoría)'):_om(audPlan.length,'planes de auditoría')}
 
 ══════════════════════════════════════
 DOCUMENTOS CONTROLADOS
 ══════════════════════════════════════
-${docDetalle||'  (sin documentos)'}
+${SECC.docs?(docDetalle||'  (sin documentos)'):_om(docs.length,'documentos controlados')}
 
 ══════════════════════════════════════
 SOLICITUDES DE CAMBIO DOCUMENTAL
 ══════════════════════════════════════
-${scDetalle||'  (sin solicitudes)'}
+${SECC.sc?(scDetalle||'  (sin solicitudes)'):_om(solicCambio.length,'solicitudes de cambio')}
 
 ══════════════════════════════════════
 SOLICITUDES DE SERVICIO
 ══════════════════════════════════════
-${ssDetalle||'  (sin solicitudes)'}
+${SECC.ss?(ssDetalle||'  (sin solicitudes)'):_om(solicServ.length,'solicitudes de servicio')}
 
 ══════════════════════════════════════
 USUARIOS DEL SISTEMA
 ══════════════════════════════════════
-${usuariosDetalle||'  (sin usuarios)'}
+${SECC.usuarios?(usuariosDetalle||'  (sin usuarios)'):_om((S.usuarios||[]).length,'usuarios')}
 
 ══════════════════════════════════════
 POLÍTICA DE CALIDAD (R-52/01 · Cláusula 5.2)
@@ -9865,7 +10157,7 @@ ${fodaDetalle}
 SEGUIMIENTO AL FODA (R-61/02)
 ══════════════════════════════════════
 Semestre: ${seguFoda.semestre||'no definido'} | Fecha: ${seguFoda.fecha||'—'}
-${seguDetalle||'  (sin seguimiento registrado)'}
+${SECC.seguFoda?(seguDetalle||'  (sin seguimiento registrado)'):_om((seguFoda.oportunidades||[]).length+(seguFoda.debilidades||[]).length+(seguFoda.amenazas||[]).length,'acciones de seguimiento FODA')}
 
 ══════════════════════════════════════
 OBJETIVOS DE CALIDAD (R-62/01 · Cláusula 6.2)
@@ -9885,8 +10177,9 @@ ${eficDetalle||'  (sin verificaciones registradas)'}
 ${areasDetalle||'  (sin áreas configuradas)'}
 
 ══════════════════════════════════════
-INDICADORES DE CALIDAD — CATÁLOGO R-44/01 (13 INDICADORES)
+INDICADORES DE CALIDAD — CATÁLOGO R-44/01
 ══════════════════════════════════════
+Total de indicadores definidos en el catálogo: ${totalIndicadoresDef}. Total de mediciones registradas: ${totalMediciones}.
 FUENTE DE DATOS POR INDICADOR:
 • Ind 01 — Campo: porcentaje_clases (R-91/02 preg.6) | Fórmula: promedio ponderado de % de clases impartidas percibido por alumnos | Valores: 'menos de 70%'=65, '70%'=70, '80%'=80, '90%'=90, '100%'=100 | Meta: ≥75%
 • Ind 02 — Campo: satisfaccion_cultural (R-91/02) | Fórmula: (respuestas BIEN o MUY BIEN / total) × 100 | Meta: ≥75%
@@ -9924,18 +10217,18 @@ Procedimiento: P-93/01 "Revisión por la Dirección" Rev. 05 (05 dic 2024)
 Frecuencia: Al menos una vez por semestre
 Asistentes obligatorios: Director, Subdirector Académico, Jefe de Docencia, Jefe de Control Escolar, Administrador de la Calidad
 Total de revisiones registradas: ${revList.length}
-${revDetalle||'  (sin revisiones registradas aún)'}
+${SECC.rev?(revDetalle||'  (sin revisiones registradas aún)'):_om(revList.length,'revisiones por la dirección')}
 
 ══════════════════════════════════════
 LISTADO DE REGISTROS (R-75/03 · Cláusula 7.5)
 ══════════════════════════════════════
 Total de áreas: ${R7503_AREAS.length} | Total de registros: ${R7503_AREAS.reduce((s,a)=>s+(r7503data[a.id]||[]).length,0)}
-${r7503Detalle||'  (sin registros cargados)'}
+${SECC.r7503?(r7503Detalle||'  (sin registros cargados)'):_om(R7503_AREAS.reduce((s,a)=>s+(r7503data[a.id]||[]).length,0),'registros en el listado R-75/03')}
 
 ══════════════════════════════════════
 REPOSITORIO DRIVE — DOCUMENTOS ENLAZADOS
 ══════════════════════════════════════
-${(()=>{
+${!SECC.docs?'  (enlaces de Drive no incluidos para ahorrar espacio; pídeme sobre documentos o el repositorio para verlos.)':(()=>{
   const dd=leerDrive();
   const totalDrive=DRIVE_FLAT_IDS.reduce((s,aid)=>{const d=dd[aid]||{};return s+(d.procedimientos||[]).length+(d.registros||[]).length;},0);
   if(!totalDrive)return'  (sin enlaces registrados aún)';
@@ -9964,13 +10257,13 @@ Calificación: ≥70% = Principal (P) | 50–69% = Secundario (S) | <50% = No Ac
 Reevaluación: al menos anual. NC clasificadas: L (Leves) · G (Graves) · MG (Muy Graves)
 
 R-84-01 · LISTA DE PROVEEDORES APROBADOS (${provLista.length} registros):
-${provListaDetalle}
+${SECC.prov?provListaDetalle:_om(provLista.length,'proveedores aprobados')}
 
 R-84-02 · EVALUACIONES DE PROVEEDOR (${provEval.length} registros):
-${provEvalDetalle}
+${SECC.prov?provEvalDetalle:_om(provEval.length,'evaluaciones de proveedor')}
 
 R-84-03 · SOLICITUDES DE SERVICIO A PROVEEDORES (${provSol.length} registros):
-${provSolDetalle}
+${SECC.prov?provSolDetalle:_om(provSol.length,'solicitudes a proveedores')}
 
 ══════════════════════════════════════
 PROCEDIMIENTOS DOCUMENTADOS DEL SGC
@@ -10032,13 +10325,14 @@ CATÁLOGO DE INDICADORES PERSONALIZADOS (R-44/01 · Cláusula 9.1)
 ${(()=>{
   const inds=S.indicadores||[];
   if(!inds.length)return'  (sin indicadores registrados en el catálogo)';
-  return inds.map(ind=>{
-    const medList=(JSON.parse(localStorage.getItem('sgc_mediciones')||'[]')).filter(m=>String(m.indicador_id)===String(ind.id));
-    const ultMed=medList.sort((a,b)=>b.periodo?.localeCompare(a.periodo||'')||0)[0];
+  return inds.map(indRaw=>{
+    const ind=indicadorR44(indRaw);
+    const medList=mediciones.filter(m=>String(m.indicador_id)===String(ind.id)||String(m.indicador_numero||m.numero||'').padStart(2,'0')===String(ind.numero||'').padStart(2,'0'));
+    const ultMed=medList.sort((a,b)=>String(b.semestre||b.fecha||'').localeCompare(String(a.semestre||a.fecha||'')))[0];
     const meta=ind.meta??ind.esperado??'—';
     const tipo=ind.tipo||'porcentaje';
-    const ult=ultMed?`Última medición: ${ultMed.resultado??'?'}${tipo==='porcentaje'?'%':''} (${ultMed.periodo||'?'}) — ${ultMed.resultado!=null&&meta!=='—'?(parseFloat(ultMed.resultado)>=(parseFloat(meta)))?'✓ CUMPLE META':'✗ BAJO META':'?'}`:'Sin mediciones registradas';
-    return `  • ID:${ind.id} | ${ind.nombre||'?'} | Meta: ${meta}${tipo==='porcentaje'?'%':''} | Tipo: ${tipo} | Fórmula: ${ind.formula||ind.descripcion||'—'} | Área: ${ind.area||'general'} | Frecuencia: ${ind.frecuencia||'semestral'}\n    ${ult}`;
+    const ult=ultMed?`Última medición: ${ultMed.resultado??'?'}% (${ultMed.semestre||ultMed.fecha||'?'}) — ${ultMed.resultado!=null&&meta!=='—'?(parseFloat(ultMed.resultado)>=(parseFloat(meta))?'✓ CUMPLE META':'✗ BAJO META'):'?'} | Mediciones totales: ${medList.length}`:'Sin mediciones registradas';
+    return `  • N°${String(ind.numero||'').padStart(2,'0')} | ${ind.nombre||'?'} | Meta: ${meta}% | Tipo: ${tipo} | Fórmula: ${ind.formula||ind.descripcion||'—'} | Área: ${ind.area||'general'} | Frecuencia: ${ind.periodicidad||ind.frecuencia||'semestral'}\n    ${ult}`;
   }).join('\n');
 })()}
 
@@ -10157,6 +10451,10 @@ TIPOS DE ACCIÓN DISPONIBLES:
 2. "ishikawa" — Llenar el diagrama Ishikawa de una NC
 3. "indicador-r44" — Capturar una medición de indicador de calidad (cualquiera del 01 al 13)
 4. "indicador-satisfaccion" — Capturar indicadores derivados de encuesta (automático)
+5. "eficacia" — Verificación de Eficacia de Acciones Correctivas (R-93/04)
+6. "plan-accion" — Plan de Acción Correctiva (R-93/03)
+7. "foda" — Sugerencias para la Matriz FODA (R-61/01)
+8. "objetivos" — Objetivos de Calidad SMART (R-62/01)
 
 REGLAS DE CLASIFICACIÓN DE NC:
 - NC Mayor: incumplimiento TOTAL o SISTEMÁTICO de un requisito ISO; pone en riesgo la eficacia del SGC o la satisfacción del cliente.
@@ -10190,7 +10488,31 @@ REGLAS para el diagrama Ishikawa:
 - Cada categoría debe tener 1-3 causas concretas separadas por coma o salto de línea
 - Si el usuario ya tiene algunas causas capturadas (aparecerán en el contexto), complémenta o mejóralas
 - Las 5 categorías del diagrama son: Personal | Procesos/Métodos | Recursos (Mat./Equip./Infraest.) | Información/Datos (Medición) | Entorno/Contexto Organizacional
-- Puedes recomendar en qué categorías se concentran más las causas raíz para esa NC`;
+- Puedes recomendar en qué categorías se concentran más las causas raíz para esa NC
+
+Cuando el usuario pida REDACTAR, GENERAR o COMPLETAR una VERIFICACIÓN DE EFICACIA (R-93/04) de una acción correctiva, DEBES incluir al FINAL un bloque <sgc-action> con este formato (usa datos reales de las NC y planes del contexto si los hay):
+<sgc-action>
+{"tipo":"eficacia","campos":{"num_registro":"N° de NC o registro (ej. 01/26)","tipo_hallazgo":"No Conformidad Mayor|No Conformidad Menor|Observación|Área de Oportunidad","numeral":"X.X.X","area":"Área responsable","responsable_area":"Nombre","semestre":"Ej. Agosto – Enero 25-26","descripcion":"Descripción del hallazgo","acciones":[{"comprometida":"Acción que se comprometió a realizar","fecha_comp":"Fecha comprometida","fecha_real":"AAAA-MM-DD fecha real de atención","realizada":"Acción efectivamente realizada"}],"evidencia":"Evidencia objetiva que demuestra la atención","atendido":"si|no","obs":"Observaciones del Administrador de la Calidad sobre la eficacia"}}
+</sgc-action>
+REGLAS para eficacia: evalúa si la acción correctiva eliminó la causa raíz (atendido="si") o no (atendido="no"). Sé objetivo y cita evidencia verificable.
+
+Cuando el usuario pida GENERAR o COMPLETAR un PLAN DE ACCIÓN CORRECTIVA (R-93/03), DEBES incluir al FINAL un bloque <sgc-action> con este formato:
+<sgc-action>
+{"tipo":"plan-accion","campos":{"semestre":"Ej. Enero – Julio 25-26","obs_general":"Observaciones generales del plan","items":[{"tipo":"mayor|menor|obs|op","numeral":"X.X.X","situacion":"Situación o hallazgo detectado","accion":"Acción correctiva a tomar y responsable","fecha_rev":"Ej. 30/08/26"}]}}
+</sgc-action>
+REGLAS para el plan: genera 1 item por cada hallazgo. Cada acción debe ser específica, medible y con responsable y fecha. Usa las NC abiertas del contexto si el usuario no especifica.
+
+Cuando el usuario pida SUGERENCIAS, IDEAS o GENERAR la MATRIZ FODA (R-61/01) de la institución, DEBES incluir al FINAL un bloque <sgc-action> con este formato:
+<sgc-action>
+{"tipo":"foda","campos":{"F":["Fortaleza 1","Fortaleza 2"],"D":["Debilidad 1","Debilidad 2"],"O":["Oportunidad 1"],"A":["Amenaza 1"]}}
+</sgc-action>
+REGLAS para FODA: genera de 2 a 5 elementos por cuadrante, ESPECÍFICOS para una Escuela Normal pública formadora de docentes. Internos: F y D. Externos: O y A. Si ya hay un FODA en el contexto, propón elementos NUEVOS que complementen.
+
+Cuando el usuario pida GENERAR o SUGERIR OBJETIVOS DE CALIDAD (R-62/01), DEBES incluir al FINAL un bloque <sgc-action> con este formato:
+<sgc-action>
+{"tipo":"objetivos","campos":{"periodo":"Ciclo escolar 2025-2026","objetivos":["Objetivo SMART 1 con meta y plazo","Objetivo SMART 2 con meta y plazo"]}}
+</sgc-action>
+REGLAS para objetivos: cada objetivo debe ser SMART (específico, medible, alcanzable, relevante, temporal), alineado a la política de calidad y a los indicadores R-44. Genera de 3 a 6 objetivos.`;
 }
 
 /* ── Parser de acciones estructuradas del chat ── */
@@ -10320,6 +10642,68 @@ function renderActionCard(action){
       ${filas||'<div class="chat-action-field">(sin causas generadas)</div>'}
       <div class="chat-action-btns">
         <button class="chat-action-btn chat-action-btn-apply" onclick="chatAplicarIshikawa('${dataStr}')">✏️ Aplicar al formulario NC</button>
+        <button class="chat-action-btn chat-action-btn-edit" onclick="this.closest('.chat-action-card').style.display='none'">Descartar</button>
+      </div>
+    </div>`;
+  }
+  if(action.tipo==='eficacia'){
+    const c=action.campos||{};
+    const dataStr=encodeURIComponent(JSON.stringify(c));
+    const accRows=(c.acciones||[]).map((a,i)=>`<div class="chat-action-pac"><b>Acción ${i+1}:</b> ${esc(a.comprometida||'')}<br><span style="color:#6b7280">Realizada:</span> ${esc(a.realizada||'—')} &nbsp;·&nbsp; <span style="color:#6b7280">Fecha:</span> ${esc(a.fecha_real||a.fecha_comp||'—')}</div>`).join('');
+    return `<div class="chat-action-card" style="border-color:#0d9488">
+      <div class="chat-action-header"><span class="chat-action-badge obs" style="background:#0d9488">✅ R-93/04</span><span class="chat-action-title">Verificación de Eficacia — generada por IA</span></div>
+      <div class="chat-action-field"><b>N° Registro:</b> ${esc(c.num_registro||'—')} &nbsp;·&nbsp; <b>Numeral:</b> ${esc(c.numeral||'—')}</div>
+      <div class="chat-action-field"><b>Área:</b> ${esc(c.area||'—')}</div>
+      <div class="chat-action-field"><b>Hallazgo:</b> ${esc(c.descripcion||'—')}</div>
+      ${accRows?`<div class="chat-action-section">Acciones correctivas</div>${accRows}`:''}
+      <div class="chat-action-field"><b>Evidencia:</b> ${esc(c.evidencia||'—')}</div>
+      <div class="chat-action-field"><b>¿Atendida eficazmente?:</b> ${c.atendido==='si'?'🟢 Sí':c.atendido==='no'?'🔴 No':'—'}</div>
+      ${c.obs?`<div class="chat-action-razon">💡 ${esc(c.obs)}</div>`:''}
+      <div class="chat-action-btns">
+        <button class="chat-action-btn chat-action-btn-apply" onclick="chatAplicarEficacia('${dataStr}')">✏️ Aplicar al formulario R-93/04</button>
+        <button class="chat-action-btn chat-action-btn-edit" onclick="this.closest('.chat-action-card').style.display='none'">Descartar</button>
+      </div>
+    </div>`;
+  }
+  if(action.tipo==='plan-accion'){
+    const c=action.campos||{};
+    const dataStr=encodeURIComponent(JSON.stringify(c));
+    const lbl={mayor:'NC Mayor',menor:'NC Menor',obs:'Observación',op:'Oportunidad'};
+    const itRows=(c.items||[]).map(it=>`<div class="chat-action-pac"><b>${lbl[it.tipo]||it.tipo||'Item'} ${esc(it.numeral||'')}:</b> ${esc(it.situacion||'')}<br><span style="color:#6b7280">Acción:</span> ${esc(it.accion||'')} &nbsp;·&nbsp; <span style="color:#6b7280">Revisión:</span> ${esc(it.fecha_rev||'—')}</div>`).join('');
+    return `<div class="chat-action-card" style="border-color:#4c51bf">
+      <div class="chat-action-header"><span class="chat-action-badge obs" style="background:#4c51bf">📋 R-93/03</span><span class="chat-action-title">Plan de Acción Correctiva — generado por IA</span></div>
+      <div class="chat-action-field"><b>Semestre:</b> ${esc(c.semestre||'—')}</div>
+      ${itRows||'<div class="chat-action-field">(sin acciones)</div>'}
+      ${c.obs_general?`<div class="chat-action-razon">💡 ${esc(c.obs_general)}</div>`:''}
+      <div class="chat-action-btns">
+        <button class="chat-action-btn chat-action-btn-apply" onclick="chatAplicarPlanAccion('${dataStr}')">✏️ Aplicar al formulario R-93/03</button>
+        <button class="chat-action-btn chat-action-btn-edit" onclick="this.closest('.chat-action-card').style.display='none'">Descartar</button>
+      </div>
+    </div>`;
+  }
+  if(action.tipo==='foda'){
+    const c=action.campos||{};
+    const dataStr=encodeURIComponent(JSON.stringify(c));
+    const cuad=(k,l,col)=>(c[k]&&c[k].length)?`<div class="chat-action-field"><b style="color:${col}">${l}:</b><br>${c[k].map(x=>'• '+esc(x)).join('<br>')}</div>`:'';
+    return `<div class="chat-action-card" style="border-color:#1f3864">
+      <div class="chat-action-header"><span class="chat-action-badge obs" style="background:#1f3864">🧭 FODA</span><span class="chat-action-title">Sugerencias FODA — generadas por IA</span></div>
+      ${cuad('F','Fortalezas','#2e7d32')}${cuad('D','Debilidades','#e65100')}${cuad('O','Oportunidades','#1565c0')}${cuad('A','Amenazas','#b71c1c')}
+      <div class="chat-action-btns">
+        <button class="chat-action-btn chat-action-btn-apply" onclick="chatAplicarFoda('${dataStr}')">✏️ Agregar a la Matriz FODA</button>
+        <button class="chat-action-btn chat-action-btn-edit" onclick="this.closest('.chat-action-card').style.display='none'">Descartar</button>
+      </div>
+    </div>`;
+  }
+  if(action.tipo==='objetivos'){
+    const c=action.campos||{};
+    const dataStr=encodeURIComponent(JSON.stringify(c));
+    const rows=(c.objetivos||[]).map((o,i)=>`<div class="chat-action-field">${i+1}. ${esc(o)}</div>`).join('');
+    return `<div class="chat-action-card" style="border-color:#38a169">
+      <div class="chat-action-header"><span class="chat-action-badge obs" style="background:#38a169">🎯 R-62/01</span><span class="chat-action-title">Objetivos de Calidad — generados por IA</span></div>
+      <div class="chat-action-field"><b>Período:</b> ${esc(c.periodo||'—')}</div>
+      ${rows||'<div class="chat-action-field">(sin objetivos)</div>'}
+      <div class="chat-action-btns">
+        <button class="chat-action-btn chat-action-btn-apply" onclick="chatAplicarObjetivos('${dataStr}')">✏️ Aplicar a Objetivos de Calidad</button>
         <button class="chat-action-btn chat-action-btn-edit" onclick="this.closest('.chat-action-card').style.display='none'">Descartar</button>
       </div>
     </div>`;
@@ -10637,6 +11021,96 @@ window.chatAplicarIndicadorManual=function(dataStr){
   }catch(e){alert('Error al aplicar indicador: '+e.message);}
 };
 
+/* ── Aplicar Verificación de Eficacia (R-93/04) desde QualiRAR ── */
+window.chatAplicarEficacia=function(dataStr){
+  try{
+    const c=JSON.parse(decodeURIComponent(dataStr));
+    goto('eficacia',null);
+    setTimeout(()=>{
+      if(typeof efic_nuevo==='function')efic_nuevo();
+      const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
+      set('efic-semestre',c.semestre);
+      set('efic-num-registro',c.num_registro);
+      const th=document.getElementById('efic-tipo-hallazgo');if(th&&c.tipo_hallazgo)th.value=c.tipo_hallazgo;
+      set('efic-numeral',c.numeral);
+      set('efic-area',c.area);
+      set('efic-responsable-area',c.responsable_area);
+      set('efic-descripcion',c.descripcion);
+      set('efic-evidencia',c.evidencia);
+      set('efic-obs',c.obs);
+      if(c.atendido==='si'){const r=document.getElementById('efic-atendido-si');if(r)r.checked=true;}
+      if(c.atendido==='no'){const r=document.getElementById('efic-atendido-no');if(r)r.checked=true;}
+      const cont=document.getElementById('efic-acciones-lista');if(cont)cont.innerHTML='';
+      (c.acciones||[]).forEach(a=>{if(typeof efic_addAccionData==='function')efic_addAccionData(a.comprometida||'',a.fecha_comp||'',a.fecha_real||'',a.realizada||'');});
+      document.getElementById('efic-form-card')?.scrollIntoView({behavior:'smooth',block:'start'});
+    },400);
+  }catch(e){alert('Error al aplicar eficacia: '+e.message);}
+};
+
+/* ── Aplicar Plan de Acción Correctiva (R-93/03) desde QualiRAR ── */
+window.chatAplicarPlanAccion=function(dataStr){
+  try{
+    const c=JSON.parse(decodeURIComponent(dataStr));
+    goto('plan',null);
+    setTimeout(()=>{
+      if(typeof plan_nuevo==='function')plan_nuevo();
+      const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
+      set('plan-semestre',c.semestre);
+      set('plan-obs-general',c.obs_general);
+      const cont=document.getElementById('plan-items-all');if(cont)cont.innerHTML='';
+      (c.items||[]).forEach(it=>{
+        if(typeof plan_addItem==='function')plan_addItem(it.tipo||'mayor');
+        const rows=document.querySelectorAll('#plan-items-all .plan-item-row');
+        const row=rows[rows.length-1];if(!row)return;
+        const sv=(sel,v)=>{const el=row.querySelector(sel);if(el&&v!=null)el.value=v;};
+        sv('.plan-numeral',it.numeral);
+        sv('.plan-situacion',it.situacion);
+        sv('.plan-accion',it.accion);
+        sv('.plan-fecha-rev',it.fecha_rev);
+      });
+      document.getElementById('plan-form-card')?.scrollIntoView({behavior:'smooth',block:'start'});
+    },400);
+  }catch(e){alert('Error al aplicar plan: '+e.message);}
+};
+
+/* ── Aplicar sugerencias FODA (R-61/01) desde QualiRAR ── */
+window.chatAplicarFoda=function(dataStr){
+  try{
+    const c=JSON.parse(decodeURIComponent(dataStr));
+    goto('foda',null);
+    setTimeout(()=>{
+      if(typeof fodaLeer!=='function'){alert('No se pudo acceder a la matriz FODA.');return;}
+      const d=fodaLeer();
+      ['F','D','O','A'].forEach(k=>{
+        if(Array.isArray(c[k]))d[k]=[...(d[k]||[]),...c[k].filter(x=>x&&!(d[k]||[]).includes(x))];
+      });
+      if(typeof fodaGuardar==='function')fodaGuardar(d);
+      if(typeof foda_cargar==='function')foda_cargar();
+      else if(typeof fodaRenderTodos==='function')fodaRenderTodos();
+      document.getElementById('foda-panel-matriz')?.scrollIntoView({behavior:'smooth',block:'start'});
+    },400);
+  }catch(e){alert('Error al aplicar FODA: '+e.message);}
+};
+
+/* ── Aplicar Objetivos de Calidad (R-62/01) desde QualiRAR ── */
+window.chatAplicarObjetivos=function(dataStr){
+  try{
+    const c=JSON.parse(decodeURIComponent(dataStr));
+    goto('objetivos',null);
+    setTimeout(()=>{
+      if(typeof obj_cargar==='function')obj_cargar();
+      const w=document.getElementById('obj-edit-wrap');
+      if(w&&w.style.display==='none'&&typeof toggleObjEdit==='function')toggleObjEdit();
+      if(c.periodo){const p=document.getElementById('obj-periodo');if(p&&!p.value)p.value=c.periodo;}
+      const cont=document.getElementById('obj-lista-container');
+      const existentes=cont?[...cont.querySelectorAll('textarea')].map(t=>t.value.trim()).filter(Boolean):[];
+      const nuevos=(c.objetivos||[]).filter(o=>o&&!existentes.includes(o));
+      if(typeof obj_renderLista==='function')obj_renderLista([...existentes,...nuevos]);
+      document.getElementById('obj-edit-wrap')?.scrollIntoView({behavior:'smooth',block:'start'});
+    },400);
+  }catch(e){alert('Error al aplicar objetivos: '+e.message);}
+};
+
 window.chatAplicarIndicador=function(dataStr){
   try{
     const c=JSON.parse(decodeURIComponent(dataStr));
@@ -10819,7 +11293,7 @@ window.chatEnviar=async function(){
       const _savedModels=JSON.parse(localStorage.getItem('sgc_ia_gemini_models')||'[]');
       const geminiModels=_savedModels.length?_savedModels:['gemini-2.0-flash','gemini-2.0-flash-lite','gemini-1.5-flash','gemini-1.5-flash-8b'];
       const geminiBody=JSON.stringify({
-        system_instruction:{parts:[{text:chatGetContexto()}]},
+        system_instruction:{parts:[{text:chatGetContexto(texto)}]},
         contents:histGemini,
         generationConfig:{maxOutputTokens:8192,temperature:0.7}
       });
@@ -10861,7 +11335,7 @@ window.chatEnviar=async function(){
         body:JSON.stringify({
           model:'claude-haiku-4-5-20251001',
           max_tokens:8192,
-          system:chatGetContexto(),
+          system:chatGetContexto(texto),
           messages:_chatHistory.slice(-10)
         })
       });
@@ -13999,10 +14473,11 @@ window.sgcGenerarInforme=async function(){
   // ── Datos de todos los módulos ──────────────────────────────────────────
   const ncList=JSON.parse(localStorage.getItem('sgc_nc')||'[]');
   const planList=JSON.parse(localStorage.getItem('sgc_planes')||'[]');
-  const mediciones=JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
+  // Las mediciones viven en S.mediciones (memoria/Supabase); localStorage es solo respaldo
+  const mediciones=(S.mediciones&&S.mediciones.length)?S.mediciones:JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
   const audList=S.auditorias||[];
   const revList=leerRevision()||[];
-  const eficaciaList=JSON.parse(localStorage.getItem('eficacia_acciones')||'{}').lista||[];
+  const eficaciaList=(typeof leerEficacia==='function'?leerEficacia():JSON.parse(localStorage.getItem('sgc_eficacia')||'[]'))||[];
   const provLista=S.proveedores?.lista||[];
   const provEval=S.proveedores?.evaluaciones||[];
   const plan_sgc=JSON.parse(localStorage.getItem('sgc_planificacion')||'{}');
@@ -14173,8 +14648,10 @@ window.sgcGenerarInforme=async function(){
     ncHtml+=`<h4>Verificación de eficacia (R-93/04)</h4>
     <table class="sgc-inf-tabla"><thead><tr><th>NC / Referencia</th><th>Acción</th><th>Fecha verif.</th><th>Eficaz</th><th>Observaciones</th></tr></thead><tbody>`;
     eficaciaList.forEach((e2,i)=>{
-      ncHtml+=`<tr style="${rowBg(i)}"><td>${e(e2.nc_ref||'—')}</td><td style="font-size:9pt">${e((e2.accion||'—').slice(0,100))}</td>
-        <td>${e(e2.fecha||'—')}</td><td>${e2.eficaz?chip('Sí','verde'):chip('No','rojo')}</td>
+      const ref=[e2.num_registro?('N°'+e2.num_registro):'',e2.area].filter(Boolean).join(' — ')||'—';
+      const accTxt=(e2.acciones||[]).map(a=>a.realizada||a.comprometida||'').filter(Boolean).join(' · ')||(e2.descripcion||'—');
+      ncHtml+=`<tr style="${rowBg(i)}"><td>${e(ref)}</td><td style="font-size:9pt">${e(accTxt.slice(0,100))}</td>
+        <td>${e(e2.fecha||'—')}</td><td>${e2.atendido==='si'?chip('Sí','verde'):chip('No','rojo')}</td>
         <td style="font-size:9pt">${e((e2.obs||'—').slice(0,100))}</td></tr>`;
     });
     ncHtml+='</tbody></table>';
@@ -14396,12 +14873,92 @@ window.sgcGenerarInforme=async function(){
     return txt;
   })();
 
+  // ── 11. TRAZABILIDAD DE ENTRADAS DE LA REVISIÓN (9.3.2) ──────────────────
+  const _haySat=!!(_satDataCache&&(_satDataCache.ficha.length||_satDataCache.encuesta.length));
+  const _hayFoda=!!((fodaData.F&&fodaData.F.length)||fodaData.fortalezas||(fodaData.D&&fodaData.D.length)||fodaData.debilidades);
+  const _hayObj=((objData.objetivos||[]).length)>0;
+  const estadoChip=(s)=>s==='si'?chip('✓ Documentado','verde'):s==='parcial'?chip('◑ Parcial','amarillo'):chip('⚠ Por documentar','rojo');
+  const trazaRows=[
+    ['a) Estado de las acciones de revisiones previas','Sección 10',revList.length>0?'si':'no'],
+    ['b) Cambios en las cuestiones externas e internas','Sección 7 (FODA)',_hayFoda?'si':'no'],
+    ['c.1) Satisfacción del cliente y partes interesadas','Sección 3',_haySat?'si':'no'],
+    ['c.2) Grado de cumplimiento de los objetivos de calidad','Sección 8',_hayObj?'si':'parcial'],
+    ['c.3) Desempeño de procesos y conformidad del servicio','Secciones 4 y 6',(mediciones.length||audList.length)?'si':'no'],
+    ['c.4) No conformidades y acciones correctivas','Sección 5',ncList.length>0?'si':'parcial'],
+    ['c.5) Resultados de seguimiento y medición','Sección 4',mediciones.length>0?'si':'no'],
+    ['c.6) Resultados de las auditorías','Sección 6',audList.length>0?'si':'no'],
+    ['c.7) Desempeño de los proveedores externos','Sección 9',provLista.length>0?'si':'parcial'],
+    ['d) Adecuación de los recursos','Sección 12 (Salidas)','parcial'],
+    ['e) Eficacia de las acciones ante riesgos y oportunidades','Secciones 5 y 7',(eficaciaList.length||_hayFoda)?'si':'no'],
+    ['f) Oportunidades de mejora','Sección 12 (Salidas)','si']
+  ];
+  const trazabilidadHtml=`<p style="font-size:9pt;color:#64748b">Verificación de cobertura de las entradas obligatorias de la Revisión por la Dirección, conforme a ISO 9001:2015 apartado 9.3.2.</p>
+    <table class="sgc-inf-tabla"><thead><tr><th>Entrada requerida (9.3.2)</th><th>Sección</th><th>Estado</th></tr></thead><tbody>
+    ${trazaRows.map((r,i)=>`<tr style="${rowBg(i)}"><td style="font-size:9pt">${e(r[0])}</td><td style="text-align:center">${e(r[1])}</td><td>${estadoChip(r[2])}</td></tr>`).join('')}
+    </tbody></table>`;
+
+  // ── 12. SALIDAS DE LA REVISIÓN — DECISIONES Y ACUERDOS (9.3.3) ────────────
+  const ultRev=[...revList].sort((a,b)=>(b.fecha||b.rep_fecha||'').localeCompare(a.fecha||a.rep_fecha||''))[0];
+  const decisiones=(ultRev?.decisiones||[]).filter(d=>d&&(d.descripcion||d.tema||d.acciones));
+  let decisionesHtml='';
+  if(decisiones.length){
+    decisionesHtml=`<h4>Decisiones y acuerdos registrados — ${e(ultRev.semestre||ultRev.fecha||'última revisión')}</h4>
+    <table class="sgc-inf-tabla"><thead><tr><th>Tema</th><th>Decisión / Acción</th><th>Responsable</th><th>Fecha compromiso</th></tr></thead><tbody>
+    ${decisiones.map((d,i)=>`<tr style="${rowBg(i)}"><td style="font-size:9pt">${e(d.tema||'—')}</td><td style="font-size:9pt">${e(d.descripcion||d.acciones||'—')}</td><td style="font-size:9pt">${e(d.responsable||'—')}</td><td>${e(d.fecha_cumplimiento||'—')}</td></tr>`).join('')}
+    </tbody></table>`;
+  }
+  const _indFueraList=medUlt.filter(({ind,ult})=>ult&&parseFloat(ult.resultado||0)<(ind.esperado||75)).map(({ind,ult})=>`Ind. ${String(ind.numero||'').padStart(2,'0')} "${ind.nombre||''}" (${ult.resultado}%, meta ≥${ind.esperado||75}%)`);
+  const oportunidades=[];
+  if(_indFueraList.length)oportunidades.push(`Mejorar los indicadores fuera de meta: ${_indFueraList.join('; ')}.`);
+  if(ncAbiertas>0)oportunidades.push(`Acelerar el cierre de ${ncAbiertas} no conformidad(es) abierta(s) o en proceso.`);
+  if(_haySat)oportunidades.push('Dar seguimiento a las áreas de menor satisfacción del alumno y ampliar la retroalimentación a otras partes interesadas (docentes, escuelas receptoras, SEP).');
+  if(!oportunidades.length)oportunidades.push('Mantener el desempeño actual y consolidar las buenas prácticas identificadas en el SGC.');
+  const ncPorArea={};
+  ncList.forEach(n=>{const a=(n.area_numeral||n.area||'Sin área').split('/')[0].trim();ncPorArea[a]=(ncPorArea[a]||0)+1;});
+  const areasRecurrentes=Object.entries(ncPorArea).filter(([,n])=>n>=2).map(([a,n])=>`${a} (${n} NC)`);
+  const cambios=[];
+  if(areasRecurrentes.length)cambios.push(`Revisar y reforzar los procedimientos de las áreas con no conformidades recurrentes: ${areasRecurrentes.join(', ')}.`);
+  if(accionesPend>0)cambios.push(`Dar seguimiento y cierre a ${accionesPend} acción(es) del plan correctivo pendiente(s).`);
+  if(!_hayObj)cambios.push('Formalizar o actualizar los objetivos de calidad del período.');
+  if(!cambios.length)cambios.push('No se identifican cambios mayores requeridos en el SGC en este período; se mantiene la estructura vigente.');
+  const recursos=[
+    'Evaluar la suficiencia de personal, infraestructura, equipamiento y presupuesto asignados a la operación del SGC.',
+    'Confirmar la disponibilidad de recursos para ejecutar las acciones de mejora y los planes correctivos acordados.'
+  ];
+  const _listBlock=(titulo,arr,clausula)=>`<h4>${titulo} <span style="font-weight:400;color:#64748b;font-size:8.5pt">(${clausula})</span></h4><ul style="font-size:9.5pt;color:#374151;margin:4px 0 8px 18px;line-height:1.6">${arr.map(x=>`<li>${e(x)}</li>`).join('')}</ul>`;
+  const salidasHtml=`<p class="sgc-inf-nota">Conforme a ISO 9001:2015 (9.3.3), las salidas de la Revisión por la Dirección deben incluir decisiones y acciones sobre oportunidades de mejora, cambios al SGC y necesidades de recursos.</p>
+    ${decisionesHtml}
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:8.5pt;color:#92400e">⚠ Puntos sugeridos automáticamente a partir de los datos del SGC. La Dirección debe revisarlos, validarlos y formalizarlos como acuerdos con responsables y fechas.</div>
+    ${_listBlock('a) Oportunidades de mejora',oportunidades,'9.3.3 a')}
+    ${_listBlock('b) Cambios necesarios en el SGC',cambios,'9.3.3 b')}
+    ${_listBlock('c) Necesidades de recursos',recursos,'9.3.3 c')}`;
+
+  // ── CONCLUSIÓN DE LA DIRECCIÓN ───────────────────────────────────────────
+  const _indMedidos=medUlt.filter(({ult})=>ult).length;
+  const _pctMeta=_indMedidos?Math.round(indEnMeta/_indMedidos*100):0;
+  const _pctCierre=ncList.length?Math.round(ncCerradas/ncList.length*100):100;
+  let _verdicto,_color;
+  const _ok=(_pctMeta>=70&&_pctCierre>=70&&ncAbiertas===0)||(ncList.length===0&&_indMedidos>0);
+  if(_ok){_verdicto='El Sistema de Gestión de la Calidad se considera <strong>conveniente, adecuado y eficaz</strong>, y se mantiene alineado con la dirección estratégica de la institución.';_color='#16a34a';}
+  else if(_pctMeta>=50||_pctCierre>=50){_verdicto='El Sistema de Gestión de la Calidad se mantiene <strong>adecuado en términos generales</strong>, con áreas de mejora identificadas que requieren seguimiento de la Dirección para asegurar su plena eficacia.';_color='#d97706';}
+  else{_verdicto='El Sistema de Gestión de la Calidad presenta <strong>desviaciones significativas</strong> que comprometen su eficacia; se requieren acciones prioritarias por parte de la Alta Dirección.';_color='#dc2626';}
+  const conclusionHtml=`<div style="border-left:5px solid ${_color};background:#f8fafc;padding:12px 16px;border-radius:6px">
+    <p style="font-size:10pt;color:#1e293b;line-height:1.6;margin:0 0 8px">${_verdicto}</p>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:9pt;color:#475569">
+      <span>Cierre de NC: <strong>${_pctCierre}%</strong></span>
+      <span>Indicadores en meta: <strong>${_pctMeta}%</strong> (${indEnMeta}/${_indMedidos})</span>
+      <span>NC abiertas: <strong>${ncAbiertas}</strong></span>
+      <span>Auditorías: <strong>${audList.length}</strong></span>
+    </div>
+    <p style="font-size:8.5pt;color:#64748b;margin:10px 0 0;font-style:italic">Conclusión generada automáticamente a partir del desempeño del SGC. Debe ser revisada, ajustada y firmada por la Alta Dirección como parte del acta de Revisión por la Dirección.</p>
+  </div>`;
+
   // ── CONSTRUIR HTML COMPLETO ─────────────────────────────────────────────
   const html=`
     <table style="width:100%;border-collapse:collapse;border-bottom:3px solid #1e3a8a;margin-bottom:0;background:#fff">
       <tr>
-        <td style="width:76px;padding:8px 10px;vertical-align:middle">
-          <img src="coordinacion_calidad_hero.png" alt="ENUFC" style="width:66px;height:66px;object-fit:contain;border-radius:50%;border:1px solid #dbeafe;-webkit-print-color-adjust:exact;print-color-adjust:exact" onerror="this.style.display='none'">
+        <td style="width:215px;padding:6px 10px;vertical-align:middle">
+          <img src="coordinacion_calidad_hero.png" alt="Coordinación de Calidad — ENUFC" style="width:205px;height:auto;max-height:72px;object-fit:contain;display:block;-webkit-print-color-adjust:exact;print-color-adjust:exact" onerror="this.style.display='none'">
         </td>
         <td style="vertical-align:middle;padding:8px 4px;text-align:center">
           <div style="font-size:11.5pt;font-weight:700;color:#1e3a8a;text-transform:uppercase;letter-spacing:.3px">Escuela Normal Urbana Federal Cuautla</div>
@@ -14513,9 +15070,34 @@ window.sgcGenerarInforme=async function(){
       ${revHtml}
     </div>
 
+    <div class="sgc-inf-seccion">
+      <h3>11. Trazabilidad de Entradas de la Revisión (Cláusula 9.3.2)</h3>
+      ${trazabilidadHtml}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>12. Salidas de la Revisión — Decisiones y Acuerdos (Cláusula 9.3.3)</h3>
+      ${salidasHtml}
+    </div>
+
+    <div class="sgc-inf-seccion">
+      <h3>Conclusión de la Dirección</h3>
+      ${conclusionHtml}
+      <div style="margin-top:16px;display:flex;gap:40px;flex-wrap:wrap">
+        <div style="text-align:center;flex:1;min-width:180px">
+          <div style="border-top:1px solid #475569;margin-top:30px;padding-top:4px;font-size:9pt;color:#1e293b">${e(S.config?.director||'Mtro. Samir Gómez Calderón')}</div>
+          <div style="font-size:8pt;color:#64748b">Director — Alta Dirección</div>
+        </div>
+        <div style="text-align:center;flex:1;min-width:180px">
+          <div style="border-top:1px solid #475569;margin-top:30px;padding-top:4px;font-size:9pt;color:#1e293b">${e(S.config?.auditor_lider||'Mtro. Roberto Carlos Aguilar Pedroza')}</div>
+          <div style="font-size:8pt;color:#64748b">Coordinador de la Calidad</div>
+        </div>
+      </div>
+    </div>
+
     <div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:8.5pt;color:#94a3b8;text-align:center">
       Informe generado automáticamente por el Sistema de Gestión de la Calidad SGC-ENUFC · ${hoyStr}<br>
-      Escuela Normal Urbana Federal Cuautla · ISO 9001:2015
+      Escuela Normal Urbana Federal Cuautla · ISO 9001:2015 · Revisión por la Dirección (Cláusula 9.3)
     </div>`;
 
   // ── Mostrar en overlay ──────────────────────────────────────────────────
@@ -14669,6 +15251,7 @@ window.sgcImprimirInforme=function(){
     return;
   }
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<base href="${location.href}">
 <title>Informe SGC — ENUFC</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -14728,9 +15311,10 @@ window.revGenerarInformeAutomatico=function(){
   const hoy=new Date().toISOString().slice(0,10);
   const ncList=JSON.parse(localStorage.getItem('sgc_nc')||'[]');
   const planList=JSON.parse(localStorage.getItem('sgc_planes')||'[]');
-  const mediciones=JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
+  // Las mediciones viven en S.mediciones (memoria/Supabase); localStorage es solo respaldo
+  const mediciones=(S.mediciones&&S.mediciones.length)?S.mediciones:JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
   const audList=S.auditorias||[];
-  const eficaciaList=JSON.parse(localStorage.getItem('eficacia_acciones')||'{}').lista||[];
+  const eficaciaList=(typeof leerEficacia==='function'?leerEficacia():JSON.parse(localStorage.getItem('sgc_eficacia')||'[]'))||[];
 
   // ── Calcular datos clave ──────────────────────────────────────────────────
   const ncAbiertas=ncList.filter(n=>n.estado==='abierta'||n.estado==='en_proceso');
@@ -14782,7 +15366,7 @@ window.revGenerarInformeAutomatico=function(){
 
   // Eficacia de acciones
   const eficTexto=eficaciaList.length
-    ?`${eficaciaList.filter(e=>e.eficaz).length} de ${eficaciaList.length} verificaciones con resultado EFICAZ`
+    ?`${eficaciaList.filter(e=>e.atendido==='si').length} de ${eficaciaList.length} verificaciones con resultado EFICAZ`
     :'Sin verificaciones de eficacia registradas';
 
   // Proveedores
