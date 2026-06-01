@@ -4873,11 +4873,11 @@ window.goto=function(sec,navEl){
   if(sec==='memorandum'){withTimeout(loadMemorandums(),'memorandums').then(renderMemorandum);}
   if(sec==='sol-cambios'){fillSelectSC();withTimeout(loadSolicitudesCambio(),'sol-cambios').then(renderSolicitudesCambio);sc_nueva();}
   if(sec==='solicitud'){withTimeout(loadSolicitudes(),'solicitudes').then(renderSolicitudes);}
-  if(sec==='plan'){withTimeout(loadPlanes(),'planes').then(renderPlanes);}
+  if(sec==='plan'){renderPlanes();withTimeout(loadPlanes(),'planes').then(renderPlanes);}
   if(sec==='calendario')renderCalendario();
   if(sec==='inicio')renderDashboardMejorado();
-  if(sec==='nc'){withTimeout(loadNCs(),'no conformidades').then(renderNCs);}
-  if(sec==='eficacia'){cargarEficaciaSupabase().then(renderEficacia);}
+  if(sec==='nc'){renderNCs();withTimeout(loadNCs(),'no conformidades').then(renderNCs);}
+  if(sec==='eficacia'){renderEficacia();cargarEficaciaSupabase().then(renderEficacia);}
   if(sec==='politica')politica_cargar();
   if(sec==='foda'){foda_cargar();fodaTab('matriz');}
   if(sec==='objetivos')obj_cargar();
@@ -13611,9 +13611,10 @@ window.efic_nuevo=function(){
   sel.innerHTML='<option value="">— Sin vincular / llenar manualmente —</option>'+
     ncs.map(n=>`<option value="${esc(n.numero||'')}">NC ${esc(n.numero||'s/n')} — ${esc((n.area_numeral||'').split('/')[0].trim())}: ${esc((n.descripcion||'').substring(0,50))}</option>`).join('');
   document.getElementById('efic-form-card').dataset.editIdx='';
+  document.getElementById('efic-form-card').dataset.editId='';
   document.getElementById('efic-form-title').textContent='Nueva Verificación de Eficacia — R-93/04';
   document.getElementById('efic-form-card').style.display='block';
-  document.querySelector('.card.no-print').style.display='none';
+  document.querySelector('#sec-eficacia .card.no-print').style.display='none';
 };
 
 window.efic_autoFill=function(){
@@ -13651,7 +13652,9 @@ function efic_addAccionData(comprometida,fechaComp,fechaReal,realizada){
 }
 
 window.efic_editar=function(i){
-  const e=leerEficacia()[i];if(!e)return;
+  let e=leerEficacia()[i];if(!e)return;
+  // Asegurar que el registro tenga un id estable (registros antiguos pueden no tenerlo)
+  if(!e.id){e.id='efic_'+Date.now()+'_'+i;const l=leerEficacia();l[i]=e;guardarEficacia(l);}
   efic_nuevo();
   document.getElementById('efic-semestre').value=e.semestre||'';
   document.getElementById('efic-fecha').value=e.fecha||'';
@@ -13669,11 +13672,14 @@ window.efic_editar=function(i){
   if(e.atendido==='no')document.getElementById('efic-atendido-no').checked=true;
   (e.acciones||[]).forEach(a=>efic_addAccionData(a.comprometida||'',a.fecha_comp||'',a.fecha_real||'',a.realizada||''));
   document.getElementById('efic-form-card').dataset.editIdx=String(i);
+  document.getElementById('efic-form-card').dataset.editId=e.id||'';
   document.getElementById('efic-form-title').textContent='Editar Verificación de Eficacia — R-93/04';
 };
 
 window.efic_cancelar=function(){
-  document.getElementById('efic-form-card').style.display='none';
+  const card=document.getElementById('efic-form-card');
+  card.style.display='none';
+  card.dataset.editId='';card.dataset.editIdx='';
   document.querySelector('#sec-eficacia .card.no-print').style.display='block';
   document.getElementById('efic-preview').style.display='none';
 };
@@ -13705,10 +13711,15 @@ window.efic_guardar=async function(){
     id:'efic_'+Date.now(),
     updated_at:new Date().toISOString()
   };
+  const card=document.getElementById('efic-form-card');
+  const editId=card.dataset.editId||'';
   const list=leerEficacia();
-  const editIdx=document.getElementById('efic-form-card').dataset.editIdx;
-  if(editIdx!=='')list[parseInt(editIdx)]={...list[parseInt(editIdx)],...obj};
-  else list.push(obj);
+  let idx=-1;
+  if(editId)idx=list.findIndex(x=>x.id===editId);
+  if(idx>=0)list[idx]={...list[idx],...obj,id:editId}; // editar: conserva el id original
+  else list.push(obj);                                  // nuevo: agrega al final
+  // Limpiar marca de edición para evitar sobrescrituras accidentales
+  card.dataset.editId='';card.dataset.editIdx='';
   guardarEficacia(list);
   try{
     await sb.from('sgc_planificacion').upsert({clave:'eficacia_acciones',valor:{lista:list}},{onConflict:'clave'});
