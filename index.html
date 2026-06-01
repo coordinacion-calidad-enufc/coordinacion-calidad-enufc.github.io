@@ -3356,6 +3356,7 @@ Coordinacion de Calidad</textarea>
       <div id="sat-comp-periodos" style="font-size:12px;color:var(--muted);padding-bottom:6px"></div>
     </div>
     <div id="sat-comp-deltas" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px"></div>
+    <div id="sat-comp-analisis" style="margin-bottom:18px"></div>
     <div class="card" style="margin-bottom:16px">
       <h3 style="font-size:13px;margin-bottom:10px">Ficha R-91/01 — Control Escolar</h3>
       <div style="position:relative;height:240px"><canvas id="chart-comp-ce"></canvas></div>
@@ -3384,6 +3385,8 @@ Coordinacion de Calidad</textarea>
     </div>
     <!-- Cards resumen -->
     <div id="sat-periodo-cards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px"></div>
+    <!-- Panel de resumen y análisis del período -->
+    <div id="sat-periodo-analisis" style="margin-bottom:18px"></div>
     <!-- Barra de escala por categoría -->
     <div class="card" style="margin-bottom:16px">
       <h3 style="font-size:13px;margin-bottom:4px">Distribución de satisfacción por categoría</h3>
@@ -15887,6 +15890,15 @@ function satDestroyAll(){
   Object.keys(_satCharts).forEach(k=>{_satCharts[k]?.destroy();delete _satCharts[k];});
 }
 
+// Destruye cualquier gráfica que ya exista en estos canvas (evita el error
+// "Canvas is already in use" al re-renderizar con un período distinto)
+function satClearCharts(ids){
+  ids.forEach(id=>{
+    const cv=document.getElementById(id);
+    if(cv&&window.Chart&&Chart.getChart){const ex=Chart.getChart(cv);if(ex)ex.destroy();}
+  });
+}
+
 // Inserta/actualiza texto de observación debajo de la gráfica dentro de su card
 function satSetObs(canvasId,html){
   const canvas=document.getElementById(canvasId);
@@ -16034,6 +16046,7 @@ function satMkDetalleTabla(rows,fields,labels,grupo){
 }
 
 function satRenderFicha(rows){
+  satClearCharts(['chart-sat-ce','chart-sat-tit','chart-sat-ficha-all','chart-sat-ce-dist','chart-sat-tit-dist']);
   const ceFields=['ce_inscripcion','ce_reinscripcion','ce_constancias','ce_credenciales','ce_duplicado_boleta','ce_boleta_calif'];
   const ceLabels=['Inscripción','Reinscripción','Constancias','Credenciales','Dup. boleta','Boleta calif.'];
   const titFields=['tit_asesor','tit_constancia_cursos','tit_respuesta_carta'];
@@ -16216,6 +16229,7 @@ function satRenderFicha(rows){
 }
 
 function satRenderEncuesta(rows){
+  satClearCharts(['chart-sat-doc','chart-sat-infra','chart-sat-general','chart-sat-form','chart-sat-cultural','chart-sat-talleres','chart-sat-pct-clases','chart-sat-pct-actividades']);
   const docFields=['doc_dominio_materia','doc_estrategias_ensenanza','doc_recursos_didacticos','doc_estrategias_eval','doc_asesoria_academica'];
   const docLabels=['Dominio de materia','Estrategias enseñanza','Recursos didácticos','Evaluación','Asesoría académica'];
   const infraFields=['infra_salones','infra_aula_medios','infra_banos','infra_biblioteca','infra_biblioteca_escolar','infra_auditorio','infra_areas_verdes','infra_canchas','infra_salon_danza'];
@@ -16518,6 +16532,7 @@ let _satDataCache=null;
 /* ─── VISTA POR PERÍODO ─── */
 async function satRenderPeriodo(){
   if(!_satDataCache){_satDataCache=await satLoad();}
+  satClearCharts(['chart-sat-escala','chart-sat-donut-ficha','chart-sat-donut-enc']);
   const{ficha,encuesta}=_satDataCache;
 
   // Poblar selector de períodos (más reciente primero)
@@ -16544,6 +16559,7 @@ async function satRenderPeriodo(){
 
   if(!p){
     if(cardsEl)cardsEl.innerHTML='<p style="color:var(--muted);font-size:13px">Selecciona un período para ver los resultados.</p>';
+    const _ap=document.getElementById('sat-periodo-analisis');if(_ap)_ap.innerHTML='';
     if(detalleEl)detalleEl.innerHTML='';
     if(comsEl)comsEl.innerHTML='';
     return;
@@ -16614,6 +16630,98 @@ async function satRenderPeriodo(){
       <div style="font-size:11px;color:var(--muted);margin-top:2px">Promedio Encuesta ${satSemaphore(geAvg)}</div>
       <div style="font-size:11px;color:var(--muted);margin-top:3px">escala 1 – 5</div>
     </div>`;
+
+  // ── PANEL DE RESUMEN Y ANÁLISIS DEL PERÍODO ─────────────────────────────
+  const analisisP=document.getElementById('sat-periodo-analisis');
+  if(analisisP){
+    // Satisfacción global del período (ambos instrumentos)
+    const totalSat=sf.n+se.n, totalResp=sf.t+se.t;
+    const globalPct=totalResp?+(totalSat/totalResp*100).toFixed(1):null;
+
+    // Aspectos individuales con su promedio
+    const aspectosP=[
+      ...ceFields.map((f,i)=>({l:ceLabels[i],g:'Control Escolar',rows:fRows,f})),
+      ...titFields.map((f,i)=>({l:titLabels[i],g:'Titulación',rows:fRows,f})),
+      ...docFields.map((f,i)=>({l:docLabels[i],g:'Docentes',rows:eRows,f})),
+      ...infraFields.map((f,i)=>({l:infraLabels[i],g:'Infraestructura',rows:eRows,f})),
+      {l:'Satisfacción con la formación',g:'Encuesta',rows:eRows,f:'doc_satisfaccion_formacion'},
+      {l:'Acompañamiento en prácticas',g:'Encuesta',rows:eRows,f:'doc_acompanamiento_prac'},
+      {l:'Actividades culturales',g:'Encuesta',rows:eRows,f:'satisfaccion_cultural'},
+      {l:'Talleres',g:'Encuesta',rows:eRows,f:'calif_talleres'},
+      {l:'Limpieza',g:'Encuesta',rows:eRows,f:'limpieza'},
+    ].map(a=>({...a,avg:satAvg(a.rows,[a.f])})).filter(a=>a.avg!=null);
+    const ranked=[...aspectosP].sort((a,b)=>b.avg-a.avg);
+    const mejores=ranked.slice(0,3);
+    const debiles=ranked.slice(-3).reverse();
+    const criticos=aspectosP.filter(a=>a.avg<3).sort((a,b)=>a.avg-b.avg);
+
+    // Veredicto general
+    let vcolor,vnivel;
+    if(globalPct==null){vcolor='#64748b';vnivel='';}
+    else if(globalPct>=80){vcolor='#16a34a';vnivel='satisfacción <b>alta</b> 🟢';}
+    else if(globalPct>=60){vcolor='#d97706';vnivel='satisfacción <b>aceptable</b> 🟡';}
+    else{vcolor='#dc2626';vnivel='satisfacción <b>baja</b> 🔴';}
+    const veredicto=globalPct==null?'No hay datos suficientes en este período.'
+      :`En <b>${esc(p)}</b>, la satisfacción general de los alumnos es del <b>${globalPct}%</b> — ${vnivel} (${fRows.length+eRows.length} respuestas en total).`;
+
+    // vs período anterior (periodos está ordenado de más reciente a más antiguo)
+    const idxP=periodos.indexOf(p);
+    const prevP=(idxP>=0&&idxP+1<periodos.length)?periodos[idxP+1]:null;
+    let trendHtml;
+    if(prevP){
+      const pf=ficha.filter(r=>satPeriodo(r.marca_temporal)===prevP);
+      const pe=encuesta.filter(r=>satPeriodo(r.marca_temporal)===prevP);
+      const pg=countSat(pf,fichaFields),ph=countSat(pe,encAllFields);
+      const prevTot=pg.t+ph.t,prevPct=prevTot?+((pg.n+ph.n)/prevTot*100).toFixed(1):null;
+      if(prevPct!=null&&globalPct!=null){
+        const d=+(globalPct-prevPct).toFixed(1);
+        const col=d>0?'#16a34a':d<0?'#dc2626':'#64748b';
+        const arr=d>0?`▲ +${d}`:d<0?`▼ ${d}`:'= 0';
+        trendHtml=`vs <b>${esc(prevP)}</b> (${prevPct}%): <span style="color:${col};font-weight:700">${arr} pts</span> ${d>0?'de mejora':d<0?'de retroceso':'sin cambio'}`;
+      }else{trendHtml='<span style="color:var(--muted)">Sin datos comparables del período anterior.</span>';}
+    }else{trendHtml='<span style="color:var(--muted)">Es el primer período registrado; no hay anterior para comparar.</span>';}
+
+    // Cumplimiento de meta
+    const meta=75;
+    const cumpleMeta=globalPct!=null&&globalPct>=meta;
+    const metaHtml=globalPct==null?'Sin datos para evaluar la meta.'
+      :`Meta institucional ≥${meta}% satisfechos: <b style="color:${cumpleMeta?'#16a34a':'#dc2626'}">${cumpleMeta?'✓ CUMPLE':'✗ NO CUMPLE'}</b> (actual ${globalPct}%). Ligada a los indicadores de calidad 01–03 (R-44/01).`;
+
+    // Recomendación
+    let rec;
+    if(criticos.length){
+      rec=`Atender de inmediato los aspectos críticos: <b>${criticos.slice(0,4).map(a=>esc(a.l)).join(', ')}</b>. Conviene registrar una No Conformidad u oportunidad de mejora y darle seguimiento en la Revisión por la Dirección.`;
+    }else if(globalPct!=null&&!cumpleMeta){
+      rec=`No hay aspectos críticos, pero la satisfacción global (${globalPct}%) está por debajo de la meta. Reforzar los aspectos más débiles: <b>${debiles.map(a=>esc(a.l)).join(', ')}</b>.`;
+    }else{
+      rec='El período cumple la meta y no presenta aspectos críticos. Se recomienda documentar y mantener las buenas prácticas.';
+    }
+
+    analisisP.innerHTML=`
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="background:${vcolor}14;border-left:5px solid ${vcolor};padding:12px 16px">
+          <div style="font-size:11px;font-weight:700;color:${vcolor};text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">📋 Resumen del período ${esc(p)}</div>
+          <div style="font-size:13.5px;color:var(--text);line-height:1.5">${veredicto}</div>
+          <div style="font-size:12.5px;color:var(--text);margin-top:6px">📈 ${trendHtml}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+          <div style="padding:12px 16px;border-right:1px solid var(--border)">
+            <div style="font-size:12px;font-weight:700;color:#16a34a;margin-bottom:2px">⭐ Mejor evaluados</div>
+            <ul style="margin:4px 0 0 16px;font-size:12.5px;color:var(--text)">${mejores.map(a=>`<li><b>${esc(a.l)}</b> <span style="color:var(--muted);font-size:11px">(${esc(a.g)})</span>: ${a.avg} ${satSemaphore(a.avg)}</li>`).join('')||'<li style="color:var(--muted)">Sin datos</li>'}</ul>
+          </div>
+          <div style="padding:12px 16px">
+            <div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:2px">⚠ Más débiles</div>
+            <ul style="margin:4px 0 0 16px;font-size:12.5px;color:var(--text)">${debiles.map(a=>`<li><b>${esc(a.l)}</b> <span style="color:var(--muted);font-size:11px">(${esc(a.g)})</span>: ${a.avg} ${satSemaphore(a.avg)}</li>`).join('')||'<li style="color:var(--muted)">Sin datos</li>'}</ul>
+          </div>
+        </div>
+        ${criticos.length?`<div style="padding:12px 16px;border-top:1px solid var(--border)"><div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:6px">🔴 Aspectos críticos (promedio &lt; 3)</div>${criticos.map(a=>`<span style="display:inline-block;background:#fee2e2;color:#991b1b;border-radius:6px;padding:3px 8px;margin:2px;font-size:11.5px">${esc(a.l)}: ${a.avg}</span>`).join('')}</div>`:''}
+        <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--text)">🎯 ${metaHtml}</div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border);background:var(--surface2)">
+          <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:3px">💡 Recomendación</div>
+          <div style="font-size:12.5px;color:var(--text);line-height:1.5">${rec}</div>
+        </div>
+      </div>`;
+  }
 
   // ── GRÁFICA ESCALA HORIZONTAL APILADA ──
   const catLabels=['Control Escolar','Titulación','Docentes','Formación docente','Acomp. prácticas','Act. culturales','Talleres','Infraestructura','Limpieza'];
@@ -17148,6 +17256,7 @@ function satPeriodoSortKey(p){
 }
 
 async function satRenderComp(){
+  satClearCharts(['chart-comp-ce','chart-comp-doc','chart-comp-infra']);
   const compDiv=document.getElementById('sat-comp-deltas');
   const periodosDiv=document.getElementById('sat-comp-periodos');
   if(!compDiv)return;
@@ -17185,6 +17294,7 @@ async function satRenderComp(){
 
   if(!p1||!p2){
     compDiv.innerHTML='';
+    const _ae=document.getElementById('sat-comp-analisis');if(_ae)_ae.innerHTML='';
     if(periodosDiv)periodosDiv.textContent='Selecciona dos períodos para comparar.';
     ['compCe','compDoc','compInfra'].forEach(k=>{if(_satCharts[k]){_satCharts[k].destroy();delete _satCharts[k];}});
     return;
@@ -17235,6 +17345,95 @@ async function satRenderComp(){
       </div>
     </div>`;
   }).join('');
+
+  // ── Panel de análisis automático de la comparativa ──────────────────────
+  const analisisEl=document.getElementById('sat-comp-analisis');
+  if(analisisEl){
+    const ceLabels=['Inscripción','Reinscripción','Constancias','Credenciales','Dup. boleta','Boleta calif.'];
+    const titLabels=['Asesor de Tesis','Constancia Cursos','Carta Exposición'];
+    const docLabels=['Dominio de materia','Estrategias enseñanza','Recursos didácticos','Evaluación','Asesoría académica'];
+    const infraLabels=['Salones','Aula de medios','Baños','Biblioteca','Bib. escolar','Auditorio','Áreas verdes','Canchas','Salón de danza'];
+    const aspectos=[
+      ...ceFields.map((f,i)=>({l:ceLabels[i],g:'Control Escolar',f,r1:fichaP1,r2:fichaP2})),
+      ...titFields.map((f,i)=>({l:titLabels[i],g:'Titulación',f,r1:fichaP1,r2:fichaP2})),
+      ...docFields.map((f,i)=>({l:docLabels[i],g:'Docentes',f,r1:encuestaP1,r2:encuestaP2})),
+      ...infraFields.map((f,i)=>({l:infraLabels[i],g:'Infraestructura',f,r1:encuestaP1,r2:encuestaP2})),
+      {l:'Satisfacción con la formación',g:'Encuesta',f:'doc_satisfaccion_formacion',r1:encuestaP1,r2:encuestaP2},
+      {l:'Acompañamiento en prácticas',g:'Encuesta',f:'doc_acompanamiento_prac',r1:encuestaP1,r2:encuestaP2},
+      {l:'Actividades culturales',g:'Encuesta',f:'satisfaccion_cultural',r1:encuestaP1,r2:encuestaP2},
+      {l:'Talleres',g:'Encuesta',f:'calif_talleres',r1:encuestaP1,r2:encuestaP2},
+      {l:'Limpieza',g:'Encuesta',f:'limpieza',r1:encuestaP1,r2:encuestaP2},
+    ];
+    const calc=aspectos.map(a=>{
+      const a1=satAvg(a.r1,[a.f]),a2=satAvg(a.r2,[a.f]);
+      const delta=(a1!=null&&a2!=null)?+(a2-a1).toFixed(2):null;
+      return{...a,a1,a2,delta};
+    }).filter(x=>x.a1!=null||x.a2!=null);
+    const nivel=v=>v==null?'':(v>=4?'🟢':v>=3?'🟡':'🔴');
+    const nivelTxt=v=>v==null?'sin dato':(v>=4?'satisfactorio':v>=3?'aceptable':'crítico');
+    const _g=v=>v>0?'#16a34a':v<0?'#dc2626':'#64748b';
+    const _arrow=v=>v>0?`▲ +${v}`:v<0?`▼ ${v}`:'= 0';
+
+    const promedio=arr=>{const vs=arr.filter(v=>v!=null);return vs.length?+(vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(2):null;};
+    const genP1=promedio(calc.map(x=>x.a1)),genP2=promedio(calc.map(x=>x.a2));
+    const genDelta=(genP1!=null&&genP2!=null)?+(genP2-genP1).toFixed(2):null;
+    const conDelta=calc.filter(x=>x.delta!=null);
+    const mejoras=conDelta.filter(x=>x.delta>0.001).sort((a,b)=>b.delta-a.delta).slice(0,3);
+    const retrocesos=conDelta.filter(x=>x.delta<-0.001).sort((a,b)=>a.delta-b.delta).slice(0,3);
+    const cambiosNivel=conDelta.filter(x=>x.a1!=null&&x.a2!=null&&nivel(x.a1)!==nivel(x.a2));
+    const partP1=fichaP1.length+encuestaP1.length,partP2=fichaP2.length+encuestaP2.length;
+    const partDelta=partP2-partP1;
+
+    let veredicto,vcolor;
+    if(genDelta==null){veredicto='No hay datos suficientes en ambos períodos para comparar.';vcolor='#64748b';}
+    else if(genDelta>=0.15){veredicto=`La satisfacción general <b>mejoró</b> (${_arrow(genDelta)} pts) entre <b>${esc(p1)}</b> (${genP1}) y <b>${esc(p2)}</b> (${genP2}). 🟢`;vcolor='#16a34a';}
+    else if(genDelta<=-0.15){veredicto=`La satisfacción general <b>disminuyó</b> (${_arrow(genDelta)} pts) entre <b>${esc(p1)}</b> (${genP1}) y <b>${esc(p2)}</b> (${genP2}). Requiere atención. 🔴`;vcolor='#dc2626';}
+    else{veredicto=`La satisfacción general se <b>mantuvo estable</b> entre <b>${esc(p1)}</b> (${genP1}) y <b>${esc(p2)}</b> (${genP2}), variación de ${_arrow(genDelta)}. 🟡`;vcolor='#d97706';}
+
+    const liAsp=x=>`<li style="margin-bottom:3px"><b>${esc(x.l)}</b> <span style="color:var(--muted);font-size:11px">(${esc(x.g)})</span>: ${x.a1??'—'} → ${x.a2??'—'} <span style="color:${_g(x.delta)};font-weight:600">${_arrow(x.delta)}</span></li>`;
+    const mejorasHtml=mejoras.length?`<ul style="margin:4px 0 0 16px;font-size:12.5px;color:var(--text)">${mejoras.map(liAsp).join('')}</ul>`:'<p style="font-size:12px;color:var(--muted);margin:4px 0">Sin mejoras destacadas.</p>';
+    const retroHtml=retrocesos.length?`<ul style="margin:4px 0 0 16px;font-size:12.5px;color:var(--text)">${retrocesos.map(liAsp).join('')}</ul>`:'<p style="font-size:12px;color:var(--muted);margin:4px 0">Sin retrocesos. 👍</p>';
+    const cambiosHtml=cambiosNivel.length?cambiosNivel.map(x=>{
+      const subio=x.delta>0;
+      return `<span style="display:inline-block;background:${subio?'#dcfce7':'#fee2e2'};color:${subio?'#166534':'#991b1b'};border-radius:6px;padding:3px 8px;margin:2px;font-size:11.5px">${esc(x.l)}: ${nivel(x.a1)}→${nivel(x.a2)} (${nivelTxt(x.a1)} a ${nivelTxt(x.a2)})</span>`;
+    }).join(''):'<span style="font-size:12px;color:var(--muted)">Ningún aspecto cambió de nivel de semáforo.</span>';
+    const partHtml=`Respuestas: <b>${esc(p1)}</b> ${partP1} → <b>${esc(p2)}</b> ${partP2} <span style="color:${_g(partDelta)};font-weight:600">(${partDelta>=0?'+':''}${partDelta})</span>. ${partP2<partP1?'⚠ Menor participación puede reducir la representatividad.':partP2>partP1?'Mayor participación: muestra más representativa.':''}`;
+
+    let recomendacion;
+    const criticosP2=calc.filter(x=>x.a2!=null&&x.a2<3);
+    if(retrocesos.length||criticosP2.length){
+      const focos=[...new Set([...retrocesos.map(x=>x.l),...criticosP2.map(x=>x.l)])].slice(0,4);
+      recomendacion=`Se recomienda priorizar acciones de mejora en: <b>${focos.map(esc).join(', ')}</b>. Considera registrar una No Conformidad u oportunidad de mejora y darle seguimiento en la Revisión por la Dirección (cláusula 9.3).`;
+    }else if(genDelta!=null&&genDelta>0){
+      recomendacion='El desempeño mejoró de forma generalizada. Se recomienda <b>documentar y mantener</b> las buenas prácticas que generaron la mejora.';
+    }else{
+      recomendacion='El desempeño se mantiene estable. Se recomienda sostener las acciones actuales y <b>monitorear</b> los aspectos cercanos al umbral.';
+    }
+
+    analisisEl.innerHTML=`
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="background:${vcolor}14;border-left:5px solid ${vcolor};padding:12px 16px">
+          <div style="font-size:11px;font-weight:700;color:${vcolor};text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">📊 Análisis comparativo automático</div>
+          <div style="font-size:13.5px;color:var(--text);line-height:1.5">${veredicto}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+          <div style="padding:12px 16px;border-right:1px solid var(--border)">
+            <div style="font-size:12px;font-weight:700;color:#16a34a;margin-bottom:2px">▲ Mayores mejoras</div>${mejorasHtml}
+          </div>
+          <div style="padding:12px 16px">
+            <div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:2px">▼ Mayores retrocesos</div>${retroHtml}
+          </div>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border)">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">🚦 Cambios de nivel (semáforo)</div>${cambiosHtml}
+        </div>
+        <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--text)">👥 ${partHtml}</div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border);background:var(--surface2)">
+          <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:3px">💡 Recomendación</div>
+          <div style="font-size:12.5px;color:var(--text);line-height:1.5">${recomendacion}</div>
+        </div>
+      </div>`;
+  }
 
   // Destruir charts anteriores
   ['compCe','compDoc','compInfra'].forEach(k=>{if(_satCharts[k]){_satCharts[k].destroy();delete _satCharts[k];}});
@@ -17339,26 +17538,51 @@ async function satProcesarCSV(e){
     }
   }
 
-  // Desglose por semestre del archivo
-  const semConteo={};
-  rows.forEach(r=>{const k=r.semestre||'(sin semestre)';semConteo[k]=(semConteo[k]||0)+1;});
-  const semDetectados=Object.entries(semConteo).map(([s,n])=>`${s}: ${n}`).join(' · ');
-
   const tabla=tipo==='ficha'?'sgc_ficha_satisfaccion':'sgc_encuesta_satisfaccion';
-  msg.textContent=`Importando ${rows.length} registros…`;
   if(!sb){msg.textContent='Error: Supabase no conectado.';return;}
 
-  // Insertar en lotes de 100
+  // ── Omitir duplicados: respuestas cuya combinación marca temporal + semestre
+  //    + licenciatura ya está en la nube, o que se repiten dentro del CSV ──────
+  const keyOf=r=>[String(r.marca_temporal||''),String(r.semestre||''),String(r.licenciatura||'')].join('||');
+  msg.textContent='Verificando duplicados…';
+  const existentes=new Set();
+  try{
+    const{data:prev}=await sb.from(tabla).select('marca_temporal,semestre,licenciatura');
+    (prev||[]).forEach(r=>existentes.add(keyOf(r)));
+  }catch(err2){console.warn('dedup check',err2);}
+  const vistos=new Set();
+  const totalLeidos=rows.length;
+  const nuevos=rows.filter(r=>{
+    const k=keyOf(r);
+    if(existentes.has(k)||vistos.has(k))return false; // ya en la nube o repetida en el CSV
+    vistos.add(k);return true;
+  });
+  const omitidos=totalLeidos-nuevos.length;
+
+  // Desglose por semestre de lo que SÍ se importará
+  const semConteo={};
+  nuevos.forEach(r=>{const k=r.semestre||'(sin semestre)';semConteo[k]=(semConteo[k]||0)+1;});
+  const semDetectados=Object.entries(semConteo).map(([s,n])=>`${s}: ${n}`).join(' · ')||'—';
+
+  if(!nuevos.length){
+    _satDataCache=null;
+    msg.innerHTML=`ℹ️ No había respuestas nuevas: se omitieron <b>${omitidos}</b> duplicado(s) ya existente(s). El histórico no cambió.`;
+    satRender();
+    return;
+  }
+
+  // Insertar en lotes de 100 (solo los nuevos)
+  msg.textContent=`Importando ${nuevos.length} registros nuevos…`;
   let ok=0,err=0;
-  for(let i=0;i<rows.length;i+=100){
-    const batch=rows.slice(i,i+100);
+  for(let i=0;i<nuevos.length;i+=100){
+    const batch=nuevos.slice(i,i+100);
     const{error}=await sb.from(tabla).insert(batch);
     if(error)err+=batch.length;else ok+=batch.length;
-    msg.textContent=`Importando… ${Math.min(i+100,rows.length)}/${rows.length}`;
+    msg.textContent=`Importando… ${Math.min(i+100,nuevos.length)}/${nuevos.length}`;
   }
   _satDataCache=null;
-  msg.innerHTML=`✅ <b>${ok}</b> registros importados${err?` · <span style="color:#dc2626">${err} con error</span>`:''}
-    &nbsp;|&nbsp; Semestres detectados: <b>${esc(semDetectados)}</b>`;
+  msg.innerHTML=`✅ <b>${ok}</b> registros nuevos importados${omitidos?` · <span style="color:#d97706">${omitidos} duplicado(s) omitido(s)</span>`:''}${err?` · <span style="color:#dc2626">${err} con error</span>`:''}
+    &nbsp;|&nbsp; Semestres: <b>${esc(semDetectados)}</b>`;
   satRender();
 }
 
