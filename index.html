@@ -2071,6 +2071,7 @@ Coordinacion de Calidad</textarea>
         <span style="font-size:13px;color:var(--muted)" id="efic-count"></span>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary btn-sm" onclick="efic_nuevo()" data-admin-only>+ Nueva verificación</button>
+          <button class="btn btn-sm" onclick="cargarEficaciaSupabase().then(renderEficacia)" title="Recargar información">↻</button>
         </div>
       </div>
       <div id="efic-lista"></div>
@@ -2425,6 +2426,10 @@ Coordinacion de Calidad</textarea>
           <input type="text" id="memo-cfg-lema" placeholder="Ej. 2026, Año de Margarita Maza Parada">
         </div>
         <div>
+          <label class="lbl">Ciclo escolar <span style="font-size:11px;color:var(--muted)">(se cambia cada año)</span></label>
+          <input type="text" id="memo-cfg-ciclo" placeholder="Ej. 2025-2026">
+        </div>
+        <div>
           <label class="lbl">Código del documento (pie de página)</label>
           <input type="text" id="memo-cfg-codigo" placeholder="Ej. R-74/01 Rev. 00">
         </div>
@@ -2594,6 +2599,16 @@ Coordinacion de Calidad</textarea>
           <!-- Cuerpo -->
           <div class="memo-cuerpo" id="prev-cuerpo"></div>
 
+          <!-- Firma / Atentamente -->
+          <div class="memo-firma" style="text-align:center;margin-top:42px;page-break-inside:avoid">
+            <div style="font-weight:700;letter-spacing:.5px">ATENTAMENTE:</div>
+            <div style="display:inline-block;text-align:center;min-width:62%;margin-top:48px">
+              <div style="border-top:1px solid #000;padding-top:4px;font-weight:700" id="prev-firma-nombre"></div>
+              <div style="font-weight:700;font-size:10pt" id="prev-firma-cargo"></div>
+              <div style="font-style:italic;font-size:9pt;margin-top:2px">"Por la niñez, ciencia, cultura y honor al servicio de la Patria"</div>
+            </div>
+          </div>
+
           <!-- Pie de dirección -->
           <div class="memo-footer-table">
             <div>Av. Normal de Maestros No.1 Col. Gabriel Tepepa<br>C.P. 62742</div>
@@ -2618,7 +2633,10 @@ Coordinacion de Calidad</textarea>
     <div class="card" style="margin-bottom:1rem">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
         <h3 style="margin:0">Catálogo de documentos</h3>
-        <button class="btn btn-primary" onclick="docNuevo()" data-admin-only>+ Nuevo documento</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="docNuevo()" data-admin-only>+ Nuevo documento</button>
+          <button class="btn btn-sm" onclick="loadDocumentos().then(renderDocs)" title="Recargar información">↻</button>
+        </div>
       </div>
       <div class="doc-filters">
         <input type="text" id="doc-buscar" placeholder="Buscar por nombre o código..." oninput="renderDocs()" style="flex:2;min-width:180px">
@@ -2715,7 +2733,10 @@ Coordinacion de Calidad</textarea>
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
         <h3 style="margin:0">Solicitudes registradas</h3>
-        <button class="btn btn-primary btn-sm" onclick="sc_nueva()">+ Nueva solicitud</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="sc_nueva()">+ Nueva solicitud</button>
+          <button class="btn btn-sm" onclick="loadSolicitudesCambio().then(renderSolicitudesCambio)" title="Recargar información">↻</button>
+        </div>
       </div>
       <div id="sc-lista"></div>
     </div>
@@ -4870,7 +4891,7 @@ window.goto=function(sec,navEl){
   if(sec==='admin'){fillSelects();renderAreasAdmin();renderIndCatalogo();renderUsuarios();renderConfigInstitucional();renderAdminIA();loadAsignaciones().then(renderAdminAsignaciones);}
   if(sec==='aud-nueva'||sec==='ind-captura'){fillSelects();aplicarConfigAuditoria();aplicarPermisos();loadAsignaciones().then(renderIndLista);}
   if(sec==='documentos'){fillDocAreaSelect();docDiagnosticarSync();withTimeout(loadDocumentos(),'documentos').then(renderDocs);}
-  if(sec==='memorandum'){withTimeout(loadMemorandums(),'memorandums').then(renderMemorandum);}
+  if(sec==='memorandum'){renderMemorandum();withTimeout(loadMemorandums(),'memorandums').then(renderMemorandum);}
   if(sec==='sol-cambios'){fillSelectSC();withTimeout(loadSolicitudesCambio(),'sol-cambios').then(renderSolicitudesCambio);sc_nueva();}
   if(sec==='solicitud'){withTimeout(loadSolicitudes(),'solicitudes').then(renderSolicitudes);}
   if(sec==='plan'){renderPlanes();withTimeout(loadPlanes(),'planes').then(renderPlanes);}
@@ -7258,8 +7279,12 @@ window.sol_imprimirFormato=function(){imprimirSoloFormato('sec-solicitud',sol_vi
    MEMORÁNDUM — R-74/01
 ══════════════════════════════════════════════════════ */
 function memoGetConfig(){
+  const _ahora=new Date();
+  const _cA=_ahora.getMonth()<6?_ahora.getFullYear()-1:_ahora.getFullYear();
+  const _cicloAuto=`${_cA}-${_cA+1}`;
   return{
     lema:localStorage.getItem('sgc_memo_lema')||'2026, Año de Margarita Maza Parada',
+    ciclo:localStorage.getItem('sgc_memo_ciclo')||_cicloAuto,
     codigo:localStorage.getItem('sgc_memo_codigo')||'R-74/01 Rev. 00',
     iniciales:localStorage.getItem('sgc_memo_iniciales')||'RCAP*rjta',
     de_nombre:localStorage.getItem('sgc_memo_de_nombre')||'MTRO. ROBERTO CARLOS AGUILAR PEDROZA',
@@ -7404,7 +7429,6 @@ window.memoPreviewActualizar=function(){
   const cfg=memoGetConfig();
   const fecha=document.getElementById('memo-fecha').value;
   const ahora=new Date();
-  const cicloA=ahora.getMonth()<6?ahora.getFullYear()-1:ahora.getFullYear();
   // Fecha larga
   const fechaLarga=fecha?memoFechaLarga(fecha):'—';
   const ye=fecha?fecha.slice(0,4):ahora.getFullYear();
@@ -7420,7 +7444,7 @@ window.memoPreviewActualizar=function(){
   set('prev-iniciales',cfg.iniciales);
   set('prev-iniciales-fixed',cfg.iniciales);
   set('prev-doccode-fixed',cfg.codigo);
-  set('prev-ciclo',`${cicloA}-${parseInt(cicloA)+1}`);
+  set('prev-ciclo',cfg.ciclo);
   // Destinatarios múltiples
   const destList=memoGetDestinatarios().filter(d=>d.nombre||d.cargo);
   const destHtml=destList.length
@@ -7430,6 +7454,8 @@ window.memoPreviewActualizar=function(){
   const prevPC=document.getElementById('prev-para-cargo');if(prevPC)prevPC.style.display='none';
   set('prev-de-nombre',document.getElementById('memo-de-nombre').value||cfg.de_nombre);
   set('prev-de-cargo',document.getElementById('memo-de-cargo').value||cfg.de_cargo);
+  set('prev-firma-nombre',document.getElementById('memo-de-nombre').value||cfg.de_nombre);
+  set('prev-firma-cargo',document.getElementById('memo-de-cargo').value||cfg.de_cargo);
   set('prev-asunto',document.getElementById('memo-asunto').value||'—');
   // El cuerpo es contenteditable — renderizar HTML directo
   const cuerpoEl=document.getElementById('memo-cuerpo');
@@ -7446,6 +7472,7 @@ window.memoImprimirPreview=function(){
 window.memoConfigAbrir=function(){
   const cfg=memoGetConfig();
   document.getElementById('memo-cfg-lema').value=cfg.lema;
+  document.getElementById('memo-cfg-ciclo').value=cfg.ciclo;
   document.getElementById('memo-cfg-codigo').value=cfg.codigo;
   document.getElementById('memo-cfg-iniciales').value=cfg.iniciales;
   document.getElementById('memo-cfg-de-nombre').value=cfg.de_nombre;
@@ -7456,6 +7483,7 @@ window.memoConfigAbrir=function(){
 
 window.memoConfigGuardar=function(){
   localStorage.setItem('sgc_memo_lema',document.getElementById('memo-cfg-lema').value.trim());
+  localStorage.setItem('sgc_memo_ciclo',document.getElementById('memo-cfg-ciclo').value.trim());
   localStorage.setItem('sgc_memo_codigo',document.getElementById('memo-cfg-codigo').value.trim());
   localStorage.setItem('sgc_memo_iniciales',document.getElementById('memo-cfg-iniciales').value.trim());
   localStorage.setItem('sgc_memo_de_nombre',document.getElementById('memo-cfg-de-nombre').value.trim());
@@ -7467,22 +7495,32 @@ window.memoConfigGuardar=function(){
 /* ── QualiRAR: ayuda para redactar el cuerpo ── */
 window.memoAyudaQualiRAR=function(){
   const asunto=document.getElementById('memo-asunto').value.trim();
-  const para=document.getElementById('memo-para-nombre').value.trim();
+  const _dests=memoGetDestinatarios();
+  const para=(_dests[0]?.nombre||'').trim();
   const de=document.getElementById('memo-de-nombre').value.trim()||memoGetConfig().de_nombre;
-  // Abrir panel de QualiRAR
+  const apiKey=localStorage.getItem('sgc_ia_key')||'';
+
+  // Abrir el panel del chat con la configuración correcta (igual que el botón flotante)
   const panel=document.getElementById('chat-panel');
-  if(panel&&!panel.classList.contains('open'))panel.classList.add('open');
+  if(panel&&!panel.classList.contains('open')&&typeof toggleChat==='function')toggleChat();
+  else if(panel)panel.classList.add('open');
+
   setTimeout(()=>{
     const inp=document.getElementById('chat-input');
-    if(inp){
-      inp.value=`Redacta el cuerpo de un memorándum institucional de la ENUFC. `+
-        `Remitente: ${de||'Coordinador de Calidad'}. `+
-        `Destinatario: ${para||'Director'}. `+
-        `Asunto: ${asunto||'(sin asunto definido)'}. `+
-        `Usa lenguaje formal, breve y respetuoso. Escribe solo el cuerpo del texto (no el encabezado ni datos del destinatario).`;
-      inp.focus();
+    if(!inp)return;
+    inp.value=`Redacta el cuerpo de un memorándum institucional de la ENUFC. `+
+      `Remitente: ${de||'Coordinador de Calidad'}. `+
+      `Destinatario: ${para||'Director'}. `+
+      `Asunto: ${asunto||'(sin asunto definido)'}. `+
+      `Usa lenguaje formal, breve y respetuoso. Escribe SOLO el cuerpo del texto (sin encabezado, sin datos del destinatario y sin la despedida con firma).`;
+    if(apiKey&&typeof chatEnviar==='function'){
+      window._chatMemoMode=true; // al responder, insertar directo en #memo-cuerpo
+      chatEnviar();
+    }else{
+      inp.focus(); // sin API key: deja el texto listo y avisa
+      alert('Para que QualiRAR redacte el memorándum, primero configura tu API Key en Administrar → Asistente IA. Ya dejé la solicitud escrita en el chat.');
     }
-  },300);
+  },450);
 };
 
 /* ── Descargar DOCX ── */
@@ -7506,10 +7544,10 @@ window.memoGenerarDocx=async function(){
     const cfg=memoGetConfig();
     const fecha=document.getElementById('memo-fecha').value;
     const ahora=new Date();
-    const cicloA=ahora.getMonth()<6?ahora.getFullYear()-1:ahora.getFullYear();
-    const ciclo=`${cicloA}-${parseInt(cicloA)+1}`;
-    const paraNombre=document.getElementById('memo-para-nombre').value.trim();
-    const paraCargo=document.getElementById('memo-para-cargo').value.trim();
+    const ciclo=cfg.ciclo;
+    const _docxDests=memoGetDestinatarios();
+    const paraNombre=(_docxDests[0]?.nombre||'').trim();
+    const paraCargo=(_docxDests[0]?.cargo||'').trim();
     const deNombre=document.getElementById('memo-de-nombre').value.trim()||cfg.de_nombre;
     const deCargo=document.getElementById('memo-de-cargo').value.trim()||cfg.de_cargo;
     const asunto=document.getElementById('memo-asunto').value.trim();
@@ -7653,6 +7691,15 @@ window.memoGenerarDocx=async function(){
           new Paragraph({children:[arial('ASUNTO',{bold:true,size:22}),arial(': ',{bold:true,size:22}),arial(asunto,{size:22})]}),
           new Paragraph({children:[]}),
           ...cuerpoParas,
+          new Paragraph({children:[]}),
+          // Firma / Atentamente
+          new Paragraph({alignment:AlignmentType.CENTER,children:[arial('ATENTAMENTE:',{bold:true,size:22})]}),
+          new Paragraph({children:[]}),
+          new Paragraph({children:[]}),
+          new Paragraph({children:[]}),
+          new Paragraph({alignment:AlignmentType.CENTER,border:{top:{style:BorderStyle.SINGLE,size:6,color:'000000',space:2}},children:[arial(deNombre,{bold:true,size:22})]}),
+          new Paragraph({alignment:AlignmentType.CENTER,children:[arial(deCargo,{bold:true,size:20})]}),
+          new Paragraph({alignment:AlignmentType.CENTER,children:[arial('"Por la niñez, ciencia, cultura y honor al servicio de la Patria"',{italics:true,size:18})]}),
           new Paragraph({children:[]}),
           addrTable,
           folio?new Paragraph({alignment:AlignmentType.RIGHT,children:[arial(`No. ${folio}`,{size:14,color:'555555'})]}):new Paragraph({children:[]}),
@@ -11030,23 +11077,29 @@ window.chatAplicarEficacia=function(dataStr){
     const c=JSON.parse(decodeURIComponent(dataStr));
     goto('eficacia',null);
     setTimeout(()=>{
-      if(typeof efic_nuevo==='function')efic_nuevo();
-      const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
-      set('efic-semestre',c.semestre);
-      set('efic-num-registro',c.num_registro);
-      const th=document.getElementById('efic-tipo-hallazgo');if(th&&c.tipo_hallazgo)th.value=c.tipo_hallazgo;
-      set('efic-numeral',c.numeral);
-      set('efic-area',c.area);
-      set('efic-responsable-area',c.responsable_area);
-      set('efic-descripcion',c.descripcion);
-      set('efic-evidencia',c.evidencia);
-      set('efic-obs',c.obs);
-      if(c.atendido==='si'){const r=document.getElementById('efic-atendido-si');if(r)r.checked=true;}
-      if(c.atendido==='no'){const r=document.getElementById('efic-atendido-no');if(r)r.checked=true;}
-      const cont=document.getElementById('efic-acciones-lista');if(cont)cont.innerHTML='';
-      (c.acciones||[]).forEach(a=>{if(typeof efic_addAccionData==='function')efic_addAccionData(a.comprometida||'',a.fecha_comp||'',a.fecha_real||'',a.realizada||'');});
-      document.getElementById('efic-form-card')?.scrollIntoView({behavior:'smooth',block:'start'});
-    },400);
+      try{
+        if(typeof efic_nuevo==='function')efic_nuevo();
+      }catch(e){console.warn('efic_nuevo error:',e);}
+      setTimeout(()=>{
+        try{
+          const sv=(id,v)=>{const el=document.getElementById(id);if(el&&v!==undefined)el.value=v||'';};
+          sv('efic-semestre',c.semestre);
+          sv('efic-num-registro',c.num_registro);
+          const th=document.getElementById('efic-tipo-hallazgo');if(th&&c.tipo_hallazgo)th.value=c.tipo_hallazgo;
+          sv('efic-numeral',c.numeral);
+          sv('efic-area',c.area);
+          sv('efic-responsable-area',c.responsable_area);
+          sv('efic-descripcion',c.descripcion);
+          sv('efic-evidencia',c.evidencia);
+          sv('efic-obs',c.obs);
+          if(c.atendido==='si'){const r=document.getElementById('efic-atendido-si');if(r)r.checked=true;}
+          if(c.atendido==='no'){const r=document.getElementById('efic-atendido-no');if(r)r.checked=true;}
+          const cont=document.getElementById('efic-acciones-lista');if(cont)cont.innerHTML='';
+          (c.acciones||[]).forEach(a=>{if(typeof efic_addAccionData==='function')efic_addAccionData(a.comprometida||'',a.fecha_comp||'',a.fecha_real||'',a.realizada||'');});
+          document.getElementById('efic-form-card')?.scrollIntoView({behavior:'smooth',block:'start'});
+        }catch(e){alert('Error al llenar formulario de eficacia: '+e.message);}
+      },200);
+    },500);
   }catch(e){alert('Error al aplicar eficacia: '+e.message);}
 };
 
@@ -11255,10 +11308,10 @@ window.chatEnviar=async function(){
       chatCalcularIndicadoresEncuesta();
       return;
     }
-    // Memorándum
+    // Memorándum (omitir si viene de memoAyudaQualiRAR para no interceptar la redacción)
     const esMemo=/memo|memorand/.test(t);
     const esRedactar=/redact|escri|ayuda|crea|nuev|haz/.test(t);
-    if(esMemo&&esRedactar){
+    if(esMemo&&esRedactar&&!window._chatMemoMode){
       typingDiv.remove();
       sendBtn.disabled=false;
       // Navegar a memorándum y abrir formulario, luego regresar al chat
@@ -11351,6 +11404,20 @@ window.chatEnviar=async function(){
     typingDiv.innerHTML=mdToHtml(textPart||'Sin respuesta.');
     typingDiv.classList.remove('typing');
     _chatHistory.push({role:'assistant',content:respText});
+
+    // Inserción directa en el cuerpo del memorándum
+    if(window._chatMemoMode){
+      window._chatMemoMode=false;
+      const cuerpoEl=document.getElementById('memo-cuerpo');
+      if(cuerpoEl){
+        cuerpoEl.innerHTML=mdToHtml(textPart||'');
+        if(typeof memoPreviewActualizar==='function')memoPreviewActualizar();
+        const nota=document.createElement('div');
+        nota.className='chat-msg chat-msg-bot';
+        nota.innerHTML='✅ <b>Texto insertado</b> en el cuerpo del memorándum. Puedes editarlo directamente ahí.';
+        messages.appendChild(nota);
+      }
+    }
     if(actions.length){
       actions.forEach(action=>{
         const wrap=document.createElement('div');
@@ -13744,7 +13811,7 @@ function efic_htmlFormato(){
   const chkSi=e.atendido==='si'?'✓':'☐', chkNo=e.atendido==='no'?'✓':'☐';
   const sigLine='<br><br><span style="display:block;border-top:1px solid #111;margin-top:28px;font-size:9pt;color:#555">Nombre y Firma</span>';
   const _tit='VERIFICACION DE LA EFICACIA DE<br>ACCIONES CORRECTIVAS';
-  const _cod='R-93/04'; const _rv=docVersion('R-93/04','00'); const _tot=2;
+  const _cod='R-93/04'; const _rv=docVersion('R-93/04','00');
   // ── Página 1: contenido del formulario ──
   const pg1=
   '<table class="fmt-table"><tr><th colspan="6" class="fmt-gray">DESCRIPCION DE HALLAZGO</th></tr>'+
@@ -13760,15 +13827,23 @@ function efic_htmlFormato(){
   '<div style="margin-top:12px;font-size:10pt"><b>RESPONSABLE DEL &Aacute;REA (Nombre y firma):</b><br><br>'+esc(e.responsable_area||'')+'<br><span style="display:inline-block;border-top:1px solid #111;margin-top:24px;min-width:220px;font-size:9pt;color:#555">Nombre y Firma</span></div>'+
   '<div style="margin-top:14px;font-size:10pt;font-weight:700">VERIFICACI&Oacute;N DEL ADMINISTRADOR DE LA CALIDAD</div>'+
   '<div style="margin-top:6px;font-size:10pt">&iquest;Se atendieron las no conformidades conforme a lo planificado? &nbsp;&nbsp; <b>S&iacute;</b> ('+chkSi+') &nbsp;&nbsp; <b>No</b> ('+chkNo+')</div>'+
-  '<table class="fmt-table" style="margin-top:8px"><tr><th class="fmt-gray">Observaciones generales</th></tr>'+
-  '<tr><td style="min-height:3em;padding:8px">'+esc(e.obs||'')+'</td></tr></table>';
+  '<div style="break-inside:avoid;page-break-inside:avoid"><table class="fmt-table" style="margin-top:8px"><tr><th class="fmt-gray">Observaciones generales</th></tr>'+
+  '<tr><td style="min-height:3em;padding:8px">'+esc(e.obs||'')+'</td></tr></table></div>';
   // ── Página 2: firmas ──
   const pg2=
   '<table class="fmt-table" style="margin-top:8px">'+
   '<tr><td style="width:50%;text-align:center;padding:24px 12px"><b>Director (Nombre y firma):</b>'+sigLine+esc(e.director||'')+'</td>'+
   '<td style="text-align:center;padding:24px 12px"><b>Administrador de la Calidad (Nombre y firma):</b>'+sigLine+esc(e.admin_calidad||'')+'</td></tr></table>';
-  return '<div class="fmt-doc">'+fmtHead(_tit,_cod,_rv,'',1,_tot)+pg1+'</div>'+
-         '<div class="fmt-doc" style="page-break-before:always">'+fmtHead(_tit,_cod,_rv,'',2,_tot)+pg2+'</div>';
+  const headHtml=fmtHead(_tit,_cod,_rv,'','','');
+  return '<div class="fmt-doc" style="min-height:0">'+
+    '<table style="width:100%;border-collapse:collapse;border:none">'+
+      '<thead><tr><td style="padding:0;border:none">'+headHtml+'</td></tr></thead>'+
+      '<tbody>'+
+        '<tr><td style="padding:0;border:none">'+pg1+'</td></tr>'+
+        '<tr><td style="padding:0;border:none"><div style="break-inside:avoid;page-break-inside:avoid">'+pg2+'</div></td></tr>'+
+      '</tbody>'+
+    '</table>'+
+  '</div>';
 }
 window.efic_vistaPrevia=function(){activarVistaFormato('efic-preview',efic_htmlFormato());};
 // Abre en ventana nueva con CSS que repite encabezado y numera páginas
