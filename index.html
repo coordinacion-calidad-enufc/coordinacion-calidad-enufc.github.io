@@ -2925,8 +2925,8 @@ Coordinacion de Calidad</textarea>
         <div id="rev-panel-prog" class="rev-tab-panel">
           <div class="rev-form-grid">
             <div>
-              <label class="rev-label">Semestre / Período</label>
-              <input type="text" id="rev-semestre" class="rev-input" placeholder="Ej. 1er Semestre 2025">
+              <label class="rev-label">Ciclo Escolar</label>
+              <input type="text" id="rev-semestre" class="rev-input" placeholder="Ej. 2025-2026">
             </div>
             <div>
               <label class="rev-label">Fecha</label>
@@ -3383,6 +3383,10 @@ Coordinacion de Calidad</textarea>
       <div style="position:relative;height:240px"><canvas id="chart-comp-ce"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:16px">
+      <h3 style="font-size:13px;margin-bottom:10px">Ficha R-91/01 — Titulación</h3>
+      <div style="position:relative;height:240px"><canvas id="chart-comp-tit"></canvas></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
       <h3 style="font-size:13px;margin-bottom:10px">Encuesta R-91/02 — Docentes</h3>
       <div style="position:relative;height:240px"><canvas id="chart-comp-doc"></canvas></div>
     </div>
@@ -3696,6 +3700,10 @@ Coordinacion de Calidad</textarea>
     <button class="btn btn-primary" onclick="provListaNuevo()">+ Nuevo proveedor</button>
     <button class="btn btn-outline" onclick="provListaImprimir()">🖨 Imprimir R-84-01</button>
     <input id="prov-lista-buscar" type="text" placeholder="Buscar proveedor…" oninput="provListaRender()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;min-width:200px;flex:1">
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <label style="font-size:13px;color:var(--muted);white-space:nowrap">Aprobado por:</label>
+    <input id="pl-aprobado" type="text" value="Mtro. Samir Gómez Calderón" placeholder="Nombre del responsable" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;min-width:260px;flex:1">
   </div>
 
   <!-- Tabla -->
@@ -9659,8 +9667,20 @@ function renderDashboardMejorado(){
     const accTotal=(accionesPend+accionesCerr)||1;
     const accPct=Math.round((accionesCerr/accTotal)*100);
     const contar=(arr,fn)=>arr.reduce((m,x)=>{const k=fn(x)||'Sin dato';m[k]=(m[k]||0)+1;return m;},{});
-    const ncArea=contar(ncList,n=>(n.area_numeral||'').split('/')[0].trim());
-    const ncTipo=contar(ncList,n=>({mayor:'Mayor',menor:'Menor',obs:'Observación',op:'Oportunidad'}[n.tipo]||n.tipo));
+    const getOrigen=nc=>nc.origenes?.[0]||'sin_origen';
+    const getArea=n=>(n.area_numeral||'').split('/')[0].trim();
+    const getTipoLabel=n=>({mayor:'Mayor',menor:'Menor',obs:'Observación',op:'Oportunidad'}[n.tipo]||n.tipo);
+    const ncInt=ncList.filter(nc=>getOrigen(nc)==='int');
+    const ncExt=ncList.filter(nc=>getOrigen(nc)==='ext');
+    const ncOtros=ncList.filter(nc=>!['int','ext'].includes(getOrigen(nc)));
+    const ncArea=contar(ncList,getArea);
+    const ncAreaInt=contar(ncInt,getArea);
+    const ncAreaExt=contar(ncExt,getArea);
+    const ncAreaOtros=contar(ncOtros,getArea);
+    const ncTipo=contar(ncList,getTipoLabel);
+    const ncTipoInt=contar(ncInt,getTipoLabel);
+    const ncTipoExt=contar(ncExt,getTipoLabel);
+    const ncTipoOtros=contar(ncOtros,getTipoLabel);
     const recordatorios=acciones.map(a=>({...a,vence:parseFechaRecordatorio(a.fecha_rev)})).filter(a=>a.vence&&a.cumplio!=='si').map(a=>{
       const diff=Math.ceil((a.vence-hoyD)/86400000);return {...a,dias:diff};
     }).filter(a=>a.dias<=15).sort((a,b)=>a.dias-b.dias).slice(0,8);
@@ -9674,12 +9694,16 @@ function renderDashboardMejorado(){
     const tipoKeys=Object.keys(ncTipo);
 
     // NC trend por semestre
-    const ncSem={};
+    const ncSem={};const ncSemInt={};const ncSemExt={};const ncSemOtros={};
     ncList.forEach(nc=>{
       const f=nc.fecha||'';const yr=f.substring(0,4);const mo=parseInt(f.substring(5,7));
       if(!yr)return;
       const sem=(mo>=8||mo===0)?`Ago-Ene ${yr}/${String(parseInt(yr)+1).slice(-2)}`:`Feb-Jul ${yr}`;
       ncSem[sem]=(ncSem[sem]||0)+1;
+      const orig=getOrigen(nc);
+      if(orig==='int'){ncSemInt[sem]=(ncSemInt[sem]||0)+1;}
+      else if(orig==='ext'){ncSemExt[sem]=(ncSemExt[sem]||0)+1;}
+      else{ncSemOtros[sem]=(ncSemOtros[sem]||0)+1;}
     });
     const semKeys=Object.keys(ncSem).sort((a,b)=>{
       const yA=parseInt(a.slice(-4)||a.slice(-7,a.indexOf('/')));
@@ -9687,6 +9711,9 @@ function renderDashboardMejorado(){
       if(yA!==yB)return yA-yB;return a.startsWith('Feb')?-1:1;
     });
     const semData=semKeys.map(k=>ncSem[k]);
+    const semDataInt=semKeys.map(k=>ncSemInt[k]||0);
+    const semDataExt=semKeys.map(k=>ncSemExt[k]||0);
+    const semDataOtros=semKeys.map(k=>ncSemOtros[k]||0);
 
     // Indicadores últimos valores vs meta
     const medList=S.mediciones&&S.mediciones.length?S.mediciones:JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
@@ -9696,11 +9723,16 @@ function renderDashboardMejorado(){
       const fe=m.fecha||m.semestre||'';
       if(!indLatest[num]||fe>(indLatest[num].fecha||indLatest[num].semestre||''))indLatest[num]=m;
     });
-    const indItems=Object.values(indLatest).slice(0,8);
+    const indItems=Object.values(indLatest);
+    const _areaCorta=a=>(a||'').replace('Coordinación de Calidad','Coord. Calidad').replace('Subdirección Académica','Subdirección Acad.').replace('Control Escolar','Control Escolar');
     const indLabels=indItems.map(m=>{
       const num=String(m.indicador_numero||m.numero||'').padStart(2,'0');
       const n=m.indicador_nombre||INDICADORES_R44?.[num]?.nombre||('Ind.'+num);
-      return n.length>22?n.substring(0,20)+'…':n;
+      const area=_areaCorta(m.area||INDICADOR_AREA?.[num]||'');
+      const per=m.semestre||m.fecha||'';
+      const nameLabel=n.length>22?n.substring(0,20)+'…':n;
+      const subLabel=[area,per].filter(Boolean).join(' · ');
+      return subLabel?[nameLabel,subLabel]:nameLabel;
     });
     const indValues=indItems.map(m=>parseFloat(m.resultado??m.valor)||0);
     const indMetas=indItems.map(m=>{
@@ -9749,9 +9781,9 @@ function renderDashboardMejorado(){
         <h3>Tendencia de NC por período</h3>
         <div class="chart-canvas-wrap"><canvas id="chart-nc-trend"></canvas></div>
       </div>`:''}
-      ${indLabels.length?`<div class="chart-card">
+      ${indLabels.length?`<div class="chart-card chart-card-full">
         <h3>Indicadores — resultado vs meta</h3>
-        <div class="chart-canvas-wrap"><canvas id="chart-ind-meta"></canvas></div>
+        <div style="position:relative;height:${Math.max(260,indItems.length*36+80)}px"><canvas id="chart-ind-meta"></canvas></div>
       </div>`:''}
       <div class="chart-card chart-card-full"><h3>⏰ Acciones próximas a vencer (≤15 días)</h3>${remindersHtml}</div>
     `;
@@ -9765,17 +9797,23 @@ function renderDashboardMejorado(){
       if(document.getElementById('chart-acc-donut')){
         _chartInstances.accDonut=new Chart(document.getElementById('chart-acc-donut'),{type:'doughnut',data:{labels:['Concluidas','Pendientes'],datasets:[{data:[accionesCerr,accionesPend],backgroundColor:['#22C55E','#F59E0B'],borderWidth:0,hoverOffset:4}]},options:{responsive:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.label+': '+ctx.raw}}}}});
       }
+      const _mkDs=(label,data,color)=>({label,data,backgroundColor:color,borderRadius:4,borderSkipped:false});
+      const _legOpts={display:true,position:'top',labels:{font:{size:10},boxWidth:10,padding:8}};
+      const _scOpts={y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}};
       if(document.getElementById('chart-nc-area')){
-        _chartInstances.ncArea=new Chart(document.getElementById('chart-nc-area'),{type:'bar',data:{labels:areasKeys,datasets:[{label:'NC',data:areasKeys.map(k=>ncArea[k]),backgroundColor:COLORS.slice(0,areasKeys.length),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}});
+        const dsArea=[_mkDs('Aud. Interna',areasKeys.map(k=>ncAreaInt[k]||0),'#319795'),_mkDs('Aud. Externa',areasKeys.map(k=>ncAreaExt[k]||0),'#3730A3'),...(ncOtros.length?[_mkDs('Otros',areasKeys.map(k=>ncAreaOtros[k]||0),'#94A3B8')]:[])] ;
+        _chartInstances.ncArea=new Chart(document.getElementById('chart-nc-area'),{type:'bar',data:{labels:areasKeys,datasets:dsArea},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:_legOpts,tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} NC`}}},scales:_scOpts}});
       }
       if(document.getElementById('chart-nc-tipo')){
-        _chartInstances.ncTipo=new Chart(document.getElementById('chart-nc-tipo'),{type:'bar',data:{labels:tipoKeys,datasets:[{label:'NC',data:tipoKeys.map(k=>ncTipo[k]),backgroundColor:['#EF4444','#F59E0B','#6366F1','#14B8A6'],borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}});
+        const dsTipo=[_mkDs('Aud. Interna',tipoKeys.map(k=>ncTipoInt[k]||0),'#319795'),_mkDs('Aud. Externa',tipoKeys.map(k=>ncTipoExt[k]||0),'#3730A3'),...(ncOtros.length?[_mkDs('Otros',tipoKeys.map(k=>ncTipoOtros[k]||0),'#94A3B8')]:[])] ;
+        _chartInstances.ncTipo=new Chart(document.getElementById('chart-nc-tipo'),{type:'bar',data:{labels:tipoKeys,datasets:dsTipo},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:_legOpts,tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} NC`}}},scales:_scOpts}});
       }
-      if(document.getElementById('chart-nc-trend')&&semKeys.length>=2){
-        _chartInstances.ncTrend=new Chart(document.getElementById('chart-nc-trend'),{type:'bar',data:{labels:semKeys,datasets:[{label:'NC registradas',data:semData,backgroundColor:semData.map((_,i)=>COLORS[i%COLORS.length]),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw} NC`}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}});
+      if(document.getElementById('chart-nc-trend')&&semKeys.length>=1){
+        const dsTrend=[_mkDs('Aud. Interna',semDataInt,'#319795'),_mkDs('Aud. Externa',semDataExt,'#3730A3'),...(ncOtros.length?[_mkDs('Otros',semDataOtros,'#94A3B8')]:[])] ;
+        _chartInstances.ncTrend=new Chart(document.getElementById('chart-nc-trend'),{type:'bar',data:{labels:semKeys,datasets:dsTrend},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:_legOpts,tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} NC`}}},scales:_scOpts}});
       }
       if(document.getElementById('chart-ind-meta')&&indLabels.length){
-        _chartInstances.indMeta=new Chart(document.getElementById('chart-ind-meta'),{type:'bar',data:{labels:indLabels,datasets:[{label:'Resultado',data:indValues,backgroundColor:'#185FA5',borderRadius:4,borderSkipped:false,order:2},{label:'Meta',data:indMetas,type:'line',borderColor:'#EF4444',borderWidth:2,pointBackgroundColor:'#EF4444',pointRadius:5,fill:false,tension:0,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
+        _chartInstances.indMeta=new Chart(document.getElementById('chart-ind-meta'),{type:'bar',data:{labels:indLabels,datasets:[{label:'Resultado',data:indValues,backgroundColor:'#185FA5',borderRadius:4,borderSkipped:false,order:2},{label:'Meta',data:indMetas,type:'line',borderColor:'#EF4444',borderWidth:2,pointBackgroundColor:'#EF4444',pointRadius:5,fill:false,tension:0,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{title:ctx=>{const m=indItems[ctx[0].dataIndex];const num=String(m.indicador_numero||m.numero||'').padStart(2,'0');return m.indicador_nombre||INDICADORES_R44?.[num]?.nombre||('Ind.'+num);},label:ctx=>{const m=indItems[ctx.dataIndex];const num=String(m.indicador_numero||m.numero||'').padStart(2,'0');const area=m.area||INDICADOR_AREA?.[num]||'';const per=m.semestre||m.fecha||'';const lines=[`${ctx.dataset.label}: ${ctx.raw}%`];if(area)lines.push(`Área: ${area}`);if(per)lines.push(`Período: ${per}`);return lines;}}}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false},ticks:{font:{size:10},maxRotation:35}}}}});
       }
     },80);
   }
@@ -9810,9 +9848,8 @@ window.toggleChat=function(){
     const nota=document.getElementById('chat-api-note');
     if(nota)nota.style.display=apiKey?'none':'block';
     const sub=document.getElementById('chat-head-sub');
-    if(sub)sub.textContent=apiKey
-      ?(prov==='gemini'?'Google Gemini 1.5 Flash · Gratis':'Anthropic Claude Haiku')
-      :'⚠ Sin API Key — ve a Administrar';
+    const _provLabel={gemini:'Google Gemini 2.0 Flash · Gratis',groq:'Groq · Llama 3.3 70B · Gratis',openrouter:'OpenRouter · Llama 3.1 · Gratis',openai:'ChatGPT · GPT-4o mini',anthropic:'Anthropic Claude Haiku'};
+    if(sub)sub.textContent=apiKey?(_provLabel[prov]||prov):'⚠ Sin API Key — ve a Administrar';
     document.getElementById('chat-input').focus();
     // Refrescar datos de satisfacción silenciosamente para que el contexto esté actualizado
     satLoad().then(d=>{_satDataCache=d;}).catch(()=>{});
@@ -9969,10 +10006,13 @@ function chatGetContexto(userMsg){
       }).join('\n')
     :'  (sin proveedores registrados)';
 
+  const _jsnCtx=(v,fb)=>{try{return typeof v==='string'?JSON.parse(v):(v??fb);}catch(e){return fb;}};
   const provEvalDetalle=provEval.length
     ?provEval.map(r=>{
-        const crits=r.criterios?Object.entries(r.criterios).map(([k,v])=>`${k}:${v||'—'}`).join(' '):'—';
-        const reevals=(r.reevals||[]).map(rv=>`[${rv.fecha} ${rv.tipo} NC-L:${rv.nc_l||0} NC-G:${rv.nc_g||0} NC-MG:${rv.nc_mg||0} → ${rv.resultado}]`).join(' ');
+        const _crit=_jsnCtx(r.criterios,{});
+        const _reev=_jsnCtx(r.reevals,[]);
+        const crits=Object.keys(_crit).length?Object.entries(_crit).map(([k,v])=>`${k}:${v||'—'}`).join(' '):'—';
+        const reevals=Array.isArray(_reev)?_reev.map(rv=>`[${rv.fecha} ${rv.tipo} NC-L:${rv.nc_l||0} NC-G:${rv.nc_g||0} NC-MG:${rv.nc_mg||0} → ${rv.resultado}]`).join(' '):'';
         return `  • ${r.proveedor} | Producto: ${r.producto} | Tipo: ${r.tipo||'—'} | Fecha: ${r.fecha||'—'}\n    Puntos: ${r.total_pts||0}/${(leerProvEval(),8*5)} | Porcentaje: ${r.porcentaje||0}% | Resultado: ${r.resultado||'—'}\n    Criterios: ${crits}\n    Reevaluaciones: ${reevals||'ninguna'} | Firmó: ${r.firma||'—'}`;
       }).join('\n')
     :'  (sin evaluaciones registradas)';
@@ -10563,6 +10603,45 @@ Cuando el usuario pida GENERAR o SUGERIR OBJETIVOS DE CALIDAD (R-62/01), DEBES i
 {"tipo":"objetivos","campos":{"periodo":"Ciclo escolar 2025-2026","objetivos":["Objetivo SMART 1 con meta y plazo","Objetivo SMART 2 con meta y plazo"]}}
 </sgc-action>
 REGLAS para objetivos: cada objetivo debe ser SMART (específico, medible, alcanzable, relevante, temporal), alineado a la política de calidad y a los indicadores R-44. Genera de 3 a 6 objetivos.`;
+}
+
+/* ── Contexto compacto para proveedores con límite de tokens (Groq, OpenRouter) ── */
+function chatGetContextoCorto(userMsg){
+  const hoy=new Date().toISOString().split('T')[0];
+  const ncList=JSON.parse(localStorage.getItem('sgc_nc')||'[]');
+  const ncAbiertas=ncList.filter(n=>n.estado==='abierta'||n.estado==='en_proceso').length;
+  const ncCerradas=ncList.filter(n=>n.estado==='cerrada'||n.estado==='cerrado').length;
+  const planList=JSON.parse(localStorage.getItem('sgc_planes')||'[]');
+  const accPend=planList.flatMap(p=>[...(p.items?.mayor||[]),...(p.items?.menor||[]),...(p.items?.obs||[]),...(p.items?.op||[])]).filter(a=>a.cumplio!=='si').length;
+  const mediciones=(S.mediciones&&S.mediciones.length)?S.mediciones:JSON.parse(localStorage.getItem('sgc_mediciones')||'[]');
+  const provEval=leerProvEval();
+  const provLista=leerProvLista();
+  const revList=leerRevision();
+  const eficaciaList=leerEficacia();
+  return `Eres QualiRAR, Auditor Líder ISO 9001:2015 del SGC de la ENUFC (Escuela Normal Urbana Federal Cuautla, Morelos, México). Respondes en español, con rigor técnico y tono profesional.
+
+INSTITUCIÓN: ENUFC — formadora de docentes de educación básica. Áreas: Dirección, Subdirección Académica, Docencia, Control Escolar, Coordinación de Calidad.
+FECHA: ${hoy} | Coordinador: ${S.config?.auditor_lider||'Mtro. Roberto Carlos Aguilar Pedroza'}
+
+RESUMEN SGC:
+- NC: ${ncAbiertas} abiertas | ${ncCerradas} cerradas | ${ncList.length} total
+- Acciones pendientes: ${accPend} | Mediciones: ${mediciones.length}
+- Proveedores aprobados: ${provLista.length} | Evaluaciones: ${provEval.length}
+- Revisiones por la Dirección: ${revList.length} | Verificaciones eficacia: ${eficaciaList.length}
+${ncAbiertas>0?`\nNC ABIERTAS RECIENTES:\n${ncList.filter(n=>n.estado==='abierta'||n.estado==='en_proceso').slice(0,5).map(n=>`  • N°${n.numero||'s/n'} | ${n.tipo||'?'} | Área: ${n.area_numeral||n.area||'?'} | ${n.descripcion?.slice(0,80)||'—'}`).join('\n')}`:''}
+
+REGLAS:
+• Cita siempre el numeral ISO 9001:2015 aplicable.
+• Diferencia: NC mayor / NC menor / Observación / Oportunidad de mejora.
+• Propón acciones correctivas realistas con evidencias verificables.
+• Usa terminología ISO: evidencia objetiva, criterio de auditoría, hallazgo, parte interesada.
+• NUNCA des respuestas genéricas — siempre basadas en el contexto del SGC de la ENUFC.
+
+ACCIONES EN LA APP (incluye el bloque <sgc-action> cuando el usuario pida capturar/generar):
+Para NC: {"tipo":"nc","campos":{"descripcion":"...","tipo":"mayor|menor|obs|op","area_numeral":"Área / X.X.X","correccion":"...","causa_raiz_desc":"...","responsable_area":"...","fecha":"AAAA-MM-DD"}}
+Para eficacia: {"tipo":"eficacia","campos":{"num_registro":"...","tipo_hallazgo":"...","numeral":"...","area":"...","semestre":"...","descripcion":"...","acciones":[{"comprometida":"...","fecha_comp":"...","fecha_real":"...","realizada":"..."}],"evidencia":"...","atendido":"si|no","obs":"..."}}
+Para plan acción: {"tipo":"plan-accion","campos":{"semestre":"...","obs_general":"...","items":[{"tipo":"mayor|menor|obs|op","numeral":"...","situacion":"...","accion":"...","fecha_rev":"..."}]}}
+Envuelve el JSON en <sgc-action>...</sgc-action> al final de tu respuesta.`;
 }
 
 /* ── Parser de acciones estructuradas del chat ── */
@@ -11378,6 +11457,27 @@ window.chatEnviar=async function(){
       if(!geminiData)throw new Error('⚠️ Los modelos de Gemini no están disponibles en este momento (503). Espera unos minutos e intenta de nuevo.');
       respText=geminiData.candidates?.[0]?.content?.parts?.[0]?.text||'Sin respuesta.';
 
+    }else if(['openai','groq','openrouter'].includes(proveedor)){
+      // ── OpenAI-compatible (OpenAI / Groq / OpenRouter) ───────
+      const _cfg={
+        openai:    {url:'https://api.openai.com/v1/chat/completions',      model:'gpt-4o-mini',                           headers:{},    maxTokens:4096, histLen:10, ctxFn:chatGetContexto},
+        groq:      {url:'https://api.groq.com/openai/v1/chat/completions', model:'llama-3.3-70b-versatile',               headers:{},    maxTokens:2048, histLen:5,  ctxFn:chatGetContextoCorto},
+        openrouter:{url:'https://openrouter.ai/api/v1/chat/completions',   model:'google/gemma-2-9b-it:free', models:['google/gemma-2-9b-it:free','meta-llama/llama-3.1-8b-instruct:free','mistralai/mistral-7b-instruct:free'], headers:{'HTTP-Referer':window.location.origin||'https://sgc.enufc.mx','X-Title':'QualiRAR SGC ENUFC'}, maxTokens:2048, histLen:5, ctxFn:chatGetContextoCorto}
+      }[proveedor];
+      const _models=_cfg.models||[_cfg.model];
+      const _body=model=>JSON.stringify({model,max_tokens:_cfg.maxTokens,temperature:0.7,
+        messages:[{role:'system',content:_cfg.ctxFn(texto)},..._chatHistory.slice(-_cfg.histLen)]});
+      let _lastErr='',_found=false;
+      for(const model of _models){
+        const resp=await fetch(_cfg.url,{method:'POST',
+          headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json',..._cfg.headers},
+          body:_body(model)});
+        const data=await resp.json();
+        if(data.error){_lastErr=data.error.message||JSON.stringify(data.error);continue;}
+        respText=data.choices?.[0]?.message?.content||'Sin respuesta.';
+        _found=true;break;
+      }
+      if(!_found)throw new Error(_lastErr||'Sin respuesta de '+proveedor);
     }else{
       // ── Anthropic Claude ─────────────────────────────────────
       const resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -11452,31 +11552,33 @@ function renderAdminIA(){
 
     <!-- Selector de proveedor -->
     <label class="lbl">Proveedor de IA</label>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px" id="ia-prov-grid">
-      <div class="ia-prov-opt${savedProv==='gemini'?' ia-prov-sel':''}" onclick="selProvIA('gemini')" id="prov-gemini" style="border:1.5px solid ${savedProv==='gemini'?'var(--blue)':'var(--border)'};border-radius:12px;padding:12px 14px;cursor:pointer;transition:border-color .15s;background:${savedProv==='gemini'?'var(--blue-light)':'var(--surface)'}">
-        <div style="font-size:18px;margin-bottom:4px">🆓</div>
-        <div style="font-size:13px;font-weight:600">Google Gemini</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Gratuito · Gemini 1.5 Flash</div>
-        <div style="margin-top:6px"><span class="badge badge-ok" style="font-size:10px">Recomendado</span></div>
-      </div>
-      <div class="ia-prov-opt${savedProv==='anthropic'?' ia-prov-sel':''}" onclick="selProvIA('anthropic')" id="prov-anthropic" style="border:1.5px solid ${savedProv==='anthropic'?'var(--blue)':'var(--border)'};border-radius:12px;padding:12px 14px;cursor:pointer;transition:border-color .15s;background:${savedProv==='anthropic'?'var(--blue-light)':'var(--surface)'}">
-        <div style="font-size:18px;margin-bottom:4px">🧠</div>
-        <div style="font-size:13px;font-weight:600">Anthropic Claude</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">De pago · Claude Haiku</div>
-        <div style="margin-top:6px"><span class="badge badge-mid" style="font-size:10px">Pago</span></div>
-      </div>
+    <div style="font-size:11px;font-weight:600;color:var(--green);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">🆓 Gratuitos</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px" id="ia-prov-grid">
+      ${['gemini','groq','openrouter'].map(p=>{
+        const sel=savedProv===p;
+        const info={gemini:['🆓','Google Gemini','Gemini 2.0 Flash','Recomendado','badge-ok'],groq:['⚡','Groq','Llama 3.3 70B · Rápido','Muy rápido','badge-ok'],openrouter:['🔀','OpenRouter','Llama 3.1 · multi-modelo','Varios modelos','badge-ok']}[p];
+        return `<div onclick="selProvIA('${p}')" id="prov-${p}" style="border:1.5px solid ${sel?'var(--blue)':'var(--border)'};border-radius:12px;padding:12px 14px;cursor:pointer;transition:border-color .15s;background:${sel?'var(--blue-light)':'var(--surface)'}"><div style="font-size:18px;margin-bottom:4px">${info[0]}</div><div style="font-size:13px;font-weight:600">${info[1]}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${info[2]}</div><div style="margin-top:6px"><span class="badge ${info[4]}" style="font-size:10px">${info[3]}</span></div></div>`;
+      }).join('')}
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">💳 De pago</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">
+      ${['openai','anthropic'].map(p=>{
+        const sel=savedProv===p;
+        const info={openai:['🟢','ChatGPT (OpenAI)','GPT-4o mini','Estable','badge-mid'],anthropic:['🧠','Anthropic Claude','Claude Haiku','Pago','badge-mid']}[p];
+        return `<div onclick="selProvIA('${p}')" id="prov-${p}" style="border:1.5px solid ${sel?'var(--blue)':'var(--border)'};border-radius:12px;padding:12px 14px;cursor:pointer;transition:border-color .15s;background:${sel?'var(--blue-light)':'var(--surface)'}"><div style="font-size:18px;margin-bottom:4px">${info[0]}</div><div style="font-size:13px;font-weight:600">${info[1]}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${info[2]}</div><div style="margin-top:6px"><span class="badge ${info[4]}" style="font-size:10px">${info[3]}</span></div></div>`;
+      }).join('')}
     </div>
 
     <!-- Instrucciones dinámicas -->
     <div id="ia-instrucciones" style="background:var(--blue-light);border:0.5px solid #85B7EB;border-radius:var(--radius);padding:12px 14px;font-size:12.5px;color:var(--blue);line-height:1.7;margin-bottom:14px">
-      ${savedProv==='gemini'?_iaInstrGemini():_iaInstrAnthropic()}
+      ${{gemini:_iaInstrGemini(),groq:_iaInstrGroq(),openrouter:_iaInstrOpenRouter(),openai:_iaInstrOpenAI(),anthropic:_iaInstrAnthropic()}[savedProv]||_iaInstrGemini()}
     </div>
 
     <!-- Campo API Key -->
     <label class="lbl">API Key</label>
     <div class="input-row" style="margin-bottom:6px">
       <input type="password" id="ia-api-key"
-        placeholder="${savedProv==='gemini'?'AIzaSy...':'sk-ant-api03-...'}"
+        placeholder="${{gemini:'AIzaSy...',groq:'gsk_...',openrouter:'sk-or-v1-...',openai:'sk-...',anthropic:'sk-ant-...'}[savedProv]||'API Key...'}"
         value="${esc(savedKey)}"
         style="font-family:monospace;font-size:13px;letter-spacing:.03em">
       <button class="btn btn-sm" id="ia-toggle-vis" onclick="iaToggleVer()" style="flex-shrink:0;min-width:44px">👁</button>
@@ -11489,7 +11591,7 @@ function renderAdminIA(){
     <!-- Estado actual -->
     <div style="margin-top:10px;font-size:12px;color:var(--muted)">
       Estado: <strong id="ia-estado-txt">${savedKey?'✅ API Key configurada':'⚠ Sin configurar'}</strong>
-      &nbsp;·&nbsp; Proveedor activo: <strong id="ia-prov-txt">${savedProv==='gemini'?'Google Gemini (Gratis)':'Anthropic Claude'}</strong>
+      &nbsp;·&nbsp; Proveedor activo: <strong id="ia-prov-txt">${{gemini:'Google Gemini (Gratis)',groq:'Groq · Llama 3.3 (Gratis)',openrouter:'OpenRouter (Gratis)',openai:'ChatGPT / GPT-4o mini',anthropic:'Anthropic Claude'}[savedProv]||savedProv}</strong>
     </div>`;
 }
 
@@ -11514,24 +11616,61 @@ function _iaInstrAnthropic(){
   5️⃣ Pégala abajo y haz clic en <strong>Guardar</strong><br>
   <span style="opacity:.75">💡 Usa Claude Haiku para costos bajos (~$0.003 por consulta).</span>`;
 }
+function _iaInstrOpenAI(){
+  return `<strong>Cómo obtener tu API Key de OpenAI (ChatGPT):</strong><br>
+  1️⃣ Ve a <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue)">platform.openai.com/api-keys</a><br>
+  2️⃣ Inicia sesión o crea una cuenta<br>
+  3️⃣ Haz clic en <strong>"Create new secret key"</strong><br>
+  4️⃣ Copia la clave (empieza con <code style="background:rgba(0,0,0,.07);padding:1px 5px;border-radius:3px">sk-...</code>)<br>
+  5️⃣ Pégala abajo y haz clic en <strong>Guardar</strong><br>
+  <div style="margin-top:6px;padding:7px 10px;background:#FEF3C7;border-radius:7px;font-size:12px;color:#92400E">
+    ⚠️ Requiere saldo en tu cuenta de OpenAI. El modelo <strong>GPT-4o mini</strong> es muy económico (~$0.002 por consulta).
+  </div>
+  <span style="opacity:.75;font-size:12px">✅ Muy estable y con baja latencia.</span>`;
+}
+function _iaInstrGroq(){
+  return `<strong>Cómo obtener tu API Key de Groq (GRATIS):</strong><br>
+  1️⃣ Ve a <a href="https://console.groq.com/keys" target="_blank" style="color:var(--blue)">console.groq.com/keys</a><br>
+  2️⃣ Inicia sesión o crea una cuenta (solo correo, sin tarjeta)<br>
+  3️⃣ Haz clic en <strong>"Create API Key"</strong><br>
+  4️⃣ Copia la clave (empieza con <code style="background:rgba(0,0,0,.07);padding:1px 5px;border-radius:3px">gsk_...</code>)<br>
+  5️⃣ Pégala abajo y haz clic en <strong>Guardar</strong><br>
+  <div style="margin-top:6px;padding:7px 10px;background:#D1FAE5;border-radius:7px;font-size:12px;color:#065F46">
+    ✅ <strong>100% gratuito.</strong> Usa <strong>Llama 3.3 70B</strong> — uno de los mejores modelos open-source, con latencia muy baja (~1-2s).
+  </div>
+  <span style="opacity:.75;font-size:12px">📊 Cuota: 14,400 req/día · 6,000 tokens/min · 30 req/min.</span>`;
+}
+function _iaInstrOpenRouter(){
+  return `<strong>Cómo obtener tu API Key de OpenRouter (GRATIS):</strong><br>
+  1️⃣ Ve a <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--blue)">openrouter.ai/keys</a><br>
+  2️⃣ Inicia sesión (con Google o correo, sin tarjeta)<br>
+  3️⃣ Haz clic en <strong>"Create Key"</strong><br>
+  4️⃣ Copia la clave (empieza con <code style="background:rgba(0,0,0,.07);padding:1px 5px;border-radius:3px">sk-or-v1-...</code>)<br>
+  5️⃣ Pégala abajo y haz clic en <strong>Guardar</strong><br>
+  <div style="margin-top:6px;padding:7px 10px;background:#D1FAE5;border-radius:7px;font-size:12px;color:#065F46">
+    ✅ <strong>Gratuito.</strong> Usa <strong>Llama 3.1 8B</strong> por defecto. OpenRouter ofrece acceso a más de 20 modelos gratuitos distintos.
+  </div>
+  <span style="opacity:.75;font-size:12px">💡 Si la respuesta tarda, es porque el modelo gratuito está saturado — intenta de nuevo.</span>`;
+}
 
 window.selProvIA=function(prov){
   localStorage.setItem('sgc_ia_proveedor',prov);
-  // Actualizar tarjetas visuales
-  ['gemini','anthropic'].forEach(p=>{
+  const _instrs={gemini:_iaInstrGemini,groq:_iaInstrGroq,openrouter:_iaInstrOpenRouter,openai:_iaInstrOpenAI,anthropic:_iaInstrAnthropic};
+  const _placeholders={gemini:'AIzaSy...',groq:'gsk_...',openrouter:'sk-or-v1-...',openai:'sk-...',anthropic:'sk-ant-...'};
+  const _labels={gemini:'Google Gemini (Gratis)',groq:'Groq · Llama 3.3 (Gratis)',openrouter:'OpenRouter (Gratis)',openai:'ChatGPT / GPT-4o mini',anthropic:'Anthropic Claude'};
+  ['gemini','groq','openrouter','openai','anthropic'].forEach(p=>{
     const el=document.getElementById('prov-'+p);
     if(!el)return;
     const sel=p===prov;
     el.style.borderColor=sel?'var(--blue)':'var(--border)';
     el.style.background=sel?'var(--blue-light)':'var(--surface)';
   });
-  // Actualizar instrucciones y placeholder
   const instr=document.getElementById('ia-instrucciones');
-  if(instr)instr.innerHTML=prov==='gemini'?_iaInstrGemini():_iaInstrAnthropic();
+  if(instr)instr.innerHTML=(_instrs[prov]||_instrs.gemini)();
   const keyInput=document.getElementById('ia-api-key');
-  if(keyInput)keyInput.placeholder=prov==='gemini'?'AIzaSy...':'sk-ant-api03-...';
+  if(keyInput)keyInput.placeholder=_placeholders[prov]||'API Key...';
   const provTxt=document.getElementById('ia-prov-txt');
-  if(provTxt)provTxt.textContent=prov==='gemini'?'Google Gemini (Gratis)':'Anthropic Claude';
+  if(provTxt)provTxt.textContent=_labels[prov]||prov;
 };
 
 window.iaToggleVer=function(){
@@ -11545,34 +11684,49 @@ window.probarIAKey=async function(){
   if(!key){if(msgEl)msgEl.innerHTML='<span style="color:var(--red)">Escribe o guarda tu API Key primero.</span>';return;}
   if(msgEl)msgEl.innerHTML='<span style="color:var(--muted)">Probando conexión…</span>';
   const prov=localStorage.getItem('sgc_ia_proveedor')||'gemini';
-  if(prov==='gemini'){
-    try{
-      // 1. Verificar que la clave es válida obteniendo lista de modelos
+  const ok=html=>`<div style="color:#065F46;background:#D1FAE5;padding:8px 10px;border-radius:8px;font-size:12.5px">${html}</div>`;
+  const err=html=>`<div style="color:var(--red);background:#FEE2E2;padding:8px 10px;border-radius:8px;font-size:12.5px">${html}</div>`;
+  try{
+    if(prov==='gemini'){
       const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
       const d=await r.json();
       if(d.error){
         const m=d.error.message||'';
-        if(msgEl)msgEl.innerHTML=`<div style="color:var(--red);background:#FEE2E2;padding:8px 10px;border-radius:8px;font-size:12.5px">❌ ${esc(m)}<br><br><strong>Solución:</strong> Crea una clave nueva en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--blue)">aistudio.google.com/app/apikey</a> seleccionando <em>Crear proyecto nuevo</em>.</div>`;
+        if(msgEl)msgEl.innerHTML=err(`❌ ${esc(m)}<br><br><strong>Solución:</strong> Crea una clave en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--blue)">aistudio.google.com/app/apikey</a> (no en Google Cloud).`);
         return;
       }
-      // 2. Filtrar modelos que soportan generateContent
       const modelos=(d.models||[]).filter(m=>m.supportedGenerationMethods?.includes('generateContent')).map(m=>m.name.replace('models/',''));
-      // Guardar en localStorage para usarlos en el chat
       if(modelos.length)localStorage.setItem('sgc_ia_gemini_models',JSON.stringify(modelos));
-      if(msgEl)msgEl.innerHTML=`<div style="color:#065F46;background:#D1FAE5;padding:8px 10px;border-radius:8px;font-size:12.5px">✅ Conexión correcta. Modelos disponibles: <strong>${modelos.slice(0,4).join(', ')}</strong>${modelos.length>4?' y '+(modelos.length-4)+' más':''}</div>`;
-    }catch(e){
-      if(msgEl)msgEl.innerHTML=`<span style="color:var(--red)">❌ ${esc(e.message)}</span>`;
-    }
-  }else{
-    // Anthropic: hacer un mensaje corto de prueba
-    try{
+      if(msgEl)msgEl.innerHTML=ok(`✅ Conexión correcta. Modelos: <strong>${modelos.slice(0,4).join(', ')}</strong>${modelos.length>4?' y '+(modelos.length-4)+' más':''}`);
+    }else if(prov==='anthropic'){
       const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:10,messages:[{role:'user',content:'hola'}]})});
       const d=await r.json();
       if(d.error)throw new Error(d.error.message||JSON.stringify(d.error));
-      if(msgEl)msgEl.innerHTML='<div style="color:#065F46;background:#D1FAE5;padding:8px 10px;border-radius:8px;font-size:12.5px">✅ Conexión con Anthropic Claude correcta.</div>';
-    }catch(e){
-      if(msgEl)msgEl.innerHTML=`<span style="color:var(--red)">❌ ${esc(e.message)}</span>`;
+      if(msgEl)msgEl.innerHTML=ok('✅ Conexión con Anthropic Claude correcta.');
+    }else{
+      // OpenAI / Groq / OpenRouter — API compatible
+      const _ref=window.location.origin||'https://sgc.enufc.mx';
+      const _cfg={
+        openai:    {url:'https://api.openai.com/v1/chat/completions',      models:['gpt-4o-mini'],                        headers:{}},
+        groq:      {url:'https://api.groq.com/openai/v1/chat/completions', models:['llama-3.3-70b-versatile','llama3-70b-8192','llama-3.1-8b-instant'], headers:{}},
+        openrouter:{url:'https://openrouter.ai/api/v1/chat/completions',   models:['google/gemma-2-9b-it:free','meta-llama/llama-3.1-8b-instruct:free','mistralai/mistral-7b-instruct:free','openchat/openchat-7b:free'], headers:{'HTTP-Referer':_ref,'X-Title':'QualiRAR SGC ENUFC'}}
+      }[prov]||{url:'https://api.openai.com/v1/chat/completions',models:['gpt-4o-mini'],headers:{}};
+      let lastErr='';
+      for(const model of _cfg.models){
+        const r=await fetch(_cfg.url,{method:'POST',
+          headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json',..._cfg.headers},
+          body:JSON.stringify({model,max_tokens:10,temperature:0,messages:[{role:'user',content:'hola'}]})
+        });
+        const d=await r.json();
+        if(d.error){lastErr=d.error.message||JSON.stringify(d.error);continue;}
+        const modelo=d.model||model;
+        if(msgEl)msgEl.innerHTML=ok(`✅ Conexión correcta. Modelo: <strong>${esc(modelo)}</strong>`);
+        lastErr='';break;
+      }
+      if(lastErr)throw new Error(lastErr);
     }
+  }catch(e){
+    if(msgEl)msgEl.innerHTML=err(`❌ ${esc(e.message)}`);
   }
 };
 
@@ -14136,7 +14290,8 @@ function renderR7503(){
     // Filtrar áreas para usuarios de área
     if(areaIdsVisibles&&!areaIdsVisibles.includes(area.id))continue;
 
-    const recs=data[area.id]||[];
+    const _parseCode=c=>{const m=(c||'').match(/(\d+)(?:\/(\d+))?$/);return m?[parseInt(m[1]||0),parseInt(m[2]||0)]:[0,0];};
+    const recs=(data[area.id]||[]).slice().sort((a,b)=>{const[a1,a2]=_parseCode(a.codigo);const[b1,b2]=_parseCode(b.codigo);return a1!==b1?a1-b1:a2-b2;});
     html+=`<div class="r75-area-block">
       <div class="r75-area-hdr" onclick="r75toggleArea('${area.id}')">
         <span>${area.label}</span>
@@ -15783,17 +15938,17 @@ function revImprimirPrograma(){
       <div class="fmt-title">PROGRAMA DE SEGUIMIENTO DE LA EFICACIA DEL SGC</div>
       <div class="fmt-code">
         <strong>Código:</strong> R-93/01<br>
-        <strong>Rev:</strong> 00
+        <strong>Rev:</strong> 01
       </div>
     </div>
 
     <!-- ══ SUBTÍTULO ══ -->
-    <p class="subtitulo">Programa Semestral de Seguimiento a la Eficacia del Sistema de Gestión de la Calidad de la Escuela Normal Urbana Federal Cuautla.</p>
+    <p class="subtitulo">Programa Anual de Seguimiento a la Eficacia del Sistema de Gestión de la Calidad de la Escuela Normal Urbana Federal Cuautla.</p>
 
-    <!-- ══ TABLA PRINCIPAL: semestre / fecha / asistentes ══ -->
+    <!-- ══ TABLA PRINCIPAL: ciclo escolar / fecha / asistentes ══ -->
     <table>
       <tr>
-        <td class="lbl">Semestre a programar:</td>
+        <td class="lbl">Ciclo Escolar:</td>
         <td class="val">${esc(data.semestre)}</td>
       </tr>
       <tr>
@@ -15811,7 +15966,7 @@ function revImprimirPrograma(){
     </table>
 
     <!-- ══ CHECKLIST ══ -->
-    <p class="check-intro">Durante este semestre se evaluará <em>(Marque las opciones que correspondan)</em>:</p>
+    <p class="check-intro">Durante este ciclo escolar se evaluará <em>(Marque las opciones que correspondan)</em>:</p>
     <table>
       <tr>
         <th style="background:#d9d9d9;border:1px solid #555;padding:5px 12px;font-size:10.5pt;text-align:left">Actividad</th>
@@ -17342,7 +17497,7 @@ function satPeriodoSortKey(p){
 }
 
 async function satRenderComp(){
-  satClearCharts(['chart-comp-ce','chart-comp-doc','chart-comp-infra']);
+  satClearCharts(['chart-comp-ce','chart-comp-tit','chart-comp-doc','chart-comp-infra']);
   const compDiv=document.getElementById('sat-comp-deltas');
   const periodosDiv=document.getElementById('sat-comp-periodos');
   if(!compDiv)return;
@@ -17522,7 +17677,7 @@ async function satRenderComp(){
   }
 
   // Destruir charts anteriores
-  ['compCe','compDoc','compInfra'].forEach(k=>{if(_satCharts[k]){_satCharts[k].destroy();delete _satCharts[k];}});
+  ['compCe','compTit','compDoc','compInfra'].forEach(k=>{if(_satCharts[k]){_satCharts[k].destroy();delete _satCharts[k];}});
 
   const mkDs=(fields,rA,rB)=>[
     {label:p1,data:fields.map(f=>satAvg(rA,[f])??0),backgroundColor:'#3b82f688',borderColor:'#3b82f6',borderWidth:1.5,borderRadius:4},
@@ -17536,6 +17691,11 @@ async function satRenderComp(){
   if(ctxCe)_satCharts.compCe=new Chart(ctxCe,{type:'bar',
     data:{labels:['Inscripción','Reinscripción','Constancias','Credenciales','Dup. boleta','Boleta calif.'],
       datasets:mkDs(ceFields,fichaP1,fichaP2)},options:mkOpts});
+
+  const ctxTit=document.getElementById('chart-comp-tit');
+  if(ctxTit)_satCharts.compTit=new Chart(ctxTit,{type:'bar',
+    data:{labels:['Asesor de Tesis','Constancia Cursos','Carta Exposición'],
+      datasets:mkDs(titFields,fichaP1,fichaP2)},options:mkOpts});
 
   const ctxDoc=document.getElementById('chart-comp-doc');
   if(ctxDoc)_satCharts.compDoc=new Chart(ctxDoc,{type:'bar',
@@ -17716,21 +17876,15 @@ async function cargarProveedoresSupabase(){
       sb.from('prov_evaluacion').select('*').order('created_at',{ascending:true}),
       sb.from('prov_solicitud').select('*').order('created_at',{ascending:true})
     ]);
-    if(!rLista.error&&rLista.data?.length){
-      const remIds=new Set(rLista.data.map(r=>r.local_id||r.id));
-      const soloLocal=leerProvLista().filter(x=>!remIds.has(x.id));
-      guardarProvLista([...rLista.data.map(r=>({...r,id:r.local_id||r.id})),...soloLocal]);
-    }
-    if(!rEval.error&&rEval.data?.length){
-      const remIds=new Set(rEval.data.map(r=>r.local_id||r.id));
-      const soloLocal=leerProvEval().filter(x=>!remIds.has(x.id));
-      guardarProvEval([...rEval.data.map(r=>({...r,id:r.local_id||r.id})),...soloLocal]);
-    }
-    if(!rSol.error&&rSol.data?.length){
-      const remIds=new Set(rSol.data.map(r=>r.local_id||r.id));
-      const soloLocal=leerProvSol().filter(x=>!remIds.has(x.id));
-      guardarProvSol([...rSol.data.map(r=>({...r,id:r.local_id||r.id})),...soloLocal]);
-    }
+    const _sinDupes=(remData,leerFn,guardarFn)=>{
+      const remLocalIds=new Set(remData.map(r=>r.local_id).filter(Boolean));
+      const remUuids=new Set(remData.map(r=>r.id).filter(Boolean));
+      const soloLocal=leerFn().filter(x=>!remLocalIds.has(x.local_id)&&!remUuids.has(x.id));
+      guardarFn([...remData.map(r=>({...r,id:r.local_id||r.id})),...soloLocal]);
+    };
+    if(!rLista.error&&rLista.data?.length)_sinDupes(rLista.data,leerProvLista,guardarProvLista);
+    if(!rEval.error&&rEval.data?.length)_sinDupes(rEval.data,leerProvEval,guardarProvEval);
+    if(!rSol.error&&rSol.data?.length)_sinDupes(rSol.data,leerProvSol,guardarProvSol);
   }catch(e){console.warn('cargarProveedoresSupabase:',e);}
 }
 
@@ -17907,6 +18061,7 @@ async function provListaEliminar(lid){
 
 function provListaImprimir(){
   const rows=leerProvLista();
+  const aprobadoPor=document.getElementById('pl-aprobado')?.value||'Mtro. Samir Gómez Calderón';
   const logoSrc=document.querySelector('#login-screen img')?.src||'';
   const AÑOS=_provAñosVentana();
   const badge=v=>{
@@ -17924,10 +18079,10 @@ function provListaImprimir(){
     :Array(8).fill('<tr>'+'<td style="border:1px solid #aaa;padding:0;height:22px"></td>'.repeat(7)+'</tr>').join('');
   const thY=yr=>'<th style="background:#d9d9d9;color:#111;border:1px solid #aaa;padding:5px 4px;font-size:10pt;font-weight:700;text-align:center;width:8%">Año '+yr+'</th>';
   const css=`
-    @page{size:letter portrait;margin:.45in .5in}
+    @page{size:letter portrait;margin:.45in .5in .6in .5in;@bottom-center{content:"Página " counter(page) " de " counter(pages);font-size:9pt;font-family:Arial,Helvetica,sans-serif;color:#555}}
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,Helvetica,sans-serif;font-size:11pt;color:#111}
-    .fmt-head{display:grid;grid-template-columns:1.1in 1fr 1.45in;border:1px solid #555;min-height:.85in;margin-bottom:.18in;width:100%}
+    .fmt-head{display:grid;grid-template-columns:1.1in 1fr 1.45in;border:1px solid #555;min-height:.85in;width:100%}
     .fmt-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;padding:6px}
     .fmt-logo img{max-width:.75in;max-height:.75in;object-fit:contain}
     .fmt-title{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;text-align:center;font-size:11pt;color:#333;line-height:1.25;padding:8px 12px}
@@ -17935,28 +18090,26 @@ function provListaImprimir(){
     table{border-collapse:collapse;width:100%}
     @media print{body{margin:0}}`;
   const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-  <title>R-84-01 · Lista de Proveedores Aprobados · ENUFC</title>
+  <title>R-84/01 · Lista de Proveedores Aprobados · ENUFC</title>
   <style>${css}</style></head><body>
 
-  <!-- ══ ENCABEZADO INSTITUCIONAL ══ -->
-  <div class="fmt-head">
-    <div class="fmt-logo">${logoSrc?'<img src="'+logoSrc+'" alt="ENUFC">':''}</div>
-    <div class="fmt-title">Listado de Proveedores Aprobados</div>
-    <div class="fmt-code">
-      <strong>Código:</strong> R-84/01<br>
-      <strong>Página:</strong> 1 de 1<br>
-      <strong>Revisión:</strong> 00
+  <table style="width:100%;border-collapse:collapse">
+  <thead><tr><td style="padding:0 0 .18in 0;border:none">
+    <div class="fmt-head">
+      <div class="fmt-logo">${logoSrc?'<img src="'+logoSrc+'" alt="ENUFC">':''}</div>
+      <div class="fmt-title">Listado de Proveedores Aprobados</div>
+      <div class="fmt-code">
+        <strong>Código:</strong> R-84/01<br>
+        <strong>Revisión:</strong> 01<br>
+        <strong>Página:</strong> 1 de <span id="pg-total">1</span>
+      </div>
     </div>
-  </div>
+  </td></tr></thead>
+  <tbody><tr><td style="padding:0;border:none;vertical-align:top">
 
   <!-- ══ TÍTULO Y CAMPOS ══ -->
   <p style="text-align:center;font-weight:700;font-size:12pt;margin-bottom:.16in;text-transform:uppercase">Lista de Proveedores Aprobados</p>
-  <table style="margin-bottom:.14in">
-    <tr>
-      <td style="border:none;padding:3px 0;font-size:10pt;width:55%">Aprobado por: <span style="display:inline-block;border-bottom:1px solid #333;min-width:2.2in">&nbsp;</span></td>
-      <td style="border:none;padding:3px 0;font-size:10pt;text-align:right">Hoja ______ de ______</td>
-    </tr>
-  </table>
+  <p style="font-size:10pt;margin-bottom:.14in">Aprobado por: <strong>${esc(aprobadoPor)}</strong></p>
 
   <!-- ══ TABLA PRINCIPAL ══ -->
   <table>
@@ -17975,7 +18128,8 @@ function provListaImprimir(){
     <strong>Leyenda:</strong>&nbsp; P = Principal &nbsp;|&nbsp; S = Secundario &nbsp;|&nbsp; NA = No Aprobado
   </div>
 
-  <script>window.onload=function(){window.print();}<\/script>
+  </td></tr></tbody></table>
+  <script>window.onload=function(){var ph=(11-0.9)*96;var tot=Math.max(1,Math.ceil(document.body.scrollHeight/ph));var el=document.getElementById('pg-total');if(el)el.textContent=tot;window.print();}<\/script>
   </body></html>`;
   const w=window.open('','_blank','width=1200,height=850');
   if(w){w.document.write(html);w.document.close();}
@@ -18002,27 +18156,45 @@ function _provEvalCriteriosInit(){
   const tbody=document.getElementById('pe-criterios-tbody');
   if(!tbody||tbody.dataset.init==='1')return;
   tbody.dataset.init='1';
-  tbody.innerHTML=PE_CRITERIOS.map(c=>'<tr style="border-bottom:1px solid var(--border)">'
-    +'<td style="padding:6px 8px">'+c.concepto+'</td>'
-    +'<td style="padding:6px 8px;text-align:center">'
-      +'<input type="number" id="pe-'+c.id+'" min="1" max="5" step="1" placeholder="1–5" oninput="provEvalCalc()" '
-      +'style="width:60px;text-align:center;padding:4px;border:1px solid var(--border);border-radius:6px;font-size:13px">'
-    +'</td>'
-    +'<td style="padding:6px 8px">'
-      +'<input type="text" id="pe-'+c.id+'-com" placeholder="Comentario opcional" '
-      +'style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px">'
-    +'</td></tr>').join('');
+  tbody.innerHTML=PE_CRITERIOS.map(c=>{
+    const numInput='<input type="number" id="pe-'+c.id+'" min="1" max="5" step="1" placeholder="1–5" oninput="provEvalCalc()" '
+      +'style="width:60px;text-align:center;padding:4px;border:1px solid var(--border);border-radius:6px;font-size:13px">';
+    const ptsCell=c.id==='c8'
+      ?'<div style="display:flex;align-items:center;justify-content:center;gap:6px">'+numInput
+        +'<label style="display:flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap">'
+        +'<input type="checkbox" id="pe-c8-na" onchange="provEvalC8NaToggle()"> N/A</label></div>'
+      :numInput;
+    return '<tr style="border-bottom:1px solid var(--border)">'
+      +'<td style="padding:6px 8px">'+c.concepto+'</td>'
+      +'<td style="padding:6px 8px;text-align:center">'+ptsCell+'</td>'
+      +'<td style="padding:6px 8px">'
+        +'<input type="text" id="pe-'+c.id+'-com" placeholder="Comentario opcional" '
+        +'style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px">'
+      +'</td></tr>';
+  }).join('');
 }
 
+window.provEvalC8NaToggle=function(){
+  const na=document.getElementById('pe-c8-na');
+  const inp=document.getElementById('pe-c8');
+  if(!na||!inp)return;
+  if(na.checked){inp.value='';inp.disabled=true;inp.style.opacity='0.4';}
+  else{inp.disabled=false;inp.style.opacity='1';}
+  provEvalCalc();
+};
+
 function provEvalCalc(){
+  const naC8=document.getElementById('pe-c8-na')?.checked||false;
   let total=0,count=0;
   PE_CRITERIOS.forEach(c=>{
+    if(c.id==='c8'&&naC8)return;
     const el=document.getElementById('pe-'+c.id);
     if(!el)return;
     const v=parseFloat(el.value||0);
     if(v>=1&&v<=5){total+=v;count++;}
   });
-  const max=PE_CRITERIOS.length*5;
+  const aplicables=naC8?PE_CRITERIOS.length-1:PE_CRITERIOS.length;
+  const max=aplicables*5;
   const pct=count>0?Math.round((total/max)*100):0;
   let res='—',col='#6b7280',bg='#f3f4f6';
   if(count>0){
@@ -18048,9 +18220,10 @@ function provEvalNuevo(){
   document.getElementById('pe-msg').textContent='';
   _provEvalCriteriosInit();
   PE_CRITERIOS.forEach(c=>{
-    const el=document.getElementById('pe-'+c.id);if(el)el.value='';
+    const el=document.getElementById('pe-'+c.id);if(el){el.value='';el.disabled=false;el.style.opacity='1';}
     const com=document.getElementById('pe-'+c.id+'-com');if(com)com.value='';
   });
+  const naChk=document.getElementById('pe-c8-na');if(naChk)naChk.checked=false;
   provEvalCalc();
   _provEvalRenderReevals();
   document.getElementById('prov-eval-form').style.display='block';
@@ -18066,10 +18239,14 @@ function provEvalCancelar(){
 }
 
 function provEvalEditar(lid){
-  const rec=leerProvEval().find(r=>r.local_id===lid);
+  const rec=leerProvEval().find(r=>r.local_id===lid||r.id===lid);
   if(!rec)return;
   _provEvalEditId=lid;
-  _provEvalReevals=(rec.reevals||[]).map(x=>Object.assign({},x));
+  const _jsn=(v,fb)=>{try{return typeof v==='string'?JSON.parse(v):(v??fb);}catch(e){return fb;}};
+  const _crit=_jsn(rec.criterios,{});
+  const _comt=_jsn(rec.comentarios,{});
+  const _reev=_jsn(rec.reevals,[]);
+  _provEvalReevals=(Array.isArray(_reev)?_reev:[]).map(x=>Object.assign({},x));
   document.getElementById('prov-eval-form-title').textContent='Editar Evaluación — '+rec.proveedor;
   document.getElementById('pe-proveedor').value=rec.proveedor||'';
   document.getElementById('pe-producto').value=rec.producto||'';
@@ -18078,11 +18255,15 @@ function provEvalEditar(lid){
   document.getElementById('pe-firma').value=rec.firma||'Mtro. Samir Gómez Calderón';
   document.getElementById('pe-msg').textContent='';
   _provEvalCriteriosInit();
+  const naChkE=document.getElementById('pe-c8-na');
+  const c8val=(_crit['c8'])||'';
+  if(naChkE)naChkE.checked=(c8val==='na');
   PE_CRITERIOS.forEach(c=>{
     const el=document.getElementById('pe-'+c.id);
-    if(el)el.value=(rec.criterios&&rec.criterios[c.id])||'';
+    const val=(_crit[c.id])||'';
+    if(el){el.value=(val==='na'?'':val);el.disabled=(c.id==='c8'&&c8val==='na');el.style.opacity=(c.id==='c8'&&c8val==='na')?'0.4':'1';}
     const com=document.getElementById('pe-'+c.id+'-com');
-    if(com)com.value=(rec.comentarios&&rec.comentarios[c.id])||'';
+    if(com)com.value=(_comt[c.id])||'';
   });
   provEvalCalc();
   _provEvalRenderReevals();
@@ -18132,12 +18313,14 @@ async function provEvalGuardar(){
   if(!proveedor||!producto||!fecha){document.getElementById('pe-msg').textContent='Proveedor, Producto/Servicio y Fecha son obligatorios.';return;}
   const tipoEl=document.querySelector('input[name="pe-tipo"]:checked');
   const criterios={},comentarios={};
+  const naC8guard=document.getElementById('pe-c8-na')?.checked||false;
   PE_CRITERIOS.forEach(c=>{
-    criterios[c.id]=document.getElementById('pe-'+c.id)?.value||'';
+    criterios[c.id]=(c.id==='c8'&&naC8guard)?'na':(document.getElementById('pe-'+c.id)?.value||'');
     comentarios[c.id]=document.getElementById('pe-'+c.id+'-com')?.value||'';
   });
-  const total=Object.values(criterios).reduce((s,v)=>s+(parseFloat(v)||0),0);
-  const pct=Math.round((total/(PE_CRITERIOS.length*5))*100);
+  const aplicablesGuard=naC8guard?PE_CRITERIOS.length-1:PE_CRITERIOS.length;
+  const total=Object.entries(criterios).reduce((s,[,v])=>s+(v==='na'?0:(parseFloat(v)||0)),0);
+  const pct=Math.round((total/(aplicablesGuard*5))*100);
   const resultado=pct<50?'No Aprobado':pct<70?'Secundario':'Principal';
   const arr=leerProvEval();
   const rec={
@@ -18152,8 +18335,9 @@ async function provEvalGuardar(){
     updated_at:new Date().toISOString()
   };
   if(_provEvalEditId){
-    const idx=arr.findIndex(r=>r.local_id===_provEvalEditId);
-    if(idx>-1){rec.id=arr[idx].id;arr[idx]={...arr[idx],...rec};}
+    const idx=arr.findIndex(r=>r.local_id===_provEvalEditId||r.id===_provEvalEditId);
+    if(idx>-1){rec.id=arr[idx].id;rec.local_id=arr[idx].local_id||rec.local_id;arr[idx]={...arr[idx],...rec};}
+    else{arr.unshift(rec);}
   } else {arr.unshift(rec);}
   guardarProvEval(arr);
   provEvalCancelar();
@@ -18169,8 +18353,8 @@ async function provEvalGuardar(){
 async function provEvalEliminar(lid){
   if(!confirm('¿Eliminar esta evaluación?'))return;
   const arr=leerProvEval();
-  const rec=arr.find(r=>r.local_id===lid);
-  guardarProvEval(arr.filter(r=>r.local_id!==lid));
+  const rec=arr.find(r=>r.local_id===lid||r.id===lid);
+  guardarProvEval(arr.filter(r=>r.local_id!==lid&&r.id!==lid));
   provEvalRender();
   if(rec?.id)await sb.from('prov_evaluacion').delete().eq('id',rec.id).catch(()=>{});
   else if(lid)await sb.from('prov_evaluacion').delete().eq('local_id',lid).catch(()=>{});
@@ -18203,9 +18387,11 @@ function provEvalRender(){
       +'<td style="padding:8px 10px;text-align:center"><span style="font-weight:700;color:'+colRes(r.resultado)+'">'+(r.resultado||'—')+'</span></td>'
       +'<td style="padding:8px 10px;text-align:center;font-size:12px">'+(r.fecha||'—')+'</td>'
       +'<td style="padding:8px 10px;text-align:center;white-space:nowrap">'
-        +'<button class="btn btn-sm" onclick="provEvalEditar(\''+r.local_id+'\')">✏</button> '
-        +'<button class="btn btn-sm" onclick="provEvalImprimirReg(\''+r.local_id+'\')">🖨</button> '
-        +'<button class="btn btn-sm" style="color:var(--red)" onclick="provEvalEliminar(\''+r.local_id+'\')">🗑</button>'
+        +(function(){const eid=r.local_id||r.id||'';return ''
+          +'<button class="btn btn-sm" onclick="provEvalEditar(\''+eid+'\')">✏</button> '
+          +'<button class="btn btn-sm" onclick="provEvalImprimirReg(\''+eid+'\')">🖨</button> '
+          +'<button class="btn btn-sm" style="color:var(--red)" onclick="provEvalEliminar(\''+eid+'\')">🗑</button>';
+        })()
       +'</td></tr>').join('')
     +'</tbody></table></div>';
 }
@@ -18229,17 +18415,21 @@ function provEvalImprimir(){
 }
 
 function provEvalImprimirReg(lid){
-  const rec=leerProvEval().find(r=>r.local_id===lid);
+  const rec=leerProvEval().find(r=>r.local_id===lid||r.id===lid);
   if(!rec)return;
+  const _jsn=(v,fb)=>{try{return typeof v==='string'?JSON.parse(v):(v??fb);}catch(e){return fb;}};
+  const _crit=_jsn(rec.criterios,{});
+  const _comt=_jsn(rec.comentarios,{});
+  const _reev=_jsn(rec.reevals,[]);
   const criterios=PE_CRITERIOS.map(c=>({
     concepto:c.concepto,
-    pts:(rec.criterios&&rec.criterios[c.id])||'—',
-    com:(rec.comentarios&&rec.comentarios[c.id])||''
+    pts:(_crit[c.id])||'—',
+    com:(_comt[c.id])||''
   }));
   _provEvalPrint({
     proveedor:rec.proveedor,producto:rec.producto,tipo:rec.tipo,fecha:rec.fecha,firma:rec.firma,
     totalPts:rec.total_pts,pct:(rec.porcentaje||0)+'%',resultado:rec.resultado,
-    criterios,reevals:rec.reevals||[]
+    criterios,reevals:Array.isArray(_reev)?_reev:[]
   });
 }
 
@@ -18268,10 +18458,10 @@ function _provEvalPrint({proveedor,producto,tipo,fecha,firma,totalPts,pct,result
   const tipoLabels={A1:'A1 — Alta influencia + Alta frecuencia',A2:'A2 — Alta influencia + Baja frecuencia',B1:'B1 — Baja influencia + Alta frecuencia',B2:'B2 — Baja influencia + Baja frecuencia'};
   const tipoHtml=['A1','A2','B1','B2'].map(t=>box(tipo===t)+tipoLabels[t]).join('&nbsp;&nbsp;&nbsp;');
   const css=`
-    @page{size:letter portrait;margin:.45in .5in}
+    @page{size:letter portrait;margin:.45in .5in .6in .5in;@bottom-center{content:"Página " counter(page) " de " counter(pages);font-size:9pt;font-family:Arial,Helvetica,sans-serif;color:#555}}
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,Helvetica,sans-serif;font-size:11pt;color:#111}
-    .fmt-head{display:grid;grid-template-columns:1.2in 1fr 1.4in;border:1px solid #555;min-height:.82in;margin-bottom:.18in;width:100%}
+    .fmt-head{display:grid;grid-template-columns:1.2in 1fr 1.4in;border:1px solid #555;min-height:.82in;width:100%}
     .fmt-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;padding:5px}
     .fmt-logo img{max-width:.72in;max-height:.72in;object-fit:contain;opacity:.68}
     .fmt-title{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;text-align:center;font-weight:700;text-transform:uppercase;color:#444;line-height:1.2;font-size:12pt;padding:8px 14px}
@@ -18283,11 +18473,15 @@ function _provEvalPrint({proveedor,producto,tipo,fecha,firma,totalPts,pct,result
   <title>R-84-02 · Hoja de Evaluación de Proveedor · ENUFC</title>
   <style>${css}</style></head><body>
 
-  <div class="fmt-head">
-    <div class="fmt-logo">${logoSrc?'<img src="'+logoSrc+'" alt="ENUFC">':''}</div>
-    <div class="fmt-title">Hoja de Evaluación de Proveedor</div>
-    <div class="fmt-code"><strong>Código:</strong> R-84-02<br><strong>Revisión:</strong> 00<br><strong>Fecha:</strong> ${fechaFmt}</div>
-  </div>
+  <table style="width:100%;border-collapse:collapse">
+  <thead><tr><td style="padding:0 0 .18in 0;border:none">
+    <div class="fmt-head">
+      <div class="fmt-logo">${logoSrc?'<img src="'+logoSrc+'" alt="ENUFC">':''}</div>
+      <div class="fmt-title">Hoja de Evaluación de Proveedor</div>
+      <div class="fmt-code"><strong>Código:</strong> R-84/02<br><strong>Revisión:</strong> 02<br><strong>Página:</strong> 1 de <span id="pg-total">1</span></div>
+    </div>
+  </td></tr></thead>
+  <tbody><tr><td style="padding:0;border:none;vertical-align:top">
 
   <!-- Datos generales -->
   <table style="margin-bottom:.12in">
@@ -18356,7 +18550,8 @@ function _provEvalPrint({proveedor,producto,tipo,fecha,firma,totalPts,pct,result
     <tbody>${filasRe}</tbody>
   </table>
 
-  <script>window.onload=function(){window.print();}<\/script>
+  </td></tr></tbody></table>
+  <script>window.onload=function(){var ph=(11-0.9)*96;var tot=Math.max(1,Math.ceil(document.body.scrollHeight/ph));var el=document.getElementById('pg-total');if(el)el.textContent=tot;window.print();}<\/script>
   </body></html>`;
   const w=window.open('','_blank','width=900,height=850');
   if(w){w.document.write(html);w.document.close();}
