@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -325,18 +325,18 @@ textarea{resize:vertical;min-height:70px}
 }
 @media print{
   .sidebar,.topbar,.bottom-nav,.btn,.nav-item,.setup-screen,.loading-screen{display:none!important}
-  #notif-bell-fixed,#tareas-fab,.chat-fab,.chat-panel,.tareas-panel,.notif-panel,
+  #notif-bell-fixed,#tareas-fab,#srch-fab,.chat-fab,.chat-panel,.tareas-panel,.notif-panel,
   .cal-event-modal-overlay,.doc-modal-overlay{display:none!important}
   .main{margin:0;padding:0}
   body{background:#fff}
   .card,.inf-area,.hist-item{break-inside:avoid}
 
   /* ── Ajuste universal de formatos a la hoja ── */
-  @page{size:auto;margin:.45in .35in}
+  @page{size:auto;margin:0}
   .fmt-doc{
     width:100%!important;max-width:100%!important;
     min-height:0!important;
-    padding:.1in .15in!important;
+    padding:.45in .4in!important;
     margin:0 auto!important;
     box-shadow:none!important;box-sizing:border-box!important
   }
@@ -745,6 +745,57 @@ textarea{resize:vertical;min-height:70px}
 .aud-summary-table td,.aud-summary-table th{padding:5px 7px}
 .aud-firma-table{width:86%;margin:6px auto 0}
 .aud-actions{display:flex;justify-content:flex-end;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+
+/* ── DESCRIPCIONES DE PUESTO (R-72-02) ──────────────────── */
+.dp-card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1rem}
+.dp-card-header{padding:1rem 1.25rem;border-bottom:0.5px solid var(--border);background:linear-gradient(135deg,rgba(26,86,219,.05),rgba(26,86,219,.01))}
+.dp-card-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px}
+.dp-card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.dp-badge{font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:20px;background:var(--surface2);color:var(--muted);border:0.5px solid var(--border)}
+.dp-sect{padding:1rem 1.25rem;border-bottom:0.5px solid var(--border)}
+.dp-sect:last-child{border-bottom:none}
+.dp-sect-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:8px}
+.dp-proposito{font-size:13px;line-height:1.75;color:var(--text)}
+.dp-func-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.dp-func-list li{font-size:12.5px;line-height:1.6;padding-left:18px;position:relative;color:var(--text)}
+.dp-func-list li::before{content:'•';position:absolute;left:5px;color:var(--blue);font-weight:700;font-size:14px;line-height:1.4}
+.dp-req-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:4px}
+.dp-req-item{background:var(--bg);border-radius:8px;padding:10px 12px;border:0.5px solid var(--border)}
+.dp-req-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:4px}
+.dp-req-val{font-size:12.5px;color:var(--text);line-height:1.6}
+.dp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.dp-tab{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s;font-weight:500}
+.dp-tab:hover{border-color:var(--blue);color:var(--blue)}
+.dp-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ── BÚSQUEDA GLOBAL ─────────────────────────────────────── */
+.srch-btn{background:none;border:none;cursor:pointer;padding:6px 8px;color:var(--text);display:flex;align-items:center;border-radius:8px;transition:background .15s}
+.srch-btn:hover{background:var(--bg)}
+#srch-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding-top:clamp(40px,8vh,120px)}
+#srch-overlay.open{display:flex}
+#srch-modal{background:var(--surface);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(620px,calc(100vw - 2rem));max-height:72vh;display:flex;flex-direction:column;overflow:hidden}
+.srch-input-wrap{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:0.5px solid var(--border)}
+.srch-input-icon{color:var(--muted);flex-shrink:0}
+#srch-input{flex:1;border:none;outline:none;background:transparent;font-size:15px;color:var(--text);font-family:inherit}
+#srch-input::placeholder{color:var(--muted)}
+.srch-kbd{font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:2px 7px;white-space:nowrap;flex-shrink:0}
+#srch-results{overflow-y:auto;flex:1;padding:6px 0}
+.srch-empty{padding:2rem;text-align:center;color:var(--muted);font-size:13px}
+.srch-group-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:10px 16px 4px}
+.srch-item{display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;transition:background .1s}
+.srch-item:hover,.srch-item.active{background:var(--blue);color:#fff}
+.srch-item:hover .srch-item-sub,.srch-item.active .srch-item-sub{color:rgba(255,255,255,.75)}
+.srch-item-ico{width:32px;height:32px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;transition:background .1s}
+.srch-item:hover .srch-item-ico,.srch-item.active .srch-item-ico{background:rgba(255,255,255,.2)}
+.srch-item-body{flex:1;min-width:0}
+.srch-item-title{font-size:13px;font-weight:600;line-height:1.3}
+.srch-item-sub{font-size:11.5px;color:var(--muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+#srch-fab{position:fixed;top:14px;right:116px;z-index:300;width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;background:#4f46e5;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(79,70,229,.4);transition:transform .15s}
+#srch-fab:hover{transform:scale(1.08)}
+.sidebar-srch{padding:0 1rem .75rem;margin-bottom:.25rem}
+.sidebar-srch-btn{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;background:var(--bg);border:0.5px solid var(--border);border-radius:8px;cursor:pointer;color:var(--muted);font-size:12.5px;transition:border-color .15s,color .15s;font-family:inherit}
+.sidebar-srch-btn:hover{border-color:var(--blue);color:var(--text)}
+.sidebar-srch-kbd{margin-left:auto;font-size:10px;padding:1px 5px;background:var(--surface);border:0.5px solid var(--border);border-radius:4px;color:var(--hint);white-space:nowrap}
 
 /* FORMATOS INSTITUCIONALES R-102, R-93 Y R-71 */
 .fmt-preview{display:none;margin-top:16px}
@@ -1303,6 +1354,10 @@ textarea{resize:vertical;min-height:70px}
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
       Matriz FODA
     </div>
+    <div class="nav-item" data-sec="desc-puesto" onclick="goto('desc-puesto',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      Descripciones de Puesto
+    </div>
   </div>
   <!-- AUDITORÍAS -->
   <div class="nav-group-hdr" data-grp="auditorias" onclick="toggleNavGroup('auditorias')">Auditorías<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></div>
@@ -1436,6 +1491,9 @@ textarea{resize:vertical;min-height:70px}
     <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
     <h2 id="topbar-title">Inicio</h2>
     <div style="display:flex;align-items:center;gap:4px;margin-left:auto">
+      <button class="srch-btn" onclick="srchAbrir()" title="Buscar en el SGC (Ctrl+K)">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+      </button>
       <span class="sync-dot" id="sync-dot-top" onclick="reintentarSincronizacion()" style="cursor:pointer" title="Estado de sincronización (clic para reintentar)"></span>
       <button class="notif-bell-btn" onclick="toggleNotifPanel()" title="Notificaciones">
         🔔<span class="notif-badge" id="notif-badge">0</span>
@@ -1457,6 +1515,20 @@ textarea{resize:vertical;min-height:70px}
     </div>
     <div id="tareas-sync-err" style="display:none;margin:6px 12px;padding:8px 10px;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;font-size:12px;color:#dc2626"></div>
     <div class="tareas-lista" id="tareas-lista"></div>
+  </div>
+  <!-- Búsqueda global (FAB móvil + modal) -->
+  <button id="srch-fab" onclick="srchAbrir()" title="Buscar (Ctrl+K)">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+  </button>
+  <div id="srch-overlay" onclick="srchCerrarSiBackdrop(event)">
+    <div id="srch-modal">
+      <div class="srch-input-wrap">
+        <svg class="srch-input-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+        <input id="srch-input" placeholder="Buscar en el SGC..." oninput="srchBuscar(this.value)" onkeydown="srchTeclado(event)" autocomplete="off" spellcheck="false">
+        <span class="srch-kbd">Esc</span>
+      </div>
+      <div id="srch-results"><p class="srch-empty">Escribe para buscar secciones, puestos, documentos…</p></div>
+    </div>
   </div>
   <!-- Campana fija superior derecha -->
   <button onclick="toggleNotifPanel()" title="Notificaciones" id="notif-bell-fixed" style="position:fixed;top:14px;right:16px;z-index:300;width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;background:var(--blue);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(24,95,165,.35);transition:transform .15s">
@@ -1819,7 +1891,7 @@ Coordinacion de Calidad</textarea>
     <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap" class="no-print">
       <button class="btn btn-sm active" id="inf-tab-ind" onclick="switchInfTab('ind')">Indicadores de calidad</button>
       <button class="btn btn-sm" id="inf-tab-aud" onclick="switchInfTab('aud')">Auditorías internas</button>
-      <button class="btn btn-sm btn-primary" onclick="window.print()" style="margin-left:auto">Imprimir / PDF</button>
+      <button class="btn btn-sm btn-primary" onclick="_imprimirPagina()" style="margin-left:auto">Imprimir / PDF</button>
     </div>
     <div id="inf-contenido-ind"></div>
     <div id="inf-contenido-aud" style="display:none"></div>
@@ -3033,6 +3105,20 @@ Coordinacion de Calidad</textarea>
         <input type="hidden" id="rev-editing-id">
       </div>
     </div>
+  </div>
+
+  <!-- ═══ DESCRIPCIONES DE PUESTO (R-72-02) ═══ -->
+  <div class="section" id="sec-desc-puesto">
+    <p class="page-title">Descripciones de Puesto</p>
+    <p class="page-sub no-print">R-72-02 · Rev. 03 · Cláusula 7.2 ISO 9001:2015</p>
+    <div id="dp-selector-wrap" class="card no-print" style="display:none;margin-bottom:1rem">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:13px;font-weight:600;color:var(--muted)">Ver puesto:</span>
+        <select id="dp-sel" style="flex:1;min-width:220px;max-width:400px" onchange="dpMostrar(this.value)"></select>
+      </div>
+    </div>
+    <div id="dp-contenido"></div>
+    <p id="dp-sin-area" style="display:none;color:var(--muted);font-size:13px;padding:1rem 0">No hay una descripción de puesto registrada para tu área. Contacta al Administrador de Calidad.</p>
   </div>
 
   <!-- ═══ POLÍTICA DE CALIDAD (R-52/01) ═══ -->
@@ -4707,10 +4793,10 @@ function rolUsuarioActual(){
 }
 function seccionesPermitidas(){
   const rol=rolUsuarioActual();
-  if(['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rol))return ['inicio','aud-nueva','aud-registro','aud-plan','ind-captura','ind-historial','informes','nc','eficacia','plan','solicitud','documentos','sol-cambios','r7503','drive','revision','satisfaccion','calendario','manual','politica','foda','objetivos','admin','prov-lista','prov-eval','prov-sol','memorandum'];
-  if(['auditor','auditor_lider','auditor interno'].includes(rol))return ['inicio','aud-nueva','aud-plan','documentos','r7503','drive','revision','calendario','manual','politica','foda','objetivos'];
-  if(['area','responsable_area','responsable'].includes(rol))return ['inicio','ind-captura','ind-historial','nc','eficacia','solicitud','documentos','sol-cambios','r7503','drive'];
-  return ['inicio'];
+  if(['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rol))return ['inicio','aud-nueva','aud-registro','aud-plan','ind-captura','ind-historial','informes','nc','eficacia','plan','solicitud','documentos','sol-cambios','r7503','drive','revision','satisfaccion','calendario','manual','politica','foda','objetivos','desc-puesto','admin','prov-lista','prov-eval','prov-sol','memorandum'];
+  if(['auditor','auditor_lider','auditor interno'].includes(rol))return ['inicio','aud-nueva','aud-plan','documentos','r7503','drive','revision','calendario','manual','politica','foda','objetivos','desc-puesto'];
+  if(['area','responsable_area','responsable'].includes(rol))return ['inicio','ind-captura','ind-historial','nc','eficacia','solicitud','documentos','sol-cambios','r7503','drive','desc-puesto'];
+  return ['inicio','desc-puesto'];
 }
 function determinarUsuarioActual(){
   const email=(_session?.user?.email||localStorage.getItem('sb_email')||'').toLowerCase();
@@ -4879,7 +4965,7 @@ async function arrancarApp(){
 /* ═══════════════════════════════════════
    NAVEGACIÓN
 ═══════════════════════════════════════ */
-const TITLES={inicio:'Inicio','aud-nueva':'Nueva auditoría','aud-registro':'Registro','aud-plan':'Plan de auditoria','ind-captura':'Capturar indicador','ind-historial':'Historial','informes':'Informes','nc':'No Conformidades','eficacia':'Eficacia de Acciones Correctivas','plan':'Plan de Acción','solicitud':'Solicitud de Servicios','documentos':'Control Documental','sol-cambios':'Solicitud de Cambios','r7503':'Listado de Registros (R-75/03)','drive':'Repositorio Drive','revision':'Revisión por la Dirección','satisfaccion':'Satisfacción del Alumno','calendario':'Calendario SGC','politica':'Política de Calidad','foda':'Matriz FODA','objetivos':'Objetivos de Calidad','manual':'Manual de Calidad SGC','admin':'Administrar','prov-lista':'Lista de Proveedores Aprobados (R-84-01)','prov-eval':'Evaluación de Proveedor (R-84-02)','prov-sol':'Solicitud de Servicio a Proveedor (R-84-03)'};
+const TITLES={inicio:'Inicio','aud-nueva':'Nueva auditoría','aud-registro':'Registro','aud-plan':'Plan de auditoria','ind-captura':'Capturar indicador','ind-historial':'Historial','informes':'Informes','nc':'No Conformidades','eficacia':'Eficacia de Acciones Correctivas','plan':'Plan de Acción','solicitud':'Solicitud de Servicios','documentos':'Control Documental','sol-cambios':'Solicitud de Cambios','r7503':'Listado de Registros (R-75/03)','drive':'Repositorio Drive','revision':'Revisión por la Dirección','satisfaccion':'Satisfacción del Alumno','calendario':'Calendario SGC','politica':'Política de Calidad','foda':'Matriz FODA','objetivos':'Objetivos de Calidad','manual':'Manual de Calidad SGC','desc-puesto':'Descripciones de Puesto','admin':'Administrar','prov-lista':'Lista de Proveedores Aprobados (R-84-01)','prov-eval':'Evaluación de Proveedor (R-84-02)','prov-sol':'Solicitud de Servicio a Proveedor (R-84-03)'};
 window.goto=function(sec,navEl){
   if(!puedeVer(sec))sec=primeraSeccionPermitida();
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
@@ -4918,6 +5004,7 @@ window.goto=function(sec,navEl){
   if(sec==='prov-lista'){cargarProveedoresSupabase().then(provListaRender);}
   if(sec==='prov-eval'){cargarProveedoresSupabase().then(provEvalRender);}
   if(sec==='prov-sol'){cargarProveedoresSupabase().then(provSolRender);}
+  if(sec==='desc-puesto')dpLoad();
 };
 window.toggleSidebar=function(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');};
 window.closeSidebar=function(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');};
@@ -5211,7 +5298,7 @@ window.renderRegistro=function(){
     const tot=a.items.length,cum=a.items.filter(i=>i.respuesta==='cumple').length;
     const pct=tot?Math.round(cum/tot*100):0;
     const bc=pct>=80?'badge-ok':pct>=50?'badge-mid':'badge-nok';
-    return`<div class="reg-item">
+    return`<div class="reg-item" data-aud-id="${esc(a.id||'')}">
       <div class="reg-top"><span class="reg-area">${esc(a.area)}</span><span class="badge ${bc}">${pct}%</span></div>
       <div class="reg-meta">${a.folio?'Folio: '+esc(a.folio)+' &nbsp;·&nbsp; ':''} Auditor: ${esc(a.auditor)} &nbsp;·&nbsp; ${esc(a.fecha)} &nbsp;·&nbsp; ${tot} criterios</div>
       ${a.obs?`<div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:3px">${esc(a.obs)}</div>`:''}
@@ -5440,9 +5527,7 @@ window.vistaPreviaIndicador=function(){
 window.cerrarVistaPreviaIndicador=function(){const box=document.getElementById('ind-preview-card');if(box)box.style.display='none';};
 window.imprimirVistaPreviaIndicador=function(){
   if(document.getElementById('ind-preview-card')?.style.display==='none')vistaPreviaIndicador();
-  document.body.classList.add('only-print-preview');
-  window.print();
-  setTimeout(()=>document.body.classList.remove('only-print-preview'),400);
+  _imprimirPagina('only-print-preview');
 };
 
 window.guardarIndicador = async function(){
@@ -5648,7 +5733,7 @@ function renderInformeIndicadores(){
   const ultima={};
   S.mediciones.map(aplicarMetaIndicador).forEach(m=>{const k=m.indicador_id||m.indicadorId;if(!ultima[k]||(m.timestamp||0)>(ultima[k].timestamp||0))ultima[k]=m;});
   const meds=Object.values(ultima).sort((a,b)=>parseInt(a.indicador_numero||a.indicadorNumero||0)-parseInt(b.indicador_numero||b.indicadorNumero||0));
-  c.innerHTML='<div style="text-align:right;margin-bottom:14px" class="no-print"><button class="btn btn-primary btn-sm" onclick="window.print()">Imprimir fichas / PDF</button></div><div class="inf-fichas-wrap">'+meds.map(medicionConCatalogo).map(fichaIndicadorHTML).join('')+'</div>';
+  c.innerHTML='<div style="text-align:right;margin-bottom:14px" class="no-print"><button class="btn btn-primary btn-sm" onclick="_imprimirPagina()">Imprimir fichas / PDF</button></div><div class="inf-fichas-wrap">'+meds.map(medicionConCatalogo).map(fichaIndicadorHTML).join('')+'</div>';
 }
 
 
@@ -5718,7 +5803,7 @@ window.abrirInformeAuditoria=function(idx){
   const a=S.auditorias[idx];if(!a)return;
   goto('informes',null);switchInfTab('aud');
   const c=document.getElementById('inf-contenido-aud');
-  c.innerHTML='<div class="aud-actions no-print"><button class="btn btn-primary btn-sm" onclick="window.print()">Imprimir / PDF</button><button class="btn btn-sm" onclick="renderInformeAuditorias()">Ver informe general</button></div>'+auditAreaReportHTML(a);
+  c.innerHTML='<div class="aud-actions no-print"><button class="btn btn-primary btn-sm" onclick="_imprimirPagina()">Imprimir / PDF</button><button class="btn btn-sm" onclick="renderInformeAuditorias()">Ver informe general</button></div>'+auditAreaReportHTML(a);
 };
 window.abrirInformeAuditoriaActual=function(){const idx=S.auditorias.findIndex(a=>a.id===window._ultimaAuditoriaId);abrirInformeAuditoria(idx>=0?idx:0);};
 function renderInformeAuditorias(){
@@ -5730,7 +5815,7 @@ function renderInformeAuditorias(){
   const aviso=faltantes.length
     ? '<div class="alert alert-info no-print">El informe general R-92/03 se generara cuando esten capturadas las auditorias de las 5 areas. Faltan: '+faltantes.map(esc).join(', ')+'.</div>'
     : auditGeneralReportHTML(S.auditorias);
-  c.innerHTML='<div class="aud-actions no-print"><button class="btn btn-primary btn-sm" onclick="window.print()">Imprimir informes / PDF</button></div>'+aviso+areas.map(auditAreaReportHTML).join('');
+  c.innerHTML='<div class="aud-actions no-print"><button class="btn btn-primary btn-sm" onclick="_imprimirPagina()">Imprimir informes / PDF</button></div>'+aviso+areas.map(auditAreaReportHTML).join('');
 }
 
 
@@ -5871,7 +5956,7 @@ function renderInformeAuditorias(){
   const aviso=faltantes.length
     ? '<div class="alert alert-info no-print">El informe general R-92/03 se generara cuando esten capturadas las auditorias de las 5 areas. Faltan: '+faltantes.map(esc).join(', ')+'.</div>'
     : auditGeneralReportHTML(S.auditorias);
-  c.innerHTML='<div class="aud-actions no-print"><button class="btn btn-primary btn-sm" onclick="window.print()">Imprimir informes / PDF</button></div>'+aviso+areas.map(auditAreaReportHTML).join('');
+  c.innerHTML='<div class="aud-actions no-print"><button class="btn btn-primary btn-sm" onclick="_imprimirPagina()">Imprimir informes / PDF</button></div>'+aviso+areas.map(auditAreaReportHTML).join('');
 }
 
 function renderAreasAdmin(){
@@ -6172,7 +6257,7 @@ window.renderNCs=function(){
     const orgsExtras=(nc.origenes||[]).slice(1).map(o=>`<span style="font-size:10px;background:#f0f0f0;border-radius:8px;padding:1px 6px;color:#555">${ORIG_LABELS[o]||o}</span>`).join(' ');
     const origPpal=(nc.origenes&&nc.origenes.length)?nc.origenes[0]:'sin_origen';
     const origColor=ORIG_COLORS[origPpal]||'#718096';
-    return `<div class="reg-item" style="margin-bottom:6px;border-left:3px solid ${origColor}">
+    return `<div class="reg-item" data-nc-num="${esc(nc.numero||nc.id||'')}" style="margin-bottom:6px;border-left:3px solid ${origColor}">
       <div class="reg-top">
         <span class="reg-area">${esc(nc.numero||'')} — ${esc(nc.area_numeral||'Sin área')}</span>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -6991,13 +7076,20 @@ function activarVistaFormato(previewId, html){
   el.style.display='block';
   el.scrollIntoView({behavior:'smooth',block:'start'});
 }
+function _imprimirPagina(cls){
+  const s=document.createElement('style');s.id='_fmt-pg2';s.textContent='@page{margin:0}body{padding:.45in .4in!important}';document.head.appendChild(s);
+  if(cls)document.body.classList.add(cls);
+  window.print();
+  setTimeout(()=>{document.getElementById('_fmt-pg2')?.remove();if(cls)document.body.classList.remove(cls);},400);
+}
 function imprimirSoloFormato(secId, previewFn){
   previewFn();
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('fmt-print-section'));
   document.getElementById(secId)?.classList.add('fmt-print-section');
   document.body.classList.add('only-format-print');
+  const _ps=document.createElement('style');_ps.id='_fmt-pg';_ps.textContent='@page{margin:0}';document.head.appendChild(_ps);
   window.print();
-  setTimeout(()=>{document.body.classList.remove('only-format-print');document.getElementById(secId)?.classList.remove('fmt-print-section');},400);
+  setTimeout(()=>{document.body.classList.remove('only-format-print');document.getElementById(secId)?.classList.remove('fmt-print-section');document.getElementById('_fmt-pg')?.remove();},400);
 }
 
 function leerNCActual(){
@@ -7186,7 +7278,7 @@ window.nc_imprimirFormato=function(){
   const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
   const w=window.open('','_blank');
   if(!w){alert('Por favor permite las ventanas emergentes para imprimir.');return;}
-  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>NC Formato</title><style>body{margin:0;background:#fff}'+css+'</style></head><body>'+html+'</body></html>');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>NC Formato</title><style>body{margin:0;background:#fff}'+css+'@page{margin:0}</style></head><body>'+html+'</body></html>');
   w.document.close();
   w.addEventListener('load',function(){w.focus();w.print();});
 };
@@ -7235,7 +7327,7 @@ window.nc_listadoImprimir=function(ciclo){
   const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
   const w=window.open('','_blank');
   if(!w){alert('Por favor permite las ventanas emergentes para imprimir.');return;}
-  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>R-102/03 Listado NC</title><style>body{margin:0;background:#fff}'+css+'@page{size:letter landscape;margin:.4in .45in}</style></head><body>'+html+'</body></html>');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>R-102/03 Listado NC</title><style>body{margin:0;background:#fff}'+css+'@page{size:letter landscape;margin:0}</style></head><body>'+html+'</body></html>');
   w.document.close();
   w.addEventListener('load',function(){w.focus();w.print();});
 };
@@ -7921,7 +8013,7 @@ window.renderDocs=function(){
     const icon=DOC_TIPOS_ICON[d.tipo]||'📄';
     const tipoClass='doc-type-'+(d.tipo||'fmt');
     const estadoBadge=d.estado==='vigente'?'badge-ok':d.estado==='revision'?'badge-mid':'badge-nok';
-    return `<div class="doc-list-item" onclick="${canEditDoc?`docEditar('${esc(d.id)}')`:'void(0)'}">
+    return `<div class="doc-list-item" data-doc-id="${esc(d.id)}" onclick="${canEditDoc?`docEditar('${esc(d.id)}')`:'void(0)'}">
       <div class="doc-list-icon ${tipoClass}">${icon}</div>
       <div class="doc-info">
         <div class="doc-code">${esc(d.codigo||'Sin código')} · ${DOC_TIPOS_LABEL[d.tipo]||d.tipo}</div>
@@ -8365,7 +8457,7 @@ window.renderSolicitudesCambio=function(){
     const res=s.resolucion||s.estado||'pendiente';
     const badge=res==='Aceptado'?'badge-ok':res==='No Aceptado'?'badge-nok':'badge-mid';
     const badgeTipo=s.tipo_cambio?`<span class="badge badge-blue">${esc(s.tipo_cambio)}</span>`:'';
-    return `<div class="sc-item">
+    return `<div class="sc-item" data-sc-id="${s.id||''}">
       <div class="sc-top">
         <div style="flex:1;min-width:0">
           <div class="sc-title">${esc(s.numero?'No. '+s.numero+' — ':'')}${esc(s.documento||'Sin procedimiento')}</div>
@@ -9058,7 +9150,7 @@ window.sc_imprimirFormato=function(){
   const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
   const w=window.open('','_blank');
   if(!w){alert('Por favor permite las ventanas emergentes para imprimir.');return;}
-  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Solicitud de Cambio R-63/01</title><style>body{margin:0;background:#fff}'+css+'@page{size:letter;margin:.45in .4in}</style></head><body>'+html+'</body></html>');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Solicitud de Cambio R-63/01</title><style>body{margin:0;background:#fff}'+css+'@page{size:letter;margin:0}</style></head><body>'+html+'</body></html>');
   w.document.close();
   w.addEventListener('load',function(){w.focus();w.print();});
 };
@@ -9068,7 +9160,7 @@ window.scImprimirUno=function(id){
   const css=[...document.querySelectorAll('style')].map(st=>st.textContent).join('\n');
   const w=window.open('','_blank');
   if(!w){alert('Por favor permite las ventanas emergentes para imprimir.');return;}
-  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Solicitud de Cambio R-63/01</title><style>body{margin:0;background:#fff}'+css+'@page{size:letter;margin:.45in .4in}</style></head><body>'+scHTMLFormato(s)+'</body></html>');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Solicitud de Cambio R-63/01</title><style>body{margin:0;background:#fff}'+css+'@page{size:letter;margin:0}</style></head><body>'+scHTMLFormato(s)+'</body></html>');
   w.document.close();
   w.addEventListener('load',function(){w.focus();w.print();});
 };
@@ -14006,7 +14098,7 @@ window.efic_imprimir=function(){
   const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
   const w=window.open('','_blank');
   if(!w){alert('Por favor permite las ventanas emergentes para imprimir.');return;}
-  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>R-93/04 Verificación de Eficacia</title><style>body{margin:0;background:#fff}'+css+'@page{size:letter;margin:.45in .4in}</style></head><body>'+html+'</body></html>');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>R-93/04 Verificación de Eficacia</title><style>body{margin:0;background:#fff}'+css+'@page{size:letter;margin:0}</style></head><body>'+html+'</body></html>');
   w.document.close();
   w.addEventListener('load',function(){w.focus();w.print();});
 };
@@ -14500,9 +14592,9 @@ window.r7503_exportar=function(){
 
   // CSS idéntico al de los otros formatos de la app + ajuste landscape
   const css=`
-    @page{size:letter landscape;margin:.4in .45in}
+    @page{size:letter landscape;margin:0}
     *{box-sizing:border-box}
-    body{font-family:Arial,Helvetica,sans-serif;font-size:12pt;color:#111;margin:0;padding:0}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:12pt;color:#111;margin:.4in .45in;padding:0}
     .fmt-doc{width:100%;font-family:Arial,Helvetica,sans-serif;font-size:12pt;color:#111;padding:0}
     .fmt-head{display:grid;grid-template-columns:1.2in 1fr 1.35in;border:1px solid #555;min-height:.82in;margin:0 0 .18in;width:100%}
     .fmt-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;padding:5px}
@@ -15497,7 +15589,7 @@ window.sgcImprimirInforme=function(){
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <base href="${location.href}">
 <title>Informe SGC — ENUFC</title>
-<style>
+<style>@page{margin:0}
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:Arial,sans-serif;font-size:10.5pt;color:#1a1a1a;background:#fff;padding:10mm 12mm}
   table{border-collapse:collapse}
@@ -15911,9 +16003,9 @@ function revImprimirPrograma(){
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>R-93/01 · Programa de Seguimiento</title>
   <style>
-    @page{size:letter portrait;margin:.5in .55in}
+    @page{size:letter portrait;margin:0}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;color:#111}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;color:#111;padding:.5in .55in}
     table{border-collapse:collapse;width:100%}
     td,th{vertical-align:middle}
     /* ── Encabezado institucional ── */
@@ -16002,80 +16094,107 @@ function revImprimirPrograma(){
 function revImprimirReporte(){
   const data=_revLeerFormulario();
   const logoSrc=document.querySelector('#login-screen img')?.src||'';
-  const repFecha=data.rep_fecha?data.rep_fecha.split('-').reverse().join('/'):'';
+  const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const fmtEs=d=>{if(!d)return'';const[y,m,dd]=d.split('-');return`${parseInt(dd)} de ${MESES[parseInt(m)-1]} de ${y}`;};
+  const repFecha=fmtEs(data.rep_fecha);
+  const horaIni=data.rep_hora_inicio?(data.rep_hora_inicio+' horas'):'';
+  const horaCie=data.rep_hora_cierre?(data.rep_hora_cierre+' horas'):'';
   const td=(content,style='')=>`<td style="border:1px solid #555;padding:5px 8px;font-size:9.5pt;vertical-align:top${style?';'+style:''}">${content}</td>`;
-  const th=(content,style='')=>`<th style="background:#d9d9d9;border:1px solid #555;padding:6px 8px;font-size:9.5pt;font-weight:700;text-align:left;vertical-align:middle${style?';'+style:''}">${content}</th>`;
-  const agendaRows=data.agenda.map(a=>`<tr>${td(esc(a.tema),'font-weight:600')}${td(esc(a.relevancia))}${td(esc(a.observaciones))}</tr>`).join('');
+  const th=(content,style='')=>`<th style="background:#d9d9d9;border:1px solid #555;padding:6px 8px;font-size:9.5pt;font-weight:700;text-align:center;vertical-align:middle${style?';'+style:''}">${content}</th>`;
+  const agendaRows=data.agenda.map(a=>`<tr>${td(esc(a.tema))}${td(esc(a.relevancia))}${td(esc(a.observaciones))}</tr>`).join('');
   const decisionRows=data.decisiones.length
-    ?data.decisiones.map(d=>`<tr>${td(esc(d.tema))}${td(esc(d.descripcion))}${td(esc(d.responsable))}${td(esc(d.acciones))}${td(d.fecha_cumplimiento?d.fecha_cumplimiento.split('-').reverse().join('/'):'','text-align:center;white-space:nowrap')}</tr>`).join('')
+    ?data.decisiones.map(d=>`<tr>${td(esc(d.tema))}${td(esc(d.descripcion))}${td(esc(d.responsable))}${td(esc(d.acciones))}${td(fmtEs(d.fecha_cumplimiento)||d.fecha_cumplimiento||'','text-align:center;white-space:nowrap')}</tr>`).join('')
     :`<tr><td colspan="5" style="border:1px solid #555;padding:14px;height:.5in"></td></tr>`;
-  const sigBlock=(nombre,rol)=>`<td style="width:50%;padding:0 .15in;vertical-align:top">
-    <div style="border-top:1px solid #444;margin-top:.5in;padding-top:5px;font-size:9.5pt;line-height:1.6">
-      <strong>${rol}:</strong><br>${esc(nombre||'')}
-    </div></td>`;
+  const encabezado=`
+    <div class="fmt-head">
+      <div class="fmt-logo"><img src="${logoSrc}" alt="ENUFC"></div>
+      <div class="fmt-title">REPORTE DE REVISIÓN POR LA DIRECCIÓN</div>
+      <div class="fmt-code">
+        Código: R-93/02<br>
+        Página: 1 de 3<br>
+        <span style="color:#c0392b">Rev: 01</span>
+      </div>
+    </div>`;
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>R-93/02 · Reporte de Revisión por la Dirección</title>
   <style>
-    @page{size:letter landscape;margin:.4in .45in}
+    @page{size:letter portrait;margin:0}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#111}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#111;padding:.5in .5in}
     table{border-collapse:collapse;width:100%}
-    /* ── Encabezado idéntico al de R-75/03 ── */
-    .fmt-head{display:grid;grid-template-columns:1.2in 1fr 1.35in;border:1px solid #555;min-height:.82in;margin-bottom:.15in;width:100%}
+    .fmt-head{display:grid;grid-template-columns:1.1in 1fr 1.25in;border:1px solid #555;min-height:.9in;margin-bottom:.15in;width:100%}
     .fmt-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;padding:5px}
-    .fmt-logo img{max-width:.72in;max-height:.72in;object-fit:contain;opacity:.68}
-    .fmt-title{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;text-align:center;font-weight:700;text-transform:uppercase;color:#444;line-height:1.2;font-size:11pt;padding:8px 14px}
-    .fmt-code{font-size:10pt;line-height:1.6;padding:8px 8px;color:#333;vertical-align:top}
-    .sec-title{font-weight:700;font-size:10.5pt;margin:.18in 0 .07in;text-transform:uppercase;border-bottom:1px solid #555;padding-bottom:3px;color:#444}
+    .fmt-logo img{max-width:.75in;max-height:.75in;object-fit:contain;opacity:.68}
+    .fmt-title{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;text-align:center;font-weight:700;text-transform:uppercase;color:#444;line-height:1.25;font-size:11pt;padding:8px 14px}
+    .fmt-code{font-size:9.5pt;line-height:1.75;padding:8px 10px;color:#333}
+    .agenda-titulo{font-weight:700;font-size:11pt;text-align:center;margin:.18in 0 .15in}
+    .reunion-info{margin-bottom:.15in;font-size:10pt;line-height:1.8}
+    .reunion-info table{border-collapse:collapse;width:100%}
+    .reunion-info td{padding:2px 0;font-size:10pt;width:50%}
+    .page-break{page-break-before:always}
     @media print{body{margin:0}}
   </style></head><body>
 
-    <!-- ══ ENCABEZADO INSTITUCIONAL ══ -->
-    <div class="fmt-head">
-      <div class="fmt-logo"><img src="${logoSrc}" alt="ENUFC"></div>
-      <div class="fmt-title">AGENDA DE LA REUNIÓN DE REVISIÓN POR LA DIRECCIÓN</div>
-      <div class="fmt-code">
-        <strong>Código:</strong> R-93/02<br>
-        <strong>Revisión:</strong> 01<br>
-        <strong>Fecha:</strong> 05/12/2024
-      </div>
+    ${encabezado}
+
+    <p class="agenda-titulo">Agenda de la Reunión de Revisión por la Dirección</p>
+
+    <!-- Datos de la reunión -->
+    <div class="reunion-info">
+      <table><tr>
+        <td><strong>Fecha:</strong> <u>${repFecha}</u></td>
+        <td><strong>Lugar:</strong> <u>${esc(data.rep_lugar)}</u></td>
+      </tr><tr>
+        <td><strong>Hora de inicio:</strong> <u>${horaIni}</u></td>
+        <td><strong>Hora de cierre:</strong> <u>${horaCie}</u></td>
+      </tr></table>
     </div>
 
-    <!-- ══ DATOS DE LA REUNIÓN ══ -->
-    <table style="margin-bottom:.14in">
-      <tr>
-        <td style="border:1px solid #555;padding:5px 10px;font-size:10pt;width:20%"><strong>Fecha:</strong> ${repFecha}</td>
-        <td style="border:1px solid #555;border-left:none;padding:5px 10px;font-size:10pt;width:35%"><strong>Lugar:</strong> ${esc(data.rep_lugar)}</td>
-        <td style="border:1px solid #555;border-left:none;padding:5px 10px;font-size:10pt;width:22%"><strong>Hora de inicio:</strong> ${data.rep_hora_inicio||''}</td>
-        <td style="border:1px solid #555;border-left:none;padding:5px 10px;font-size:10pt"><strong>Hora de cierre:</strong> ${data.rep_hora_cierre||''}</td>
-      </tr>
-    </table>
-
-    <!-- ══ AGENDA ══ -->
+    <!-- Tabla agenda -->
     <table>
-      <thead><tr>${th('Tema a tratar','width:28%')}${th('Relevancia con el SGC','width:25%')}${th('Observaciones')}</tr></thead>
+      <thead><tr>${th('Tema a tratar','width:30%')}${th('Relevancia con el SGC','width:28%')}${th('Observaciones')}</tr></thead>
       <tbody>${agendaRows}</tbody>
     </table>
 
-    <!-- ══ FIRMAS AGENDA ══ -->
-    <table style="margin-top:.1in"><tr>
-      ${sigBlock(data.firma_director_rep,'Director (Nombre y Firma)')}
-      ${sigBlock(data.firma_calidad_rep,'Administrador de la Calidad (Nombre y Firma)')}
-    </tr></table>
+    <!-- Firmas después de agenda -->
+    <table style="margin-top:.2in;border-collapse:collapse;width:100%">
+      <tr>
+        <th style="border:1px solid #555;padding:5px 8px;font-size:9.5pt;background:#d9d9d9;text-align:center;width:55%">Nombre</th>
+        <th style="border:1px solid #555;padding:5px 8px;font-size:9.5pt;background:#d9d9d9;text-align:center">Firma</th>
+      </tr>
+      <tr>
+        <td style="border:1px solid #555;padding:7px 8px;font-size:9.5pt">Director: ${esc(data.firma_director_rep||'')}</td>
+        <td style="border:1px solid #555;padding:22px 8px"></td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #555;padding:7px 8px;font-size:9.5pt">Administrador de la Calidad: ${esc(data.firma_calidad_rep||'')}</td>
+        <td style="border:1px solid #555;padding:22px 8px"></td>
+      </tr>
+    </table>
 
-    <!-- ══ TOMA DE DECISIONES ══ -->
-    <p class="sec-title" style="margin-top:.2in">Toma de Decisiones</p>
+    <!-- Página 2: Toma de Decisiones -->
+    <div class="page-break"></div>
+    ${encabezado}
+
     <table>
-      <thead><tr>${th('Tema a tratar','width:15%')}${th('Descripción','width:22%')}${th('Responsable(s)','width:16%')}${th('Acciones requeridas')}${th('Fecha de cumplimiento','width:11%;text-align:center;white-space:nowrap')}</tr></thead>
+      <thead><tr>${th('Tema a tratar','width:15%')}${th('Descripción','width:22%')}${th('Responsable(s)','width:16%')}${th('Acciones requeridas')}${th('Fecha de cumplimiento','width:12%;text-align:center;white-space:nowrap')}</tr></thead>
       <tbody>${decisionRows}</tbody>
     </table>
 
-    <!-- ══ FIRMAS FINALES ══ -->
-    <table style="margin-top:.1in"><tr>
-      ${sigBlock(data.firma_director_rep,'Director')}
-      ${sigBlock(data.firma_calidad_rep,'Administrador de la Calidad')}
-      <td style="width:22%;padding:0 .15in;vertical-align:top">
-        <div style="border-top:1px solid #444;margin-top:.5in;padding-top:5px;font-size:9.5pt">
+    <!-- Firmas finales -->
+    <table style="margin-top:.25in;border-collapse:collapse;width:100%"><tr>
+      <td style="width:40%;padding:0 .15in 0 0;vertical-align:top">
+        <div style="border-top:1px solid #444;margin-top:.45in;padding-top:4px;font-size:9.5pt;line-height:1.6">
+          <strong>Director:</strong> ${esc(data.firma_director_rep||'')}
+        </div>
+      </td>
+      <td style="width:38%;padding:0 .1in;vertical-align:top">
+        <div style="border-top:1px solid #444;margin-top:.45in;padding-top:4px;font-size:9.5pt;line-height:1.6">
+          <strong>Administrador de la Calidad:</strong> ${esc(data.firma_calidad_rep||'')}
+        </div>
+      </td>
+      <td style="width:22%;padding:0 0 0 .1in;vertical-align:top">
+        <div style="border-top:1px solid #444;margin-top:.45in;padding-top:4px;font-size:9.5pt;line-height:1.6">
           <strong>Fecha:</strong> ${repFecha}
         </div>
       </td>
@@ -16083,10 +16202,299 @@ function revImprimirReporte(){
 
   <script>window.onload=function(){window.print();}<\/script>
   </body></html>`;
-  const w=window.open('','_blank','width=1300,height=850');
+  const w=window.open('','_blank','width=900,height=1100');
   if(w){w.document.write(html);w.document.close();}
 }
 
+
+/* ═══════════════════════════════════════
+   DESCRIPCIONES DE PUESTO (R-72-02)
+═══════════════════════════════════════ */
+const DESC_PUESTOS=[
+  {id:'director',titulo:'Director',jefe:'Jefe(a) del Departamento de Normales del IEBEM',subordinados:'Consejo Académico, Comité de Planeación, Subdirector(a) Académico(a), Subdirector(a) Administrativo(a), Coordinador de Calidad ISO 9001:2015, Coordinador de PROFEN, Secretaria de Dirección',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Liderar la institución educativa, garantizando la calidad de la formación docente y la mejora continua del sistema educativo. Implica dirigir la planeación, programación, organización y evaluación del trabajo académico y administrativo, así como fomentar la innovación y el desarrollo profesional del cuerpo docente.',funciones:['Planear, dirigir, supervisar y evaluar las actividades académicas y administrativas del plantel conforme a las políticas educativas y lineamientos establecidos por la DGN.','Validar el programa anual de operación del plantel y presentarlo al IEBEM.','Estructurar los planes, programas y proyectos de desarrollo institucional a mediano y largo plazo.','Aprobar el anteproyecto anual de presupuesto del plantel.','Dirigir y controlar la aplicación de los recursos financieros del plantel.','Vigilar que la selección, contratación y demás movimientos del personal se efectúen conforme a la normatividad vigente.','Presidir el Comité de Planeación y el Consejo Académico.','Promover cursos de capacitación, actualización y superación del personal.','Dirigir, controlar y evaluar la aplicación del plan y programas de estudio.','Determinar y evaluar las actividades de docencia, investigación, difusión cultural y extensión educativa.','Propiciar la información y el apoyo requeridos por las autoridades para supervisiones y auditorías.','Informar al IEBEM acerca del funcionamiento del plantel en los plazos establecidos.'],educacion:'Mínimamente estudios de Maestría. Profesor de tiempo completo, antigüedad de 5 años en la ENUFC.',habilidades:'Liderazgo, gestión, comunicación y pedagogía para guiar a la comunidad educativa hacia el logro de los objetivos institucionales.',formacion:null,experiencia:null,edad:null,areas_clave:['direccion','dirección','director']},
+  {id:'secretaria_dir',titulo:'Secretaria(o) de Dirección',jefe:'Director(a)',subordinados:'Ninguno',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Redactar documentos. Recepcionar, clasificar, registrar, distribuir y archivar la documentación de la oficina; orientar al público en general, resguardo y conservación de los documentos, así como apoyar permanentemente en las actividades propias de la Dirección.',funciones:['Generar documentación oficial (oficios, memorándums, reconocimientos, circulares, entre otros).','Realizar y contestar llamadas. Atención a personas que soliciten audiencia con el Director(a).','Recibir, enviar y clasificar correspondencia.','Mantener actualizado y organizado el archivo.','Tomar dictados y transcribir en computadora.','Distribuir documentos en el centro de trabajo.','Colaborar en actividades eventuales o extraordinarias.','Manejar agenda del jefe inmediato.','Colaborar en la elaboración y actualización de los Procedimientos de Certificación del Área.'],educacion:'Mínimo Secretaria Ejecutiva, Bachillerato o su equivalente.',habilidades:'Manejo de Office, correo electrónico, equipo de oficina, organización, discreción, iniciativa, excelentes capacidades comunicativas escritas y verbales.',formacion:'Redacción de documentos oficiales, Archivo y Correspondencia, Procesador de textos, Hoja electrónica, Internet, ortografía, redacción, relaciones humanas.',experiencia:'Mínima de 2 años en puestos similares.',edad:'De 22 a 70 años.',areas_clave:['secretaria direccion','secretaria de dirección','secretaría dirección']},
+  {id:'subdirector_academico',titulo:'Subdirector(a) Académico(a)',jefe:'Director(a)',subordinados:'Jefe(a) del Área de Docencia, Áreas de Investigación, Difusión Cultural y Extensión Educativa, Secretaria de Subdirección Académica, Auxiliar de Titulación',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Planear, coordinar y supervisar las actividades de investigación, docencia, difusión cultural y extensión educativa que se realicen en la institución.',funciones:['Elaborar el programa anual de trabajo de la Subdirección.','Participar en el establecimiento de políticas y estrategias para el cumplimiento de los objetivos.','Definir los lineamientos para la elaboración de planes de trabajo de las áreas a su cargo.','Participar en la integración del anteproyecto anual de presupuesto del plantel.','Presidir reuniones que sean competencia de la Subdirección.','Integrar los horarios de clases conforme al plan de estudios.','Sustituir al Director(a) durante sus ausencias temporales.','Orientar al personal docente sobre el uso y aplicación de elementos teórico-metodológicos.','Coordinar el desarrollo de las actividades de Docencia, Investigación, Difusión Cultural y Extensión Educativa.','Atender los problemas de orden académico que presenten docentes y alumnos.','Proponer programas de capacitación y actualización del personal.','Organizar y coordinar las actividades de control escolar.','Vigilar el cumplimiento de las disposiciones técnicas y administrativas que regulan las actividades académicas.','Colaborar en la elaboración y actualización de los Procedimientos de Certificación del Área.'],educacion:'Mínimo maestría en el área educativa, pedagogía o su equivalente.',habilidades:'Sentido de responsabilidad, iniciativa, madurez de criterio, capacidad de dirigir personal, toma de decisiones, resolución de conflictos, facilidad de expresión oral y escrita.',formacion:'Administración general, ciencias de la educación, sistemas de educación superior, políticas educativas, manejo de estadística y planes de estudio.',experiencia:'Mínima de 3 años en labor docente de escuelas normales.',edad:'De 28 a 75 años.',areas_clave:['subdirección académica','subdirector académico','subdirección','subdireccion academica','sa']},
+  {id:'secretaria_sa',titulo:'Secretaria(o) de Subdirección Académica',jefe:'Subdirector(a) Académico(a)',subordinados:'Ninguno',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Redactar documentos. Recepcionar, clasificar, registrar, distribuir y archivar la documentación de la oficina; orientar al público en general y apoyar permanentemente en las actividades propias de la Subdirección Académica.',funciones:['Generar documentación oficial (oficios, memorándums, reconocimientos, circulares, entre otros).','Realizar y contestar llamadas. Atención a personas que soliciten audiencia con el Subdirector Académico.','Recibir, enviar y clasificar correspondencia.','Mantener actualizado y organizado el archivo.','Tomar dictados y transcribir en computadora.','Distribuir documentos en el centro de trabajo.','Colaborar en actividades eventuales o extraordinarias.','Manejar agenda del jefe inmediato.','Colaborar en la elaboración y actualización de los Procedimientos de Certificación del Área.'],educacion:'Mínimo Secretaria Ejecutiva, Bachillerato o su equivalente.',habilidades:'Manejo de Office, correo electrónico, equipo de oficina, organización, discreción, iniciativa, excelentes capacidades comunicativas.',formacion:'Redacción de documentos oficiales, Archivo y Correspondencia, Procesador de textos, Hoja electrónica, Internet, ortografía, redacción, relaciones humanas.',experiencia:'Mínima de 2 años en puestos similares.',edad:'De 22 a 70 años.',areas_clave:['secretaria subdirección','secretaria sa','secretaría subdirección académica']},
+  {id:'secretario_titulacion',titulo:'Secretario(a) de la Oficina de Titulación',jefe:'Presidente(a) de la Comisión de Titulación (Subdirector Académico)',subordinados:'Ninguno',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Redactar documentos. Recepcionar, clasificar, registrar, distribuir y archivar la documentación de la oficina; resguardo y conservación de los documentos, así como apoyar permanentemente en las actividades propias de la Oficina de Titulación.',funciones:['Generar documentación oficial (oficios, memorándums, reconocimientos, circulares, entre otros).','Realizar y contestar llamadas. Atención a personas que soliciten audiencia con el Presidente(a) de la Comisión de Titulación.','Colaborar y brindar apoyo a los estudiantes en sus procesos de titulación en las fechas establecidas.','Recibir, enviar y clasificar correspondencia.','Mantener actualizado y organizado el archivo.','Distribuir documentos en el centro de trabajo.','Colaborar en actividades eventuales o extraordinarias.','Manejar agenda del Presidente(a) de la Comisión de Titulación.','Colaborar en la elaboración y actualización de los Procedimientos de Certificación del Área.'],educacion:'Mínimo Secretaria Ejecutiva, Bachillerato o su equivalente.',habilidades:'Manejo de Office, correo electrónico, equipo de oficina, organización, discreción, iniciativa, excelentes capacidades comunicativas.',formacion:'Redacción de documentos oficiales, Archivo y Correspondencia, Procesador de textos, Hoja electrónica, Internet, ortografía, redacción, relaciones humanas.',experiencia:'Mínima de 2 años en puestos similares.',edad:'De 22 a 70 años.',areas_clave:['titulación','titulacion','tit','oficina de titulación']},
+  {id:'jefe_docencia',titulo:'Jefe(a) del Área de Docencia',jefe:'Subdirector(a) Académico(a)',subordinados:'Jefe(a) de Oficina de Control Escolar, Jefe(a) de Oficina de Tutoría, Jefe(a) de Oficina de Psicopedagogía, Docentes y Secretaria(o) del Área de Docencia',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Promover, asesorar y dirigir las acciones de psicopedagogía, control escolar, así como las relacionadas con el proceso de enseñanza-aprendizaje, considerando las políticas y lineamientos establecidos.',funciones:['Elaborar con la participación del personal a su cargo el plan anual de trabajo.','Integrar el cuadro de necesidades del área.','Coordinar la elaboración de los horarios de clases.','Participar en la integración y funcionamiento de las Academias de Maestros.','Dar a conocer los lineamientos para el servicio social y el proceso de titulación de los alumnos.','Informar a la Subdirección Académica sobre la asistencia y puntualidad del personal.','Distribuir las áreas escolares de acuerdo con grupos, espacios curriculares y horarios.','Solicitar materiales, equipos e instrumentos necesarios para el proceso enseñanza-aprendizaje.','Proponer criterios técnico-pedagógicos para la aplicación de los programas de estudio.','Coordinar la aplicación de las normas y lineamientos para la evaluación del proceso de enseñanza-aprendizaje.','Orientar a docentes en la correcta interpretación de disposiciones técnico-pedagógicas.','Supervisar que el proceso de enseñanza-aprendizaje se realice conforme al modelo académico vigente.','Verificar el cumplimiento del calendario escolar y de los horarios de clases establecidos.','Colaborar en la elaboración y actualización de los Procedimientos de Certificación del Área.'],educacion:'Mínimo maestría en el área educativa, pedagogía o su equivalente.',habilidades:'Sentido de responsabilidad, iniciativa, madurez de criterio, capacidad de dirigir personal, toma de decisiones, facilidad de expresión oral y escrita, capacidad para relacionarse.',formacion:'Administración general, políticas educativas, planes y programas de estudio, pedagogía, psicología educativa, sociología educativa, procedimientos de control escolar.',experiencia:'Mínima de 2 años en labor docente en escuelas normales. De preferencia haber desempeñado acciones relacionadas con el área.',edad:'De 28 a 75 años.',areas_clave:['docencia','doc','área de docencia','jefe docencia']},
+  {id:'secretaria_docencia',titulo:'Secretaria(o) del Área de Docencia',jefe:'Jefe(a) del Área de Docencia',subordinados:'Ninguno',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Redactar documentos. Recepcionar, clasificar, registrar, distribuir y archivar la documentación de la oficina; orientar al público en general y apoyar permanentemente en las actividades propias del Área de Docencia.',funciones:['Generar documentación oficial (oficios, memorándums, reconocimientos, circulares, entre otros).','Realizar y contestar llamadas. Atención a personas que soliciten audiencia con el Jefe(a) del Área de Docencia.','Recibir, enviar y clasificar correspondencia.','Mantener actualizado y organizado el archivo.','Tomar dictados y transcribir en computadora.','Distribuir documentos en el centro de trabajo.','Colaborar en actividades eventuales o extraordinarias.','Manejar agenda del jefe inmediato.','Colaborar en la elaboración y actualización de los Procedimientos de Certificación del Área.'],educacion:'Mínimo Secretaria Ejecutiva, Bachillerato o su equivalente.',habilidades:'Manejo de Office, correo electrónico, equipo de oficina, organización, discreción, iniciativa, excelentes capacidades comunicativas.',formacion:'Redacción de documentos oficiales, Archivo y Correspondencia, Procesador de textos, Hoja electrónica, Internet, ortografía, redacción, relaciones humanas.',experiencia:'Mínima de 2 años en puestos similares.',edad:'De 22 a 70 años.',areas_clave:['secretaria docencia','secretaría docencia','secretaria area docencia']},
+  {id:'docente',titulo:'Docente',jefe:'Jefe(a) del Área de Docencia',subordinados:'Ninguno',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Conducir conforme a los planes y programas de estudio aprobados, el proceso enseñanza-aprendizaje para la formación de profesores de Educación Preescolar, Educación Primaria e Inclusión Educativa conforme al modelo académico vigente.',funciones:['Elaborar el plan de trabajo de acuerdo con los programas de estudio del curso.','Aplicar las disposiciones de carácter técnico-pedagógico y de organización para el proceso de enseñanza-aprendizaje.','Analizar programas de estudio, apuntes, textos, tesis y prácticas pedagógicas.','Desarrollar con los alumnos los programas de estudio vinculando la teoría con la práctica.','Elaborar los instrumentos necesarios para evaluar el aprendizaje de los alumnos.','Evaluar al término del semestre el proceso enseñanza-aprendizaje.','Participar en programas de capacitación y actualización del personal docente.','Colaborar en el desarrollo de actividades de Investigación, Difusión Cultural y Extensión Educativa.','Participar en las reuniones de academia de maestros y cumplir con los acuerdos establecidos.','Participar en las acciones de Servicio Social y Titulación cuando se le designe.','Determinar el material didáctico requerido y solicitarlo al Jefe(a) de Área.','Formular los exámenes ordinarios de fin de curso, de regularización o de selección de aspirantes.','Promover entre los alumnos el buen uso del mobiliario, equipo y materiales didácticos.','Colaborar en la elaboración y actualización de los Procedimientos de Certificación del Área.'],educacion:'Mínimo maestría en el área educativa, pedagogía o su equivalente.',habilidades:'Habilidad para conducir el proceso enseñanza-aprendizaje, respeto, compromiso y responsabilidad, facilidad de expresión oral y escrita, iniciativa, madurez de criterio, capacidad para relacionarse, honestidad y discreción.',formacion:'En el área de su materia, pedagogía, psicología educativa, modelo académico, recursos didácticos, técnicas de estudio, psicotécnica pedagógica.',experiencia:'Mínima de 2 años en labor docente en escuelas normales.',edad:'De 26 a 75 años.',areas_clave:['docente','docentes']},
+  {id:'jefe_ce',titulo:'Jefe(a) de la Oficina de Control Escolar',jefe:'Jefe(a) del Área de Docencia',subordinados:'Auxiliar de Analista Técnico (2)',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Regular los procesos de selección, inscripción, reinscripción, acreditación, regularización, certificación y titulación en la ENUFC, con base en las Normas Específicas de Control Escolar emitidas por la SEP.',funciones:['Operar los procesos de inscripción, reinscripción, acreditación, certificación y titulación de los alumnos del plantel.','Verificar que los documentos que presentan los alumnos cumplan con los requisitos en vigor.','Integrar los documentos de la historia académica de los alumnos.','Elaborar y mantener actualizado el registro de los alumnos.','Elaborar los listados de grupos por materia y distribuirlos al personal docente.','Integrar la información de control escolar en los términos y calendarios establecidos por la SEP / DGESuM.','Expedir la documentación de los alumnos conforme a las normas de la DGESuM.','Participar en la difusión de la Convocatoria y seguimiento a solicitudes de aspirantes.','Proporcionar a los alumnos información sobre su historial académico.','Orientar a los alumnos sobre trámites de altas, bajas y traslados.','Elaborar y validar las boletas de grado y los certificados de ciclo.','Colaborar en la elaboración y actualización de los Procedimientos de Certificación del Área.'],educacion:'Mínimo Licenciatura en Administración, Informática Administrativa, en el área humanístico social o su equivalente.',habilidades:'Manejo de Office, correo electrónico, equipo de oficina, organización, discreción, iniciativa, excelentes capacidades comunicativas, toma de decisiones, sentido de responsabilidad.',formacion:'Redacción de documentos oficiales, archivo y control de expedientes, procesador de textos, hoja electrónica, Internet, ortografía, organización y control de datos, manejo de estadística.',experiencia:'Mínima de 2 años en puestos similares.',edad:'De 24 a 70 años.',areas_clave:['control escolar','ce','control_escolar','jefe control escolar','oficina de control escolar']},
+  {id:'auxiliar_ce',titulo:'Auxiliar de Analista Técnico',jefe:'Jefe(a) de la Oficina de Control Escolar',subordinados:'Ninguno',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Realizar las actividades de los procesos de inscripciones, reinscripciones, acreditación, regularización, certificación y titulación de los alumnos del plantel conforme a las normas y lineamientos establecidos.',funciones:['Verificar que los documentos de alumnos de nuevo ingreso cumplan con los requisitos establecidos.','Verificar la acreditación de los alumnos para la expedición de los documentos correspondientes.','Orientar a los alumnos acerca de los trámites que señalan los procedimientos de Control Escolar.','Proporcionar la información relativa al registro de calificaciones de los alumnos.','Elaborar los informes estadísticos derivados del proceso de Control Escolar.','Colaborar en la elaboración y actualización de los Procedimientos de Certificación del Área.'],educacion:'Mínimo carrera trunca en Administración, Informática Administrativa, en el área humanístico social o su equivalente.',habilidades:'Manejo de Office, correo electrónico, equipo de oficina, organización, discreción, capacidad de relacionarse, sentido de responsabilidad.',formacion:'Redacción de documentos oficiales, archivo y control de expedientes, procesador de textos, hoja electrónica, Internet, ortografía, organización y control de datos.',experiencia:'Mínima de 1 año en puestos similares.',edad:'De 22 a 70 años.',areas_clave:['auxiliar analista','auxiliar técnico','analista técnico','auxiliar control escolar']},
+  {id:'coordinador_sgc',titulo:'Coordinador(a) del Sistema de Gestión de la Calidad',jefe:'Director(a)',subordinados:'Comisionados',horario:'Lunes a viernes, 08:00 – 15:00 h',proposito:'Asegurar la implementación y cumplimiento de los procesos del Sistema de Gestión de Calidad (SGC) para la mejora continua en las áreas involucradas de la ENUFC, conforme a los estándares ISO 9001.',funciones:['Garantizar el cumplimiento de las políticas y procedimientos de SGC conforme a los requisitos de la norma ISO 9001.','Elaboración y documentación de métodos y procedimientos de la ENUFC (manuales, procedimientos, instructivos, políticas, formatos, anexos, entre otros).','Diseñar e implementar las acciones, planes y competencias necesarias para mantener vigentes las políticas y normativas ante las partes interesadas.','Seguimiento y control de la información documentada.','Análisis y evaluación de los procesos para la mejora continua.','Ejecución, control y seguimiento de auditorías internas.','Diseño, documentación, mantenimiento e implementación de procesos en todas las áreas de la ENUFC.','Implementación de proyectos de mejora de procesos.','Mapeo y mejora de procesos.'],educacion:'Mínimo Administrador, Contador, Ingeniería o afín.',habilidades:'Habilidad para conducir el proceso de Gestión de la Calidad, respeto, compromiso y responsabilidad, facilidad de expresión oral y escrita, iniciativa, madurez de criterio, honestidad, discreción y orden.',formacion:'Conocimientos de Gestión de la Calidad, desarrollo de procesos.',experiencia:'Mínima de 2 años. De preferencia haber desempeñado acciones relacionadas con el área.',edad:'De 26 a 75 años.',areas_clave:['calidad','coordinacion calidad','coordinación de calidad','sgc','admin','coordinador calidad','coordinación']}
+];
+
+function dpMatchArea(areaNombre){
+  const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+  const an=norm(areaNombre);
+  if(!an)return[];
+  return DESC_PUESTOS.filter(d=>d.areas_clave.some(k=>an.includes(norm(k))||norm(k).includes(an)));
+}
+
+function dpLoad(){
+  const esAdm=['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rolUsuarioActual());
+  const selectorWrap=document.getElementById('dp-selector-wrap');
+  const sinArea=document.getElementById('dp-sin-area');
+  const contenido=document.getElementById('dp-contenido');
+  sinArea.style.display='none';
+  if(esAdm){
+    selectorWrap.style.display='';
+    const sel=document.getElementById('dp-sel');
+    sel.innerHTML=DESC_PUESTOS.map(d=>`<option value="${d.id}">${esc(d.titulo)}</option>`).join('');
+    dpMostrar(DESC_PUESTOS[0].id);
+  } else {
+    selectorWrap.style.display='none';
+    const area=S.currentUser?.areas?.nombre||S.currentUser?.area||'';
+    const matches=dpMatchArea(area);
+    if(!matches.length){sinArea.style.display='';contenido.innerHTML='';}
+    else if(matches.length===1){contenido.innerHTML=dpRenderCard(matches[0]);}
+    else{
+      const tabs=`<div class="dp-tabs">${matches.map((d,i)=>`<button class="dp-tab${i===0?' active':''}" onclick="dpActivarTab('${d.id}',this)">${esc(d.titulo)}</button>`).join('')}</div>`;
+      contenido.innerHTML=tabs+`<div id="dp-tab-content">${dpRenderCard(matches[0])}</div>`;
+    }
+  }
+}
+
+window.dpMostrar=function(id){
+  const d=DESC_PUESTOS.find(x=>x.id===id);
+  if(d)document.getElementById('dp-contenido').innerHTML=dpRenderCard(d);
+};
+
+window.dpActivarTab=function(id,btn){
+  document.querySelectorAll('#sec-desc-puesto .dp-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const d=DESC_PUESTOS.find(x=>x.id===id);
+  if(d){const tc=document.getElementById('dp-tab-content');if(tc)tc.innerHTML=dpRenderCard(d);}
+};
+
+function dpRenderCard(d){
+  const funcsHtml=d.funciones.map(f=>`<li>${esc(f)}</li>`).join('');
+  const reqItems=[
+    {label:'Educación formal',val:d.educacion},
+    {label:'Habilidades',val:d.habilidades},
+    d.formacion?{label:'Formación',val:d.formacion}:null,
+    d.experiencia?{label:'Experiencia',val:d.experiencia}:null,
+    d.edad?{label:'Edad',val:d.edad}:null,
+  ].filter(Boolean);
+  const reqHtml=reqItems.map(r=>`<div class="dp-req-item"><div class="dp-req-label">${esc(r.label)}</div><div class="dp-req-val">${esc(r.val)}</div></div>`).join('');
+  const subHtml=d.subordinados&&d.subordinados!=='Ninguno'?`<div style="font-size:12px;color:var(--muted);margin-top:6px"><strong>Subordinados:</strong> ${esc(d.subordinados)}</div>`:'';
+  return`<div class="dp-card">
+    <div class="dp-card-header">
+      <div class="dp-card-title">${esc(d.titulo)}</div>
+      <div class="dp-card-meta">
+        <span class="dp-badge">Jefe inmediato: ${esc(d.jefe)}</span>
+        <span class="dp-badge">${esc(d.horario)}</span>
+      </div>
+      ${subHtml}
+    </div>
+    <div class="dp-sect">
+      <div class="dp-sect-title">Propósito del Puesto</div>
+      <p class="dp-proposito">${esc(d.proposito)}</p>
+    </div>
+    <div class="dp-sect">
+      <div class="dp-sect-title">Funciones Principales</div>
+      <ul class="dp-func-list">${funcsHtml}</ul>
+    </div>
+    <div class="dp-sect">
+      <div class="dp-sect-title">Conocimientos, Habilidades y Experiencia Requerida</div>
+      <div class="dp-req-grid">${reqHtml}</div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════
+   BÚSQUEDA GLOBAL (Ctrl+K)
+═══════════════════════════════════════ */
+const SRCH_SECCIONES=[
+  {sec:'inicio',titulo:'Inicio',sub:'Panel principal y resumen del SGC',ico:'🏠',kw:'inicio dashboard resumen bienvenida'},
+  {sec:'manual',titulo:'Manual de Calidad',sub:'Manual del Sistema de Gestión de Calidad',ico:'📖',kw:'manual calidad sgc iso'},
+  {sec:'politica',titulo:'Política de Calidad',sub:'R-52/01 · Cláusula 5.2 ISO 9001:2015',ico:'🛡️',kw:'politica calidad'},
+  {sec:'objetivos',titulo:'Objetivos de Calidad',sub:'Metas e indicadores por área',ico:'🎯',kw:'objetivos metas indicadores'},
+  {sec:'foda',titulo:'Matriz FODA',sub:'Fortalezas, Oportunidades, Debilidades, Amenazas',ico:'🔲',kw:'foda fortalezas oportunidades debilidades amenazas analisis'},
+  {sec:'desc-puesto',titulo:'Descripciones de Puesto',sub:'R-72-02 · Funciones y competencias por cargo',ico:'👤',kw:'puesto descripcion funciones cargo competencias personal'},
+  {sec:'aud-nueva',titulo:'Nueva Auditoría',sub:'Registrar nueva auditoría interna',ico:'➕',kw:'auditoria nueva crear registrar'},
+  {sec:'aud-registro',titulo:'Registro de Auditorías',sub:'Historial de auditorías internas y externas',ico:'📋',kw:'auditoria registro historial listado'},
+  {sec:'aud-plan',titulo:'Plan de Auditoría',sub:'Programas y calendarios de auditoría',ico:'📅',kw:'plan auditoria programa calendario'},
+  {sec:'ind-captura',titulo:'Capturar Indicador',sub:'Registrar medición de indicadores de calidad',ico:'📊',kw:'indicador captura registro medicion dato'},
+  {sec:'ind-historial',titulo:'Historial de Indicadores',sub:'Tendencias y gráficas por período',ico:'📈',kw:'indicadores historial graficas tendencia'},
+  {sec:'nc',titulo:'No Conformidades',sub:'Registro y seguimiento de hallazgos',ico:'⚠️',kw:'no conformidad nc hallazgo problema desviacion'},
+  {sec:'plan',titulo:'Plan de Acción',sub:'Acciones correctivas y preventivas',ico:'✅',kw:'plan accion correctiva preventiva mejora'},
+  {sec:'eficacia',titulo:'Eficacia de Acciones',sub:'R-93/04 · Verificación de eficacia',ico:'✔️',kw:'eficacia accion correctiva verificacion r9304'},
+  {sec:'documentos',titulo:'Control Documental',sub:'Procedimientos, instructivos y formatos vigentes',ico:'📄',kw:'documento procedimiento instructivo formato control'},
+  {sec:'sol-cambios',titulo:'Solicitud de Cambios',sub:'Solicitar modificaciones a documentos SGC',ico:'✏️',kw:'cambio solicitud modificacion documento'},
+  {sec:'r7503',titulo:'Listado de Registros',sub:'R-75/03 · Catálogo de registros del SGC',ico:'📑',kw:'registros r7503 listado catalogo'},
+  {sec:'drive',titulo:'Repositorio Drive',sub:'Archivos y carpetas en Google Drive',ico:'🗂️',kw:'drive repositorio archivos carpetas google'},
+  {sec:'solicitud',titulo:'Solicitud de Servicios',sub:'Pedidos de materiales y servicios internos',ico:'📝',kw:'solicitud servicio pedido material'},
+  {sec:'memorandum',titulo:'Memorándum',sub:'Comunicados internos oficiales',ico:'✉️',kw:'memorandum comunicado escrito oficial'},
+  {sec:'prov-lista',titulo:'Lista de Proveedores',sub:'R-84-01 · Proveedores aprobados',ico:'🏭',kw:'proveedor lista aprobado r8401'},
+  {sec:'prov-eval',titulo:'Evaluación de Proveedor',sub:'R-84-02 · Evaluar desempeño de proveedor',ico:'⭐',kw:'proveedor evaluacion r8402'},
+  {sec:'prov-sol',titulo:'Solicitud a Proveedor',sub:'R-84-03 · Solicitar servicio a proveedor',ico:'📮',kw:'proveedor solicitud r8403'},
+  {sec:'informes',titulo:'Informes Generales',sub:'Reportes y estadísticas del SGC',ico:'📊',kw:'informe reporte estadistica general'},
+  {sec:'calendario',titulo:'Calendario SGC',sub:'Eventos y fechas clave del sistema',ico:'📅',kw:'calendario fechas eventos actividades'},
+  {sec:'revision',titulo:'Revisión por la Dirección',sub:'R-93/01 · R-93/02 · Cláusula 9.3',ico:'🏛️',kw:'revision direccion r9301 r9302'},
+  {sec:'satisfaccion',titulo:'Satisfacción del Alumno',sub:'R-91/01 · R-91/02 · Ficha y Encuesta',ico:'😊',kw:'satisfaccion alumno ficha encuesta r9101 r9102'},
+  {sec:'admin',titulo:'Administrar',sub:'Configuración de usuarios, áreas e indicadores',ico:'⚙️',kw:'admin configuracion usuarios areas indicadores'},
+];
+
+let _srchIdx=-1,_srchItems=[],_srchTimer=null;
+
+function srchAbrir(){
+  document.getElementById('srch-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('srch-input').focus(),60);
+  _srchIdx=-1;_srchItems=[];
+}
+window.srchAbrir=srchAbrir;
+
+function srchCerrar(){
+  document.getElementById('srch-overlay').classList.remove('open');
+  document.getElementById('srch-input').value='';
+  document.getElementById('srch-results').innerHTML='<p class="srch-empty">Escribe para buscar secciones, puestos, documentos…</p>';
+  _srchIdx=-1;_srchItems=[];
+}
+window.srchCerrar=srchCerrar;
+
+window.srchCerrarSiBackdrop=function(e){if(e.target.id==='srch-overlay')srchCerrar();};
+
+window.srchBuscar=function(q){
+  clearTimeout(_srchTimer);
+  _srchTimer=setTimeout(()=>_srchEjecutar(q.trim()),130);
+};
+
+function _srchN(s){return(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function _srchHit(q,t){return _srchN(t).includes(_srchN(q));}
+
+function _srchEjecutar(q){
+  const box=document.getElementById('srch-results');
+  if(q.length<2){box.innerHTML='<p class="srch-empty">Escribe al menos 2 caracteres…</p>';_srchItems=[];_srchIdx=-1;return;}
+  const ok=seccionesPermitidas();
+  const grupos=[];
+
+  // 1. Secciones del menú
+  const secs=SRCH_SECCIONES.filter(s=>ok.includes(s.sec)&&(_srchHit(q,s.titulo)||_srchHit(q,s.sub)||_srchHit(q,s.kw)));
+  if(secs.length)grupos.push({titulo:'Secciones',items:secs.map(s=>({ico:s.ico,titulo:s.titulo,sub:s.sub,fn:()=>{srchCerrar();goto(s.sec,null);}}))});
+
+  // 2. Puestos
+  const puestos=(typeof DESC_PUESTOS!=='undefined'?DESC_PUESTOS:[]).filter(d=>
+    _srchHit(q,d.titulo)||_srchHit(q,d.proposito)||_srchHit(q,d.jefe)||d.funciones.some(f=>_srchHit(q,f)));
+  if(puestos.length)grupos.push({titulo:'Descripciones de Puesto',items:puestos.map(d=>({ico:'👤',titulo:d.titulo,
+    sub:d.proposito.substring(0,75)+'…',
+    fn:()=>{srchCerrar();goto('desc-puesto',null);
+      setTimeout(()=>{const esA=['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rolUsuarioActual());
+        if(esA){const sel=document.getElementById('dp-sel');if(sel){sel.value=d.id;dpMostrar(d.id);}}},350);}}))});
+
+  // helper para resaltar tarjeta encontrada
+  const _srchHL2=(sel,attr,val,delay=500)=>{setTimeout(()=>{
+    const card=[...document.querySelectorAll(sel)].find(el=>el.dataset[attr]===val);
+    if(card){card.scrollIntoView({behavior:'smooth',block:'center'});
+      card.style.outline='2.5px solid var(--blue)';card.style.borderRadius='10px';
+      setTimeout(()=>{card.style.outline='';card.style.borderRadius='';},2200);}
+  },delay);};
+
+  // 3. Documentos
+  const docs=(typeof cargarDocs==='function'?cargarDocs():[]).filter(d=>
+    _srchHit(q,d.nombre)||_srchHit(q,d.codigo)||_srchHit(q,d.tipo)||_srchHit(q,d.area)||
+    _srchHit(q,d.estado)||_srchHit(q,d.version)||_srchHit(q,d.objetivo));
+  if(docs.length)grupos.push({titulo:'Documentos',items:docs.slice(0,6).map(d=>({ico:d.tipo==='procedimiento'?'📋':d.tipo==='instructivo'?'📝':d.tipo==='formato'?'📑':'📄',
+    titulo:(d.codigo?d.codigo+' — ':'')+( d.nombre||'Documento'),
+    sub:[d.tipo,d.area,d.estado].filter(Boolean).join(' · '),
+    fn:()=>{srchCerrar();goto('documentos',null);
+      setTimeout(()=>{
+        const card=[...document.querySelectorAll('.doc-list-item[data-doc-id]')].find(el=>el.dataset.docId===d.id);
+        if(card){card.scrollIntoView({behavior:'smooth',block:'center'});
+          card.style.outline='2.5px solid var(--blue)';card.style.borderRadius='10px';
+          setTimeout(()=>{card.style.outline='';card.style.borderRadius='';},2200);}
+      },500);}}))});
+
+  // 4. No Conformidades
+  const ncs=(typeof leerNCs==='function'?leerNCs():[]).filter(n=>
+    _srchHit(q,n.numero)||_srchHit(q,n.descripcion)||_srchHit(q,n.area_numeral)||
+    _srchHit(q,n.ciclo_nc)||_srchHit(q,n.tipo)||_srchHit(q,n.estado)||_srchHit(q,n.hallazgo));
+  if(ncs.length)grupos.push({titulo:'No Conformidades',items:ncs.slice(0,6).map(n=>({ico:'⚠️',
+    titulo:'NC '+(n.numero||n.folio||'—')+' — '+(n.area_numeral||'Sin área').split('/')[0].trim(),
+    sub:[n.tipo==='mayor'?'Mayor':n.tipo==='menor'?'Menor':n.tipo==='obs'?'Observación':n.tipo||'',(n.descripcion||'').substring(0,50)].filter(Boolean).join(' · '),
+    fn:()=>{srchCerrar();goto('nc',null);
+      setTimeout(()=>{
+        const card=[...document.querySelectorAll('.reg-item[data-nc-num]')].find(el=>el.dataset.ncNum===(n.numero||n.id||''));
+        if(card){
+          const cicloDiv=card.closest('[id^="nc-ciclo-"]');
+          if(cicloDiv&&cicloDiv.style.display==='none')cicloDiv.style.display='block';
+          card.scrollIntoView({behavior:'smooth',block:'center'});
+          card.style.outline='2.5px solid var(--blue)';card.style.borderRadius='10px';
+          setTimeout(()=>{card.style.outline='';card.style.borderRadius='';},2200);
+        }
+      },500);}}))});
+
+  // 5. Auditorías
+  const auds=(S.auditorias||[]).filter(a=>
+    _srchHit(q,a.area)||_srchHit(q,a.folio)||_srchHit(q,a.auditor)||_srchHit(q,a.fecha)||
+    _srchHit(q,a.obs)||(a.items||[]).some(it=>_srchHit(q,it.pregunta)||_srchHit(q,it.obs)));
+  if(auds.length)grupos.push({titulo:'Auditorías',items:auds.slice(0,5).map(a=>({ico:'🔍',
+    titulo:(a.folio?a.folio+' — ':'')+( a.area||'Auditoría'),
+    sub:[a.auditor,a.fecha,(a.items||[]).length+' criterios'].filter(Boolean).join(' · '),
+    fn:()=>{srchCerrar();goto('aud-registro',null);
+      setTimeout(()=>{
+        const card=[...document.querySelectorAll('.reg-item[data-aud-id]')].find(el=>el.dataset.audId===(a.id||''));
+        if(card){card.scrollIntoView({behavior:'smooth',block:'center'});
+          card.style.outline='2.5px solid var(--blue)';card.style.borderRadius='10px';
+          setTimeout(()=>{card.style.outline='';card.style.borderRadius='';},2200);}
+      },500);}}))});
+
+  // 6. Solicitudes de Cambio
+  if(ok.includes('sol-cambios')){
+    const scs=(typeof cargarSolicitudesCambio==='function'?cargarSolicitudesCambio():[]).filter(s=>
+      _srchHit(q,s.numero)||_srchHit(q,s.documento)||_srchHit(q,s.area)||_srchHit(q,s.solicitante)||
+      _srchHit(q,s.tipo_cambio)||_srchHit(q,s.estado)||_srchHit(q,s.resolucion)||_srchHit(q,s.justificacion));
+    if(scs.length)grupos.push({titulo:'Solicitudes de Cambio',items:scs.slice(0,5).map(s=>({ico:'✏️',
+      titulo:(s.numero?'No.'+s.numero+' — ':'')+( s.documento||'Solicitud de cambio'),
+      sub:[s.area,s.tipo_cambio,s.resolucion||s.estado||'pendiente'].filter(Boolean).join(' · '),
+      fn:()=>{srchCerrar();goto('sol-cambios',null);
+        setTimeout(()=>{
+          const card=[...document.querySelectorAll('.sc-item[data-sc-id]')].find(el=>el.dataset.scId===(s.id||''));
+          if(card){card.scrollIntoView({behavior:'smooth',block:'center'});
+            card.style.outline='2.5px solid var(--blue)';card.style.borderRadius='10px';
+            setTimeout(()=>{card.style.outline='';card.style.borderRadius='';},2200);}
+        },500);}}))});
+  }
+
+  if(!grupos.length){box.innerHTML=`<p class="srch-empty">Sin resultados para "<strong>${esc(q)}</strong>"</p>`;_srchItems=[];_srchIdx=-1;return;}
+
+  _srchItems=grupos.flatMap(g=>g.items);
+  _srchIdx=-1;
+
+  let fi=0;
+  box.innerHTML=grupos.map(g=>{
+    const rows=g.items.map((it,_)=>{
+      const idx=fi++;
+      return`<div class="srch-item" data-idx="${idx}" onclick="srchElegir(${idx})">
+        <div class="srch-item-ico">${it.ico}</div>
+        <div class="srch-item-body">
+          <div class="srch-item-title">${esc(it.titulo)}</div>
+          ${it.sub?`<div class="srch-item-sub">${esc(it.sub)}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+    return`<div class="srch-group-title">${esc(g.titulo)}</div>${rows}`;
+  }).join('');
+}
+
+window.srchElegir=function(idx){if(_srchItems[idx])_srchItems[idx].fn();};
+
+window.srchTeclado=function(e){
+  const els=document.querySelectorAll('#srch-results .srch-item');
+  if(e.key==='Escape'){srchCerrar();return;}
+  if(e.key==='ArrowDown'){e.preventDefault();_srchIdx=Math.min(_srchIdx+1,els.length-1);_srchHL(els);}
+  if(e.key==='ArrowUp'){e.preventDefault();_srchIdx=Math.max(_srchIdx-1,0);_srchHL(els);}
+  if(e.key==='Enter'&&_srchIdx>=0&&_srchItems[_srchIdx]){e.preventDefault();_srchItems[_srchIdx].fn();}
+};
+
+function _srchHL(els){
+  els.forEach((el,i)=>el.classList.toggle('active',i===_srchIdx));
+  if(els[_srchIdx])els[_srchIdx].scrollIntoView({block:'nearest'});
+}
+
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();srchAbrir();}
+});
 
 /* ═══════════════════════════════════════
    SATISFACCIÓN DEL ALUMNO (R-91/01 · R-91/02)
@@ -18079,9 +18487,9 @@ function provListaImprimir(){
     :Array(8).fill('<tr>'+'<td style="border:1px solid #aaa;padding:0;height:22px"></td>'.repeat(7)+'</tr>').join('');
   const thY=yr=>'<th style="background:#d9d9d9;color:#111;border:1px solid #aaa;padding:5px 4px;font-size:10pt;font-weight:700;text-align:center;width:8%">Año '+yr+'</th>';
   const css=`
-    @page{size:letter portrait;margin:.45in .5in .6in .5in;@bottom-center{content:"Página " counter(page) " de " counter(pages);font-size:9pt;font-family:Arial,Helvetica,sans-serif;color:#555}}
+    @page{size:letter portrait;margin:0}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,Helvetica,sans-serif;font-size:11pt;color:#111}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:11pt;color:#111;margin:.45in .5in;padding:0}
     .fmt-head{display:grid;grid-template-columns:1.1in 1fr 1.45in;border:1px solid #555;min-height:.85in;width:100%}
     .fmt-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;padding:6px}
     .fmt-logo img{max-width:.75in;max-height:.75in;object-fit:contain}
@@ -18458,9 +18866,9 @@ function _provEvalPrint({proveedor,producto,tipo,fecha,firma,totalPts,pct,result
   const tipoLabels={A1:'A1 — Alta influencia + Alta frecuencia',A2:'A2 — Alta influencia + Baja frecuencia',B1:'B1 — Baja influencia + Alta frecuencia',B2:'B2 — Baja influencia + Baja frecuencia'};
   const tipoHtml=['A1','A2','B1','B2'].map(t=>box(tipo===t)+tipoLabels[t]).join('&nbsp;&nbsp;&nbsp;');
   const css=`
-    @page{size:letter portrait;margin:.45in .5in .6in .5in;@bottom-center{content:"Página " counter(page) " de " counter(pages);font-size:9pt;font-family:Arial,Helvetica,sans-serif;color:#555}}
+    @page{size:letter portrait;margin:0}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,Helvetica,sans-serif;font-size:11pt;color:#111}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:11pt;color:#111;margin:.45in .5in;padding:0}
     .fmt-head{display:grid;grid-template-columns:1.2in 1fr 1.4in;border:1px solid #555;min-height:.82in;width:100%}
     .fmt-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;padding:5px}
     .fmt-logo img{max-width:.72in;max-height:.72in;object-fit:contain;opacity:.68}
@@ -18738,3 +19146,5 @@ if('serviceWorker' in navigator){
 </script>
 </body>
 </html>
+
+
