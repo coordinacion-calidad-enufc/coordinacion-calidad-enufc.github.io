@@ -894,6 +894,7 @@ textarea{resize:vertical;min-height:70px}
   body.only-print-preview #ind-paso2>h3,body.only-print-preview #ind-paso2>.area-chip,
   body.only-print-preview #ind-paso2>label,body.only-print-preview #ind-paso2>input,
   body.only-print-preview #ind-paso2>select,body.only-print-preview #ind-paso2>textarea,
+  body.only-print-preview #ind-paso2>div:not(#ind-form-directo):not(#ind-form-fraccion):not(.result-box):not(#ind-msg),
   body.only-print-preview #ind-paso2>.row2,body.only-print-preview #ind-paso2>.row3,
   body.only-print-preview #ind-paso2>.result-box,body.only-print-preview #ind-paso2>#ind-msg,
   body.only-print-preview #ind-paso2>.no-print,body.only-print-preview .page-title,
@@ -1386,6 +1387,10 @@ textarea{resize:vertical;min-height:70px}
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       Historial
     </div>
+    <div class="nav-item" data-sec="ind-graficas" onclick="goto('ind-graficas',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+      Gráficas por ciclo
+    </div>
   </div>
   <!-- NO CONFORMIDADES -->
   <div class="nav-group-hdr" data-grp="nc" onclick="toggleNavGroup('nc')">No Conformidades<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></div>
@@ -1413,6 +1418,10 @@ textarea{resize:vertical;min-height:70px}
     <div class="nav-item" data-sec="sol-cambios" onclick="goto('sol-cambios',this)">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
       Solicitud de Cambios
+    </div>
+    <div class="nav-item" data-sec="r7502" onclick="goto('r7502',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      Listado de Procedimientos
     </div>
     <div class="nav-item" data-sec="r7503" onclick="goto('r7503',this)">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
@@ -1758,13 +1767,6 @@ Coordinacion de Calidad</textarea>
 
     <div class="card" id="ind-paso1">
       <div class="step-hdr"><h3>Paso 1 — Seleccionar indicador</h3><span class="badge badge-blue">1 de 2</span></div>
-      <label class="lbl">Semestre</label>
-      <input type="text" id="ind-semestre" placeholder="Ej. 2024-2025 / Enero-Junio">
-      <label class="lbl">Fecha de medida</label>
-      <input type="date" id="ind-fecha">
-      <label class="lbl">Responsable de la medición</label>
-      <input type="text" id="ind-responsable" placeholder="Nombre del responsable">
-      <div class="sep"></div>
       <h3 style="font-size:14px;margin-bottom:10px">Elige el indicador</h3>
       <div id="lista-indicadores"></div>
       <div id="msg-ind1"></div>
@@ -1773,6 +1775,21 @@ Coordinacion de Calidad</textarea>
     <div class="card" id="ind-paso2" style="display:none">
       <div class="step-hdr"><h3 id="ind-titulo-captura">Paso 2 — Capturar datos</h3><span class="badge badge-blue">2 de 2</span></div>
       <div id="ind-info-chip" class="area-chip"></div>
+      <label class="lbl">Ciclo escolar y semestre</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input type="text" id="ind-ciclo" placeholder="Ej. 2025-2026" oninput="syncIndSemestre()" style="flex:1;min-width:130px">
+        <select id="ind-sem-num" onchange="syncIndSemestre()" style="flex:1;min-width:185px;font-size:13px;padding:7px 10px">
+          <option value="">— Semestre —</option>
+          <option value="Sem. 1 (Ago–Ene)">Semestre 1 — Ago – Ene</option>
+          <option value="Sem. 2 (Ene–Jul)">Semestre 2 — Ene – Jul</option>
+        </select>
+      </div>
+      <input type="hidden" id="ind-semestre">
+      <label class="lbl">Fecha de medida</label>
+      <input type="date" id="ind-fecha">
+      <label class="lbl">Responsable de la medición</label>
+      <input type="text" id="ind-responsable" placeholder="Nombre del responsable">
+      <div class="sep"></div>
 
       <div id="ind-form-directo" style="display:none">
         <p style="font-size:13px;color:var(--muted);margin-bottom:8px">Ingresa el porcentaje obtenido directamente</p>
@@ -1881,6 +1898,76 @@ Coordinacion de Calidad</textarea>
         </div>
       </div>
       <div id="lista-historial"></div>
+    </div>
+  </div>
+
+  <!-- ═══ GRÁFICAS POR CICLO ═══ -->
+  <div class="section" id="sec-ind-graficas">
+    <p class="page-title">Gráficas por ciclo escolar</p>
+    <p class="page-sub">Histórico y comparativa de indicadores de calidad por ciclo escolar</p>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-sm btn-primary" id="graf-tab-btn-hist" onclick="grafTab('hist')">📈 Histórico por indicador</button>
+      <button class="btn btn-sm" id="graf-tab-btn-ciclo" onclick="grafTab('ciclo')">📊 Todos los indicadores por ciclo</button>
+      <button class="btn btn-sm" id="graf-tab-btn-comp" onclick="grafTab('comp')">📋 Comparativa entre ciclos</button>
+    </div>
+    <!-- Tab: Histórico -->
+    <div id="graf-panel-hist">
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:220px">
+            <label class="lbl">Indicador</label>
+            <select id="graf-ind-sel" onchange="grafRenderHist()" style="width:100%;font-size:13px;padding:7px 10px">
+              <option value="">— Seleccionar indicador —</option>
+            </select>
+          </div>
+          <div style="min-width:160px">
+            <label class="lbl">Filtrar por ciclo</label>
+            <select id="graf-ciclo-filter" onchange="grafRenderHist()" style="width:100%;font-size:13px;padding:7px 10px">
+              <option value="">Todos los ciclos</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="graf-hist-contenido">
+        <p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0">Selecciona un indicador para ver su historial gráfico.</p>
+      </div>
+    </div>
+    <!-- Tab: Todos los indicadores por ciclo -->
+    <div id="graf-panel-ciclo" style="display:none">
+      <div class="card" style="margin-bottom:14px">
+        <div style="max-width:260px">
+          <label class="lbl">Ciclo escolar</label>
+          <select id="graf-ciclo-sel" onchange="grafRenderCiclo()" style="width:100%;font-size:13px;padding:7px 10px">
+            <option value="">— Seleccionar ciclo —</option>
+          </select>
+        </div>
+      </div>
+      <div id="graf-ciclo-contenido">
+        <p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0">Selecciona un ciclo escolar para ver todos sus indicadores.</p>
+      </div>
+    </div>
+    <!-- Tab: Comparativa -->
+    <div id="graf-panel-comp" style="display:none">
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+          <div style="min-width:160px">
+            <label class="lbl">Ciclo A</label>
+            <select id="graf-ciclo-a" onchange="grafRenderComp()" style="width:100%;font-size:13px;padding:7px 10px">
+              <option value="">— Ciclo A —</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;padding-bottom:8px;font-size:16px;font-weight:700;color:var(--muted)">vs</div>
+          <div style="min-width:160px">
+            <label class="lbl">Ciclo B</label>
+            <select id="graf-ciclo-b" onchange="grafRenderComp()" style="width:100%;font-size:13px;padding:7px 10px">
+              <option value="">— Ciclo B —</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="graf-comp-contenido">
+        <p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0">Selecciona dos ciclos para comparar sus resultados.</p>
+      </div>
     </div>
   </div>
 
@@ -2811,6 +2898,52 @@ Coordinacion de Calidad</textarea>
         </div>
       </div>
       <div id="sc-lista"></div>
+    </div>
+  </div>
+
+  <!-- ═══ LISTADO DE PROCEDIMIENTOS (R-75/02) ═══ -->
+  <div class="section" id="sec-r7502">
+    <p class="page-title">Listado de Procedimientos</p>
+    <p class="page-sub">R-75/02 · Rev. 03 · 13 de enero de 2026 · Cláusula 7.5 ISO 9001:2015</p>
+    <div class="r75-toolbar">
+      <button class="btn btn-primary btn-sm" onclick="r7502_openModal(null,null)" data-admin-only>+ Nuevo procedimiento</button>
+      <button class="btn btn-secondary btn-sm" onclick="r7502_exportar()">&#128441; Exportar / Imprimir</button>
+      <button class="btn btn-secondary btn-sm" onclick="r7502_resetData()" style="color:#dc2626;border-color:#fca5a5" data-admin-only>&#9888; Restablecer originales</button>
+    </div>
+    <div id="r7502-contenido"></div>
+
+    <!-- Modal edición R-75/02 -->
+    <div class="r75-modal-overlay" id="r7502-modal-overlay" onclick="if(event.target===this)r7502_closeModal()">
+      <div class="r75-modal">
+        <h3 id="r7502-modal-title">Procedimiento</h3>
+        <input type="hidden" id="r7502-rec-id">
+        <label>Área</label>
+        <select id="r7502-rec-area-sel">
+          <option value="sgc">COORDINACIÓN DE CALIDAD</option>
+          <option value="ce">OFICINA DE CONTROL ESCOLAR</option>
+          <option value="dir">DIRECCIÓN</option>
+          <option value="sa">SUBDIRECCIÓN ACADÉMICA</option>
+          <option value="tit">TITULACIÓN</option>
+          <option value="doc">DOCENCIA</option>
+        </select>
+        <label>Código del procedimiento</label>
+        <input type="text" id="r7502-rec-codigo" placeholder="P-61/01">
+        <label>Nombre del procedimiento</label>
+        <input type="text" id="r7502-rec-nombre" placeholder="NOMBRE DEL PROCEDIMIENTO">
+        <label>Estado de revisión</label>
+        <input type="text" id="r7502-rec-revision" placeholder="00" style="max-width:120px">
+        <label>Fecha de aprobación</label>
+        <input type="text" id="r7502-rec-fecha" placeholder="27 de septiembre de 2022">
+        <label>Responsable</label>
+        <input type="text" id="r7502-rec-responsable">
+        <label>Área (texto en el formato impreso)</label>
+        <input type="text" id="r7502-rec-areadoc" placeholder="COORDINACIÓN DE CALIDAD">
+        <div class="r75-modal-btns">
+          <button class="btn btn-secondary btn-sm" onclick="r7502_closeModal()">Cancelar</button>
+          <button class="btn btn-danger btn-sm" id="r7502-btn-delete" onclick="r7502_deleteRecord()" style="display:none;margin-right:auto">Eliminar</button>
+          <button class="btn btn-primary btn-sm" onclick="r7502_saveRecord()">Guardar</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -4793,9 +4926,9 @@ function rolUsuarioActual(){
 }
 function seccionesPermitidas(){
   const rol=rolUsuarioActual();
-  if(['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rol))return ['inicio','aud-nueva','aud-registro','aud-plan','ind-captura','ind-historial','informes','nc','eficacia','plan','solicitud','documentos','sol-cambios','r7503','drive','revision','satisfaccion','calendario','manual','politica','foda','objetivos','desc-puesto','admin','prov-lista','prov-eval','prov-sol','memorandum'];
-  if(['auditor','auditor_lider','auditor interno'].includes(rol))return ['inicio','aud-nueva','aud-plan','documentos','r7503','drive','revision','calendario','manual','politica','foda','objetivos','desc-puesto'];
-  if(['area','responsable_area','responsable'].includes(rol))return ['inicio','ind-captura','ind-historial','nc','eficacia','solicitud','documentos','sol-cambios','r7503','drive','desc-puesto'];
+  if(['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rol))return ['inicio','aud-nueva','aud-registro','aud-plan','ind-captura','ind-historial','ind-graficas','informes','nc','eficacia','plan','solicitud','documentos','sol-cambios','r7502','r7503','drive','revision','satisfaccion','calendario','manual','politica','foda','objetivos','desc-puesto','admin','prov-lista','prov-eval','prov-sol','memorandum'];
+  if(['auditor','auditor_lider','auditor interno'].includes(rol))return ['inicio','aud-nueva','aud-plan','documentos','r7502','r7503','drive','revision','calendario','manual','politica','foda','objetivos','desc-puesto'];
+  if(['area','responsable_area','responsable'].includes(rol))return ['inicio','ind-captura','ind-historial','ind-graficas','nc','eficacia','solicitud','documentos','sol-cambios','r7502','r7503','drive','desc-puesto'];
   return ['inicio','desc-puesto'];
 }
 function determinarUsuarioActual(){
@@ -4933,6 +5066,7 @@ async function arrancarApp(){
     initDocsEstaticos();
     initTareas();
     cargarEventosCalSupabase();
+    cargarR7502Supabase();
     cargarR7503Supabase();
     cargarDriveSupabase();
     cargarRevisionSupabase();
@@ -4965,7 +5099,7 @@ async function arrancarApp(){
 /* ═══════════════════════════════════════
    NAVEGACIÓN
 ═══════════════════════════════════════ */
-const TITLES={inicio:'Inicio','aud-nueva':'Nueva auditoría','aud-registro':'Registro','aud-plan':'Plan de auditoria','ind-captura':'Capturar indicador','ind-historial':'Historial','informes':'Informes','nc':'No Conformidades','eficacia':'Eficacia de Acciones Correctivas','plan':'Plan de Acción','solicitud':'Solicitud de Servicios','documentos':'Control Documental','sol-cambios':'Solicitud de Cambios','r7503':'Listado de Registros (R-75/03)','drive':'Repositorio Drive','revision':'Revisión por la Dirección','satisfaccion':'Satisfacción del Alumno','calendario':'Calendario SGC','politica':'Política de Calidad','foda':'Matriz FODA','objetivos':'Objetivos de Calidad','manual':'Manual de Calidad SGC','desc-puesto':'Descripciones de Puesto','admin':'Administrar','prov-lista':'Lista de Proveedores Aprobados (R-84-01)','prov-eval':'Evaluación de Proveedor (R-84-02)','prov-sol':'Solicitud de Servicio a Proveedor (R-84-03)'};
+const TITLES={inicio:'Inicio','aud-nueva':'Nueva auditoría','aud-registro':'Registro','aud-plan':'Plan de auditoria','ind-captura':'Capturar indicador','ind-historial':'Historial','ind-graficas':'Gráficas por ciclo escolar','informes':'Informes','nc':'No Conformidades','eficacia':'Eficacia de Acciones Correctivas','plan':'Plan de Acción','solicitud':'Solicitud de Servicios','documentos':'Control Documental','sol-cambios':'Solicitud de Cambios','r7503':'Listado de Registros (R-75/03)','drive':'Repositorio Drive','revision':'Revisión por la Dirección','satisfaccion':'Satisfacción del Alumno','calendario':'Calendario SGC','politica':'Política de Calidad','foda':'Matriz FODA','objetivos':'Objetivos de Calidad','manual':'Manual de Calidad SGC','desc-puesto':'Descripciones de Puesto','admin':'Administrar','prov-lista':'Lista de Proveedores Aprobados (R-84-01)','prov-eval':'Evaluación de Proveedor (R-84-02)','prov-sol':'Solicitud de Servicio a Proveedor (R-84-03)'};
 window.goto=function(sec,navEl){
   if(!puedeVer(sec))sec=primeraSeccionPermitida();
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
@@ -4981,6 +5115,7 @@ window.goto=function(sec,navEl){
   if(sec==='aud-registro') withTimeout(loadAuditorias(),'auditorias').then(renderRegistro);
   if(sec==='aud-plan') withTimeout(loadPlanesAuditoria(),'planes auditoria').then(renderPlanesAuditoria);
   if(sec==='ind-historial') withTimeout(loadIndicadores(),'mediciones').then(()=>{renderHistorial();fillFiltroInd();});
+  if(sec==='ind-graficas') withTimeout(loadIndicadores(),'mediciones').then(()=>renderGraficas());
   if(sec==='informes') Promise.allSettled([withTimeout(loadAuditorias(),'auditorias'),withTimeout(loadIndicadores(),'mediciones')]).then(renderInformes);
   if(sec==='admin'){fillSelects();renderAreasAdmin();renderIndCatalogo();renderUsuarios();renderConfigInstitucional();renderAdminIA();loadAsignaciones().then(renderAdminAsignaciones);}
   if(sec==='aud-nueva'||sec==='ind-captura'){fillSelects();aplicarConfigAuditoria();aplicarPermisos();loadAsignaciones().then(renderIndLista);}
@@ -4996,6 +5131,7 @@ window.goto=function(sec,navEl){
   if(sec==='politica')politica_cargar();
   if(sec==='foda'){foda_cargar();fodaTab('matriz');}
   if(sec==='objetivos')obj_cargar();
+  if(sec==='r7502'){renderR7502();cargarR7502Supabase();}
   if(sec==='r7503'){renderR7503();cargarR7503Supabase();}
   if(sec==='drive'){renderDrive();cargarDriveSupabase();}
   if(sec==='revision'){renderRevision();cargarRevisionSupabase();}
@@ -5400,14 +5536,12 @@ window.selIndicador=function(id){
   document.querySelectorAll('.ind-card').forEach(c=>c.style.borderColor='');
   const sel=document.getElementById('icard-'+id);if(sel)sel.style.borderColor='var(--blue)';
   const ind=indicadorR44(S.indicadores.find(i=>i.id===id));if(!ind)return;
+  const msg=document.getElementById('msg-ind1');
+  msg.innerHTML='';
   const respEl=document.getElementById('ind-responsable');
   if(respEl&&!respEl.value)respEl.value=ind.responsable||'';
-  const sem=v('ind-semestre'),fec=v('ind-fecha'),resp=v('ind-responsable');
-  const msg=document.getElementById('msg-ind1');
-  if(!sem||!fec||!resp){msg.innerHTML='<div class="alert alert-err">Completa semestre, fecha y responsable primero.</div>';return;}
-  msg.innerHTML='';
   document.getElementById('ind-titulo-captura').textContent=`Indicador ${ind.numero} — ${ind.nombre}`;
-  document.getElementById('ind-info-chip').textContent=`${sem}  ·  ${fec}  ·  Responsable: ${resp}`;
+  document.getElementById('ind-info-chip').textContent=`${ind.numero}. ${ind.nombre}`;
   document.getElementById('ind-esperado').value=ind.esperado;
   document.getElementById('ind-form-directo').style.display=ind.tipo==='directo'?'block':'none';
   document.getElementById('ind-form-fraccion').style.display=ind.tipo==='fraccion'?'block':'none';
@@ -5619,7 +5753,7 @@ window.guardarIndicador = async function(){
     setSyncStatus('ok','Sincronizado');
     setTimeout(()=>{
       msg.innerHTML='';showIndPaso(1);
-      document.getElementById('ind-semestre').value='';
+      setIndSemestre('');
       document.getElementById('ind-responsable').value='';
       document.getElementById('ind-fecha').value=hoy();
       document.getElementById('ind-revision').value='02';
@@ -5689,7 +5823,7 @@ window.editarIndicador=function(idx){
   setTimeout(()=>{
     const ind=S.indicadores.find(i=>String(i.id)===String(m.indicador_id||m.indicadorId));
     if(!ind)return;
-    document.getElementById('ind-semestre').value=m.semestre||'';
+    setIndSemestre(m.semestre||'');
     document.getElementById('ind-fecha').value=m.fecha||hoy();
     document.getElementById('ind-responsable').value=m.responsable||'';
     // Guardar índice para sobreescribir
@@ -5715,6 +5849,485 @@ window.editarIndicador=function(idx){
     showIndPaso(2);
   },300);
 };
+
+/* ═══════════════════════════════════════
+   GRÁFICAS POR CICLO ESCOLAR
+═══════════════════════════════════════ */
+const _grafCharts={};
+
+function parseCicloMedicion(semestre){
+  if(!semestre)return{ciclo:'—',semLabel:'—'};
+  const s=semestre.trim();
+  // "2024-2025 / Enero-Junio" o "2024-2025 · Agosto-Enero"
+  const m1=s.match(/(\d{4})[-–](\d{4})/);
+  if(m1){
+    const ciclo=m1[1]+'-'+m1[2];
+    const resto=s.replace(m1[0],'').replace(/^[\s/·\-–]+/,'').trim();
+    return{ciclo,semLabel:resto||s};
+  }
+  // "Agosto – Enero 25-26" o "Enero – Julio 25-26" (dos años de 2 dígitos)
+  const m2=s.match(/(\d{2})[-–](\d{2})\s*$/);
+  if(m2){
+    const ciclo='20'+m2[1]+'-20'+m2[2];
+    const label=s.replace(m2[0],'').trim().replace(/[-–,\s]+$/,'').trim();
+    return{ciclo,semLabel:label||s};
+  }
+  // "Sep-Dic 25" o "Ene-Jun 26" (un solo año de 2 dígitos al final)
+  const m3=s.match(/^(.*?)\s+(\d{2})\s*$/);
+  if(m3){
+    const label=m3[1].trim();
+    const yr=2000+parseInt(m3[2]);
+    // Sem 1 empieza en el primer año del ciclo; Sem 2 termina en el segundo
+    const es1=/ago|sep|oct|nov|agosto|septiembre|octubre|noviembre/i.test(label);
+    const ciclo=es1?yr+'-'+(yr+1):(yr-1)+'-'+yr;
+    return{ciclo:String(ciclo),semLabel:label||s};
+  }
+  // Texto libre sin año reconocible
+  return{ciclo:s,semLabel:s};
+}
+
+function grafGetCiclos(){
+  const ciclos=new Set();
+  (S.mediciones||[]).forEach(m=>{
+    const{ciclo}=parseCicloMedicion(m.semestre);
+    if(ciclo&&ciclo!=='—')ciclos.add(ciclo);
+  });
+  // Orden cronológico: extraer primer año del ciclo para comparar numéricamente
+  return[...ciclos].sort((a,b)=>{
+    const ya=parseInt(a.match(/\d{4}/)?.[0]||0),yb=parseInt(b.match(/\d{4}/)?.[0]||0);
+    return ya-yb;
+  });
+}
+
+// Devuelve true si el semLabel corresponde al primer semestre (Ago-Ene)
+function esSem1(semLabel){
+  const s=(semLabel||'').trim();
+  return/sem\.?\s*1\b/i.test(s)||/^(ago|sep|oct|nov|agosto|septiembre|octubre|noviembre)/i.test(s);
+}
+// Etiqueta legible del semestre dentro del ciclo
+function semNombre(semLabel){
+  return esSem1(semLabel)?'Sem. 1 (Ago–Ene)':'Sem. 2 (Ene–Jul)';
+}
+// Sincroniza el hidden #ind-semestre desde los campos visibles
+function syncIndSemestre(){
+  const ciclo=(document.getElementById('ind-ciclo')?.value||'').trim();
+  const sem=document.getElementById('ind-sem-num')?.value||'';
+  const val=ciclo&&sem?ciclo+' / '+sem:ciclo||sem||'';
+  const el=document.getElementById('ind-semestre');
+  if(el)el.value=val;
+}
+// Rellena los campos visibles y el hidden a partir de un valor almacenado
+function setIndSemestre(value){
+  const cicloEl=document.getElementById('ind-ciclo');
+  const semEl=document.getElementById('ind-sem-num');
+  if(!value){
+    if(cicloEl)cicloEl.value='';
+    if(semEl)semEl.value='';
+    syncIndSemestre();return;
+  }
+  const{ciclo,semLabel}=parseCicloMedicion(value);
+  if(cicloEl)cicloEl.value=ciclo!=='—'?ciclo:'';
+  if(semEl){
+    if(esSem1(semLabel))semEl.value='Sem. 1 (Ago–Ene)';
+    else if(/sem\.?\s*2|ene|feb|mar|abr|may|jun|jul/i.test(semLabel))semEl.value='Sem. 2 (Ene–Jul)';
+    else semEl.value='';
+  }
+  syncIndSemestre();
+}
+
+window.grafTab=function(tab){
+  ['hist','ciclo','comp'].forEach(t=>{
+    const p=document.getElementById('graf-panel-'+t);
+    const b=document.getElementById('graf-tab-btn-'+t);
+    if(p)p.style.display=t===tab?'block':'none';
+    if(b)b.className='btn btn-sm'+(t===tab?' btn-primary':'');
+  });
+};
+
+window.renderGraficas=function(){
+  // Popula selector de indicadores
+  const selInd=document.getElementById('graf-ind-sel');
+  if(selInd){
+    const cur=selInd.value;
+    selInd.innerHTML='<option value="">— Seleccionar indicador —</option>'+
+      Object.entries(INDICADORES_R44).sort((a,b)=>parseInt(a[0])-parseInt(b[0])).map(([num,ind])=>{
+        const nom=ind.nombre.length>72?ind.nombre.substring(0,72)+'…':ind.nombre;
+        return`<option value="${num}"${cur===num?' selected':''}>${num}. ${nom}</option>`;
+      }).join('');
+  }
+  // Popula selectores de ciclo (orden cronológico)
+  const ciclos=grafGetCiclos();
+  [['graf-ciclo-filter','Todos los ciclos'],['graf-ciclo-sel','— Seleccionar ciclo —'],['graf-ciclo-a','— Ciclo A —'],['graf-ciclo-b','— Ciclo B —']].forEach(([id,def])=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const cur=el.value;
+    el.innerHTML=`<option value="">${def}</option>`+ciclos.map(c=>`<option value="${c}"${cur===c?' selected':''}>${c}</option>`).join('');
+  });
+  if(document.getElementById('graf-ind-sel')?.value)grafRenderHist();
+};
+
+function grafDestroyChart(id){
+  if(_grafCharts[id]){_grafCharts[id].destroy();delete _grafCharts[id];}
+}
+
+function grafSortMeds(meds){
+  return[...meds].sort((a,b)=>{
+    const{ciclo:ca,semLabel:la}=parseCicloMedicion(a.semestre);
+    const{ciclo:cb,semLabel:lb}=parseCicloMedicion(b.semestre);
+    // Orden cronológico de ciclos por año inicial
+    const ya=parseInt(ca.match(/\d{4}/)?.[0]||0),yb=parseInt(cb.match(/\d{4}/)?.[0]||0);
+    if(ya!==yb)return ya-yb;
+    // Dentro del mismo ciclo: Sem 1 (Ago-Ene) antes que Sem 2 (Ene-Jul)
+    const s1a=esSem1(la),s1b=esSem1(lb);
+    if(s1a&&!s1b)return-1;
+    if(!s1a&&s1b)return 1;
+    return 0;
+  });
+}
+
+window.grafRenderHist=function(){
+  const num=document.getElementById('graf-ind-sel')?.value;
+  const cicloFiltro=document.getElementById('graf-ciclo-filter')?.value;
+  const cont=document.getElementById('graf-hist-contenido');
+  if(!cont)return;
+  if(!num){
+    grafDestroyChart('hist');
+    cont.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0">Selecciona un indicador para ver su historial gráfico.</p>';
+    return;
+  }
+  const ind=INDICADORES_R44[num];
+  if(!ind)return;
+  let meds=(S.mediciones||[]).filter(m=>String(m.indicador_numero||m.numero||'').padStart(2,'0')===String(num).padStart(2,'0'));
+  if(cicloFiltro)meds=meds.filter(m=>parseCicloMedicion(m.semestre).ciclo===cicloFiltro);
+  meds=grafSortMeds(meds);
+
+  if(!meds.length){
+    grafDestroyChart('hist');
+    cont.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0">No hay mediciones registradas para este indicador'+(cicloFiltro?' en el ciclo '+cicloFiltro:'')+'. Captura datos desde <strong>Capturar indicador</strong>.</p>';
+    return;
+  }
+
+  const esperado=parseFloat(ind.esperado||75);
+  const labels=meds.map(m=>{
+    const{ciclo,semLabel}=parseCicloMedicion(m.semestre);
+    return ciclo!=='—'?ciclo+'\n'+semLabel:(m.semestre||m.fecha||'—');
+  });
+  const valores=meds.map(m=>parseFloat(m.resultado||0));
+  const colors=valores.map(v=>v>=esperado?'rgba(34,197,94,0.82)':'rgba(239,68,68,0.82)');
+  const borders=valores.map(v=>v>=esperado?'rgb(22,163,74)':'rgb(220,38,38)');
+
+  grafDestroyChart('hist');
+  cont.innerHTML=`
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:3px;color:var(--blue)">Indicador ${esc(num)} — ${esc(ind.nombre)}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Meta: <strong>${esperado}%</strong> &nbsp;·&nbsp; ${esc(ind.periodicidad||'SEMESTRAL')} &nbsp;·&nbsp; ${meds.length} medición${meds.length!==1?'es':''}</div>
+      <div style="position:relative;height:300px"><canvas id="grafCanvas-hist"></canvas></div>
+    </div>
+    ${grafTablaHistorial(meds,num,ind)}`;
+
+  const ctx=document.getElementById('grafCanvas-hist');
+  if(!ctx||!window.Chart)return;
+  _grafCharts['hist']=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Resultado (%)',data:valores,backgroundColor:colors,borderColor:borders,borderWidth:1.5,borderRadius:4},
+        {label:`Meta (${esperado}%)`,data:Array(labels.length).fill(esperado),type:'line',
+          borderColor:'rgba(239,68,68,0.85)',borderWidth:2,borderDash:[7,4],
+          pointRadius:0,fill:false,tension:0}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',labels:{font:{size:11}}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%`}}
+      },
+      scales:{
+        y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'rgba(0,0,0,0.06)'}},
+        x:{ticks:{font:{size:10},maxRotation:40},grid:{display:false}}
+      }
+    }
+  });
+};
+
+function grafTablaHistorial(meds,num,ind){
+  const esp=parseFloat(ind.esperado||75);
+  return`<div class="card"><table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr style="background:var(--surface2,#f1f5f9)">
+      <th style="padding:8px 10px;text-align:left;font-weight:600">Ciclo / Semestre</th>
+      <th style="padding:8px 10px;text-align:right;font-weight:600">Resultado</th>
+      <th style="padding:8px 10px;text-align:right;font-weight:600">Meta</th>
+      <th style="padding:8px 10px;text-align:right;font-weight:600">Desviación</th>
+      <th style="padding:8px 10px;text-align:center;font-weight:600">Estado</th>
+    </tr></thead>
+    <tbody>${meds.map(m=>{
+      const res=parseFloat(m.resultado||0),desv=res-esp,ok=res>=esp;
+      const{ciclo,semLabel}=parseCicloMedicion(m.semestre);
+      return`<tr style="border-top:1px solid var(--border)">
+        <td style="padding:8px 10px"><strong>${esc(ciclo)}</strong><br><span style="font-size:11px;color:var(--muted)">${esc(semLabel)}</span></td>
+        <td style="padding:8px 10px;text-align:right;font-weight:700">${res.toFixed(1)}%</td>
+        <td style="padding:8px 10px;text-align:right;color:var(--muted)">${esp}%</td>
+        <td style="padding:8px 10px;text-align:right;color:${ok?'var(--green)':'var(--red)'}">${desv>=0?'+':''}${desv.toFixed(1)}%</td>
+        <td style="padding:8px 10px;text-align:center"><span class="badge ${ok?'badge-ok':'badge-nok'}">${ok?'✓ Cumple':'✗ No cumple'}</span></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+window.grafRenderComp=function(){
+  const cicloA=document.getElementById('graf-ciclo-a')?.value;
+  const cicloB=document.getElementById('graf-ciclo-b')?.value;
+  const cont=document.getElementById('graf-comp-contenido');
+  if(!cont)return;
+  if(!cicloA||!cicloB){
+    grafDestroyChart('comp');
+    cont.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0">Selecciona dos ciclos para comparar sus resultados.</p>';
+    return;
+  }
+  if(cicloA===cicloB){
+    grafDestroyChart('comp');
+    cont.innerHTML='<p style="color:var(--red);font-size:13px;text-align:center;padding:20px 0">Selecciona dos ciclos <strong>diferentes</strong>.</p>';
+    return;
+  }
+
+  // Mejor medición por indicador por ciclo (la más reciente del ciclo)
+  const medsXCiclo=ciclo=>{
+    const ultima={};
+    (S.mediciones||[]).forEach(m=>{
+      if(parseCicloMedicion(m.semestre).ciclo!==ciclo)return;
+      const n=String(m.indicador_numero||m.numero||'').padStart(2,'0');
+      if(!ultima[n]||(m.timestamp||0)>(ultima[n].timestamp||0))ultima[n]=m;
+    });
+    return ultima;
+  };
+  const medsA=medsXCiclo(cicloA),medsB=medsXCiclo(cicloB);
+  const nums=[...new Set([...Object.keys(medsA),...Object.keys(medsB)])].sort();
+
+  if(!nums.length){
+    grafDestroyChart('comp');
+    cont.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0">No hay datos para los ciclos seleccionados.</p>';
+    return;
+  }
+
+  const valA=nums.map(n=>medsA[n]?parseFloat(medsA[n].resultado||0):null);
+  const valB=nums.map(n=>medsB[n]?parseFloat(medsB[n].resultado||0):null);
+
+  grafDestroyChart('comp');
+  cont.innerHTML=`
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px">
+        Comparativa: <span style="color:var(--blue)">${esc(cicloA)}</span> vs <span style="color:#f97316">${esc(cicloB)}</span>
+        &nbsp;·&nbsp; <span style="font-size:12px;font-weight:400;color:var(--muted)">${nums.length} indicador${nums.length!==1?'es':''} con datos</span>
+      </div>
+      <div style="position:relative;height:340px"><canvas id="grafCanvas-comp"></canvas></div>
+    </div>
+    ${grafTablaComp(nums,medsA,medsB,cicloA,cicloB)}`;
+
+  const ctx=document.getElementById('grafCanvas-comp');
+  if(!ctx||!window.Chart)return;
+  _grafCharts['comp']=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:nums.map(n=>`Ind. ${n}`),
+      datasets:[
+        {label:cicloA,data:valA,backgroundColor:'rgba(59,130,246,0.78)',borderColor:'rgb(37,99,235)',borderWidth:1.5,borderRadius:3},
+        {label:cicloB,data:valB,backgroundColor:'rgba(249,115,22,0.78)',borderColor:'rgb(234,88,12)',borderWidth:1.5,borderRadius:3}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',labels:{font:{size:11}}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y.toFixed(1)+'%':'Sin datos'}`}}
+      },
+      scales:{
+        y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'rgba(0,0,0,0.06)'}},
+        x:{ticks:{font:{size:10}},grid:{display:false}}
+      }
+    }
+  });
+};
+
+window.grafRenderCiclo=function(){
+  const ciclo=document.getElementById('graf-ciclo-sel')?.value;
+  const cont=document.getElementById('graf-ciclo-contenido');
+  if(!cont)return;
+  if(!ciclo){
+    grafDestroyChart('ciclo');
+    cont.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0">Selecciona un ciclo escolar para ver todos sus indicadores.</p>';
+    return;
+  }
+  // Mediciones de este ciclo
+  const meds=(S.mediciones||[]).filter(m=>parseCicloMedicion(m.semestre).ciclo===ciclo);
+  if(!meds.length){
+    grafDestroyChart('ciclo');
+    cont.innerHTML=`<p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0">No hay mediciones registradas para el ciclo <strong>${esc(ciclo)}</strong>.</p>`;
+    return;
+  }
+  // Indicadores en orden numérico
+  const nums=Object.keys(INDICADORES_R44).sort((a,b)=>parseInt(a)-parseInt(b));
+  // Agrupar mediciones por indicador y semestre (última por semestre si hay varias)
+  const sem1={},sem2={};
+  meds.forEach(m=>{
+    const n=String(m.indicador_numero||m.numero||'').padStart(2,'0');
+    if(!n||!INDICADORES_R44[n])return;
+    const{semLabel}=parseCicloMedicion(m.semestre);
+    const target=esSem1(semLabel)?sem1:sem2;
+    if(!target[n]||(m.timestamp||0)>(target[n].timestamp||0))target[n]=m;
+  });
+  // Solo indicadores con al menos un dato
+  const numsConDatos=nums.filter(n=>sem1[n]||sem2[n]);
+  // Color por semestre (azul=Sem1, naranja=Sem2) + tono por cumplimiento
+  const colorCiclo=(semNum,m,alphaOk,alphaNok)=>{
+    if(!m)return null;
+    const res=parseFloat(m.resultado||0);
+    const esp=parseFloat(INDICADORES_R44[String(m.indicador_numero||m.numero||'').padStart(2,'0')]?.esperado||75);
+    const ok=res>=esp;
+    return semNum===1
+      ?(ok?`rgba(59,130,246,${alphaOk})`:`rgba(59,130,246,${alphaNok})`)
+      :(ok?`rgba(245,158,11,${alphaOk})`:`rgba(245,158,11,${alphaNok})`);
+  };
+  const datasets=[
+    {
+      label:'Sem. 1 (Ago–Ene)',
+      data:numsConDatos.map(n=>sem1[n]?parseFloat(sem1[n].resultado||0):null),
+      backgroundColor:numsConDatos.map(n=>colorCiclo(1,sem1[n],0.85,0.28)),
+      borderColor:numsConDatos.map(n=>colorCiclo(1,sem1[n],1,0.55)),
+      borderWidth:1.5,borderRadius:4
+    },
+    {
+      label:'Sem. 2 (Ene–Jul)',
+      data:numsConDatos.map(n=>sem2[n]?parseFloat(sem2[n].resultado||0):null),
+      backgroundColor:numsConDatos.map(n=>colorCiclo(2,sem2[n],0.85,0.28)),
+      borderColor:numsConDatos.map(n=>colorCiclo(2,sem2[n],1,0.55)),
+      borderWidth:1.5,borderRadius:4
+    },
+    {
+      type:'line',label:'Meta',showLine:true,
+      data:numsConDatos.map(n=>parseFloat(INDICADORES_R44[n]?.esperado||75)),
+      borderColor:'rgba(239,68,68,0.85)',borderWidth:2,borderDash:[6,4],
+      pointStyle:'circle',pointRadius:5,pointBorderWidth:2,
+      pointBackgroundColor:'#fff',pointBorderColor:'rgba(239,68,68,1)',
+      backgroundColor:'transparent',tension:0,
+      order:-1
+    }
+  ];
+  grafDestroyChart('ciclo');
+  const totSem1=numsConDatos.filter(n=>sem1[n]).length;
+  const totSem2=numsConDatos.filter(n=>sem2[n]).length;
+  const cumSem1=numsConDatos.filter(n=>sem1[n]&&parseFloat(sem1[n].resultado||0)>=parseFloat(INDICADORES_R44[n]?.esperado||75)).length;
+  const cumSem2=numsConDatos.filter(n=>sem2[n]&&parseFloat(sem2[n].resultado||0)>=parseFloat(INDICADORES_R44[n]?.esperado||75)).length;
+  cont.innerHTML=`
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+        <div>
+          <div style="font-size:14px;font-weight:700">Ciclo ${esc(ciclo)} — Todos los indicadores</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${numsConDatos.length} indicador${numsConDatos.length!==1?'es':''} con datos</div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          ${totSem1?`<div style="font-size:12px;text-align:center"><div style="font-weight:700;font-size:18px;color:${cumSem1===totSem1?'var(--green)':'var(--red)'}">${cumSem1}/${totSem1}</div><div style="color:var(--muted)">Sem. 1 cumple</div></div>`:''}
+          ${totSem2?`<div style="font-size:12px;text-align:center"><div style="font-weight:700;font-size:18px;color:${cumSem2===totSem2?'var(--green)':'var(--red)'}">${cumSem2}/${totSem2}</div><div style="color:var(--muted)">Sem. 2 cumple</div></div>`:''}
+        </div>
+      </div>
+      <div style="position:relative;height:360px"><canvas id="grafCanvas-ciclo"></canvas></div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;flex-wrap:wrap;align-items:center">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;background:rgba(59,130,246,0.85);border-radius:2px;display:inline-block"></span>Sem. 1 (Ago–Ene)</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;background:rgba(245,158,11,0.85);border-radius:2px;display:inline-block"></span>Sem. 2 (Ene–Jul)</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;background:rgba(59,130,246,0.28);border:1.5px solid rgba(59,130,246,0.55);border-radius:2px;display:inline-block"></span>No cumple (tenue)</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:22px;height:2px;background:rgba(239,68,68,0.85);border-top:2px dashed rgba(239,68,68,0.85);vertical-align:middle"></span><span style="width:8px;height:8px;border-radius:50%;border:2px solid rgba(239,68,68,1);background:#fff;display:inline-block"></span>&nbsp;Meta por indicador</span>
+      </div>
+    </div>
+    ${grafTablaCiclo(numsConDatos,sem1,sem2,ciclo)}`;
+  const ctx=document.getElementById('grafCanvas-ciclo');
+  if(!ctx||!window.Chart)return;
+  _grafCharts['ciclo']=new Chart(ctx,{
+    type:'bar',
+    data:{labels:numsConDatos.map(n=>'Ind. '+n),datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          title:items=>{
+            const n=numsConDatos[items[0].dataIndex];
+            return`Ind. ${n} — ${(INDICADORES_R44[n]?.nombre||'').substring(0,50)}`;
+          },
+          label:c=>` ${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y.toFixed(1)+'%  (meta: '+parseFloat(INDICADORES_R44[numsConDatos[c.dataIndex]]?.esperado||75)+'%)':'Sin datos'}`
+        }}
+      },
+      scales:{
+        y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'rgba(0,0,0,0.06)'}},
+        x:{ticks:{font:{size:10}},grid:{display:false}}
+      }
+    }
+  });
+};
+
+function grafTablaCiclo(nums,sem1,sem2,ciclo){
+  const filas=nums.map(n=>{
+    const def=INDICADORES_R44[n]||{};
+    const esp=parseFloat(def.esperado||75);
+    const m1=sem1[n],m2=sem2[n];
+    const r1=m1?parseFloat(m1.resultado||0):null;
+    const r2=m2?parseFloat(m2.resultado||0):null;
+    const ok1=r1!==null?r1>=esp:null;
+    const ok2=r2!==null?r2>=esp:null;
+    const nom=(def.nombre||'');
+    return`<tr style="border-top:1px solid var(--border)">
+      <td style="padding:8px 10px;font-weight:700;color:var(--muted);white-space:nowrap">${n}</td>
+      <td style="padding:8px 10px;font-size:12px">${esc(nom)}</td>
+      <td style="padding:8px 10px;text-align:right;font-size:12px;color:var(--muted)">${esp}%</td>
+      <td style="padding:8px 10px;text-align:center">
+        ${r1!==null?`<span style="font-weight:700;color:${ok1?'var(--green)':'var(--red)'}">${r1.toFixed(1)}%</span><br><span style="font-size:10px;color:var(--muted)">${ok1?'✓ Cumple':'✗ No cumple'}</span>`:'<span style="color:var(--muted);font-size:12px">—</span>'}
+      </td>
+      <td style="padding:8px 10px;text-align:center">
+        ${r2!==null?`<span style="font-weight:700;color:${ok2?'var(--green)':'var(--red)'}">${r2.toFixed(1)}%</span><br><span style="font-size:10px;color:var(--muted)">${ok2?'✓ Cumple':'✗ No cumple'}</span>`:'<span style="color:var(--muted);font-size:12px">—</span>'}
+      </td>
+    </tr>`;
+  }).join('');
+  return`<div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:10px">Detalle — Ciclo ${esc(ciclo)}</div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:520px">
+      <thead><tr style="background:var(--surface2,#f1f5f9)">
+        <th style="padding:8px 10px;text-align:left;font-weight:600">#</th>
+        <th style="padding:8px 10px;text-align:left;font-weight:600">Indicador</th>
+        <th style="padding:8px 10px;text-align:right;font-weight:600">Meta</th>
+        <th style="padding:8px 10px;text-align:center;font-weight:600">Sem. 1<br><span style="font-weight:400;font-size:11px">Ago–Ene</span></th>
+        <th style="padding:8px 10px;text-align:center;font-weight:600">Sem. 2<br><span style="font-weight:400;font-size:11px">Ene–Jul</span></th>
+      </tr></thead>
+      <tbody>${filas}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function grafTablaComp(nums,medsA,medsB,cicloA,cicloB){
+  return`<div class="card"><table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr style="background:var(--surface2,#f1f5f9)">
+      <th style="padding:8px 10px;text-align:left;font-weight:600">Indicador</th>
+      <th style="padding:8px 10px;text-align:right;font-weight:600;color:var(--blue)">${esc(cicloA)}</th>
+      <th style="padding:8px 10px;text-align:right;font-weight:600;color:#f97316">${esc(cicloB)}</th>
+      <th style="padding:8px 10px;text-align:center;font-weight:600">Variación</th>
+      <th style="padding:8px 10px;text-align:center;font-weight:600;color:var(--muted)">Meta</th>
+    </tr></thead>
+    <tbody>${nums.map(num=>{
+      const def=INDICADORES_R44[num]||{};
+      const esp=parseFloat(def.esperado||75);
+      const resA=medsA[num]?parseFloat(medsA[num].resultado||0):null;
+      const resB=medsB[num]?parseFloat(medsB[num].resultado||0):null;
+      const diff=(resA!==null&&resB!==null)?resB-resA:null;
+      const trend=diff===null?'—':diff>1?`<span style="color:var(--green)">▲ +${diff.toFixed(1)}%</span>`:diff<-1?`<span style="color:var(--red)">▼ ${diff.toFixed(1)}%</span>`:`<span style="color:var(--muted)">≈ ${diff>0?'+':''}${diff.toFixed(1)}%</span>`;
+      const nom=(def.nombre||'');const nomCorto=nom.length>60?nom.substring(0,60)+'…':nom;
+      return`<tr style="border-top:1px solid var(--border)">
+        <td style="padding:8px 10px"><span style="font-weight:700;color:var(--muted)">${num}</span> ${esc(nomCorto)}</td>
+        <td style="padding:8px 10px;text-align:right;font-weight:700;color:${resA!==null?resA>=esp?'var(--green)':'var(--red)':'var(--muted)'}">${resA!==null?resA.toFixed(1)+'%':'—'}</td>
+        <td style="padding:8px 10px;text-align:right;font-weight:700;color:${resB!==null?resB>=esp?'var(--green)':'var(--red)':'var(--muted)'}">${resB!==null?resB.toFixed(1)+'%':'—'}</td>
+        <td style="padding:8px 10px;text-align:center">${trend}</td>
+        <td style="padding:8px 10px;text-align:center;color:var(--muted);font-size:12px">${esp}%</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
 
 /* ═══════════════════════════════════════
    INFORMES
@@ -11174,8 +11787,7 @@ window.chatAplicarIndicadorR44=function(dataStr){
     const hoy=new Date().toISOString().slice(0,10);
     goto('ind-captura',null);
     setTimeout(()=>{
-      const selSem=document.getElementById('ind-semestre');
-      if(selSem&&c.periodo){selSem.value=c.periodo;}
+      if(c.periodo)setIndSemestre(c.periodo);
       const fechaEl=document.getElementById('ind-fecha');if(fechaEl)fechaEl.value=hoy;
       const respEl=document.getElementById('ind-responsable');if(respEl&&!respEl.value)respEl.value='Coordinación de Calidad';
       if(ind){
@@ -11210,12 +11822,7 @@ window.chatAplicarIndicadorManual=function(dataStr){
     const hoy=new Date().toISOString().slice(0,10);
     goto('ind-captura',null);
     setTimeout(()=>{
-      const selSem=document.getElementById('ind-semestre');
-      if(selSem&&selSem.tagName==='SELECT'&&c.periodo){
-        const opts=Array.from(selSem.options);
-        if(!opts.some(o=>o.value===c.periodo)){const o=document.createElement('option');o.value=c.periodo;o.textContent=c.periodo;selSem.appendChild(o);}
-        selSem.value=c.periodo;
-      }
+      if(c.periodo)setIndSemestre(c.periodo);
       const fechaEl=document.getElementById('ind-fecha');if(fechaEl)fechaEl.value=c.fecha||hoy;
       const respEl=document.getElementById('ind-responsable');if(respEl&&!respEl.value)respEl.value=c.responsable||'Coordinación de Calidad';
       if(ind){
@@ -11350,13 +11957,7 @@ window.chatAplicarIndicador=function(dataStr){
     const hoy=new Date().toISOString().slice(0,10);
     goto('ind-captura',null);
     setTimeout(()=>{
-      const selSem=document.getElementById('ind-semestre');
-      if(selSem&&periodo){
-        const opts=selSem.tagName==='SELECT'?Array.from(selSem.options):[];
-        const found=opts.some(o=>o.value===periodo);
-        if(!found&&selSem.tagName==='SELECT'){const o=document.createElement('option');o.value=periodo;o.textContent=periodo;selSem.appendChild(o);}
-        if(selSem.tagName==='SELECT')selSem.value=periodo;
-      }
+      if(periodo)setIndSemestre(periodo);
       const fechaEl=document.getElementById('ind-fecha');if(fechaEl)fechaEl.value=hoy;
       const respEl=document.getElementById('ind-responsable');if(respEl&&!respEl.value)respEl.value='Coordinación de Calidad';
       if(indSat){
@@ -12327,7 +12928,8 @@ function politica_htmlFormato(){
   const elaboro=d.elaboro||'Mtro. Roberto Carlos Aguilar Pedroza — Coordinador de la Calidad';
   const reviso=d.reviso||'Mtro. Samir Gómez Calderón — Representante de dirección';
   const sigLine='<br><br><span style="display:block;border-top:1px solid #111;margin-top:28px;font-size:9pt;color:#555">Nombre y Firma</span>';
-  return '<div class="fmt-doc">'+fmtHead('POLÍTICA DE CALIDAD','R-52/01','00','')+'<table class="fmt-table"><tr><td colspan="2" style="padding:18px 14px;font-size:11.5pt;line-height:1.7;font-style:italic;text-align:justify">&ldquo;'+esc(texto)+'&rdquo;</td></tr>'+
+  const revPol=planGetData('politica_calidad').version||'00';
+  return '<div class="fmt-doc">'+fmtHead('POLÍTICA DE CALIDAD','R-52/01',revPol,'')+'<table class="fmt-table"><tr><td colspan="2" style="padding:18px 14px;font-size:11.5pt;line-height:1.7;font-style:italic;text-align:justify">&ldquo;'+esc(texto)+'&rdquo;</td></tr>'+
   '<tr><td style="width:50%;text-align:center;padding:14px">'+esc(elaboro)+sigLine+'</td><td style="text-align:center;padding:14px">'+esc(reviso)+sigLine+'</td></tr></table></div>';
 }
 window.politica_vistaPrevia=function(){activarVistaFormato('pol-preview',politica_htmlFormato());};
@@ -12417,7 +13019,8 @@ function foda_htmlFormato(){
   const tdO=(d.O||[]).map(x=>'<tr><td>'+esc(x)+'</td></tr>').join('');
   const tdA=(d.A||[]).map(x=>'<tr><td>'+esc(x)+'</td></tr>').join('');
   const sigLine='<br><br><span style="display:block;border-top:1px solid #111;margin-top:24px;font-size:9pt;color:#555">Nombre, Fecha y Firma</span>';
-  return '<div class="fmt-doc">'+fmtHead('MATRIZ FODA','R-61/01','00','')+
+  const revFoda=planGetData('foda').version||'00';
+  return '<div class="fmt-doc">'+fmtHead('MATRIZ FODA','R-61/01',revFoda,'')+
   '<table class="fmt-table"><tr><td colspan="2"><b>Período de Aplicación:</b> '+esc(d.periodo||'')+'</td></tr></table>'+
   '<table class="fmt-table" style="margin-top:8px">'+
   '<tr><th colspan="2" class="fmt-gray">FACTORES INTERNOS</th></tr>'+
@@ -12520,7 +13123,8 @@ function seguFoda_htmlFormato(){
   const mkRows=(lista)=>lista.map(r=>'<tr><td style="font-weight:700;color:#111;padding:7px 8px">'+esc(r.item)+'</td><td style="padding:7px 8px">'+esc(r.accion)+'<br><i>Resp: '+esc(r.responsable)+'</i></td><td style="padding:7px 8px">'+esc(r.fechas)+'</td><td style="padding:7px 8px">'+esc(r.evidencia)+'</td></tr>').join('');
   const mkSection=(titulo,lista)=>lista.length?'<tr><th colspan="4" class="fmt-gray" style="text-align:left;padding:7px 8px;color:#111;font-weight:700;font-size:11pt">'+titulo+'</th></tr>'+mkRows(lista):'';
   const sigLine='<br><br><span style="display:block;border-top:1px solid #111;margin-top:24px;font-size:9pt;color:#555">Nombre y Firma</span>';
-  return '<div class="fmt-doc">'+fmtHead('SEGUIMIENTO AL FODA','R-61/02','00','')+
+  const revSeguFoda=planGetData('seguimiento_foda').version||'00';
+  return '<div class="fmt-doc">'+fmtHead('SEGUIMIENTO AL FODA','R-61/02',revSeguFoda,'')+
   '<table class="fmt-table"><tr><td><b>Semestre:</b> '+esc(sd.semestre||'')+'</td><td><b>Fecha de elaboración:</b> '+esc(sd.fecha||'')+'</td></tr></table>'+
   '<table class="fmt-table" style="margin-top:8px"><thead><tr class="fmt-gray"><th>Factor</th><th>Acción / Responsable</th><th>Fechas inicio-término</th><th>Evidencia a obtener</th></tr></thead><tbody>'+
   mkSection('OPORTUNIDADES',oport)+
@@ -12598,7 +13202,8 @@ function obj_htmlFormato(){
   const d=JSON.parse(localStorage.getItem('sgc_objetivos_calidad')||'null')||{objetivos:[...OBJ_DEFAULT]};
   const rows=d.objetivos.map((o,i)=>'<tr><td style="width:36px;text-align:center;font-weight:700;font-size:12pt;color:#1f3864">'+(i+1)+'.</td><td style="padding:10px 12px;line-height:1.6;text-align:justify">'+esc(o)+'</td></tr>').join('');
   const sigLine='<br><br><span style="display:block;border-top:1px solid #111;margin-top:28px;font-size:9pt;color:#555">Nombre y Firma</span>';
-  return '<div class="fmt-doc">'+fmtHead('OBJETIVOS DE LA CALIDAD','R-62/01','00','')+
+  const revObj=planGetData('objetivos_calidad').version||'00';
+  return '<div class="fmt-doc">'+fmtHead('OBJETIVOS DE LA CALIDAD','R-62/01',revObj,'')+
   '<table class="fmt-table"><tbody>'+rows+'</tbody></table>'+
   '<table class="fmt-table" style="margin-top:8px"><tr><td style="width:50%;text-align:center;padding:14px">'+esc(d.elaboro||'')+sigLine+'</td><td style="text-align:center;padding:14px">'+esc(d.reviso||'')+sigLine+'</td></tr></table>'+
   '</div>';
@@ -14104,6 +14709,332 @@ window.efic_imprimir=function(){
 };
 
 /* ═══════════════════════════════════════
+   R-75/02 LISTADO DE PROCEDIMIENTOS
+═══════════════════════════════════════ */
+const R7502_KEY='sgc_r7502_v1';
+const R7502_AREAS=[
+  {id:'sgc', label:'COORDINACIÓN DE CALIDAD'},
+  {id:'ce',  label:'OFICINA DE CONTROL ESCOLAR'},
+  {id:'dir', label:'DIRECCIÓN'},
+  {id:'sa',  label:'SUBDIRECCIÓN ACADÉMICA'},
+  {id:'tit', label:'TITULACIÓN'},
+  {id:'doc', label:'DOCENCIA'}
+];
+function _r75proc(codigo,nombre,revision,fecha,responsable,area){
+  return {id:codigo.replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_'+Math.random().toString(36).slice(2,6),
+    codigo,nombre,revision,fecha,responsable,area};
+}
+const _R7502_SGC='MTRO. ROBERTO CARLOS AGUILAR PEDROZA';
+const _R7502_CAL='COORDINACIÓN DE CALIDAD';
+const _R7502_DR='LIC. TANIA ERIKA DOMÍNGUEZ CARRILLO';
+const _R7502_SA='LIC. ESTHER GÓMEZ RAMÍREZ';
+const _R7502_DO='MARÍA DE LOS ÁNGELES BARRERA PUGA';
+const _R7502_CE='LIC. GLORIA FERRER ARAGÓN';
+const R7502_DATA_INICIAL={
+  sgc:[
+    _r75proc('P-43/01','Alcance del Sistema de Gestión de Calidad','03','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-44/01','Sistema de Gestión de la Calidad y Seguimiento de sus Procesos','04','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-50/01','Responsabilidades y compromiso de la Dirección','03','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-61/01','Detección y Análisis del FODA','00','30 de agosto de 2025',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-63/01','Control de los Cambios','04','19 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-71/01','Solicitudes a la Subdirección Académica','02','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-75/01','Control de Documentos y Registros','03','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-81/01','Planificación del Servicio y Definición de Requisitos','03','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-84/01','Gestión de Proveedores Externos','04','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-85/01','Provisión y Control del Servicio','04','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-87/01','Control de las Salidas no Conformes','04','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-91/01','Seguimiento, Medición, Análisis y Medición del Servicio','03','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-92/01','Auditorías Internas','04','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-93/01','Revisión por la Dirección','04','16 de agosto de 2024',_R7502_SGC,_R7502_CAL),
+    _r75proc('P-102/01','No Conformidad y Acción Correctiva','04','16 de agosto de 2024',_R7502_SGC,_R7502_CAL)
+  ],
+  ce:[
+    _r75proc('P-CE-85/01','Inscripciones','05','30 de septiembre de 2025',_R7502_CE,'OFICINA DE CONTROL ESCOLAR'),
+    _r75proc('P-CE-85/02','Reinscripciones','04','19 de agosto de 2024',_R7502_CE,'OFICINA DE CONTROL ESCOLAR'),
+    _r75proc('P-CE-85/03','Listas e historial académico','04','19 de agosto de 2024',_R7502_CE,'OFICINA DE CONTROL ESCOLAR'),
+    _r75proc('P-CE-85/04','Credenciales','04','19 de agosto de 2024',_R7502_CE,'OFICINA DE CONTROL ESCOLAR'),
+    _r75proc('P-CE-85/05','Constancias','04','19 de agosto de 2024',_R7502_CE,'OFICINA DE CONTROL ESCOLAR'),
+    _r75proc('P-CE-85/06','Titulación','04','19 de agosto de 2024',_R7502_CE,'OFICINA DE CONTROL ESCOLAR'),
+    _r75proc('P-CE-85/07','Plataformas','04','19 de agosto de 2024',_R7502_CE,'OFICINA DE CONTROL ESCOLAR'),
+    _r75proc('P-CE-85/08','Oficios y registro de licenciaturas','04','19 de agosto de 2024',_R7502_CE,'OFICINA DE CONTROL ESCOLAR')
+  ],
+  dir:[
+    _r75proc('P-DR-85/01','Actas administrativas y Oficios, Comisiones','04','16 de octubre de 2024',_R7502_DR,'DIRECCIÓN'),
+    _r75proc('P-DR-85/02','Constancias, reconocimientos y notas buenas','04','16 de octubre de 2024',_R7502_DR,'DIRECCIÓN'),
+    _r75proc('P-DR-85/03','Convocatorias, Propuestas, Presentaciones y Acuerdos de colaboración','05','16 de octubre de 2024',_R7502_DR,'DIRECCIÓN')
+  ],
+  sa:[
+    _r75proc('P-SA-85/01','Titulación','04','19 de agosto de 2024',_R7502_SA,'SUBDIRECCIÓN ACADÉMICA'),
+    _r75proc('P-SA-85/02','Oficios, Memorandums y Circulares y Calendarios de Semestre','04','19 de agosto de 2024',_R7502_SA,'SUBDIRECCIÓN ACADÉMICA'),
+    _r75proc('P-DO-85/01','Gestión del trayecto de la práctica escolar','04','19 de agosto de 2024',_R7502_SA,'SUBDIRECCIÓN ACADÉMICA')
+  ],
+  tit:[],
+  doc:[
+    _r75proc('P-DO-85/02','Colegiados de semestre','05','19 de agosto de 2024',_R7502_DO,'ÁREA DE DOCENCIA'),
+    _r75proc('P-DO-85/03','Circulares y Memorandums para docentes','04','19 de agosto de 2024',_R7502_DO,'ÁREA DE DOCENCIA'),
+    _r75proc('P-DO-85/04','Recepción de Documentación','04','19 de agosto de 2024',_R7502_DO,'ÁREA DE DOCENCIA'),
+    _r75proc('P-DO-85/05','Asignación de Cursos y elaboración de Horarios','05','19 de agosto de 2024',_R7502_DO,'ÁREA DE DOCENCIA')
+  ]
+};
+function leerR7502(){
+  const raw=localStorage.getItem(R7502_KEY);
+  if(!raw)return null;
+  try{return JSON.parse(raw);}catch(e){return null;}
+}
+function guardarR7502(data){localStorage.setItem(R7502_KEY,JSON.stringify(data));}
+
+/* ── Supabase helpers R-75/02 ── */
+async function _r7502UpsertSupa(rec,areaId,orden){
+  try{
+    await sb.from('sgc_r7502').upsert({
+      id:rec.id,area_id:areaId,codigo:rec.codigo,nombre:rec.nombre,
+      revision:rec.revision,fecha:rec.fecha,responsable:rec.responsable,
+      area_label:rec.area,orden:orden,updated_at:new Date().toISOString()
+    },{onConflict:'id'});
+  }catch(e){}
+}
+async function _r7502DeleteSupa(id){
+  try{await sb.from('sgc_r7502').delete().eq('id',id);}catch(e){}
+}
+async function _r7502SeedSupabase(data){
+  const rows=[];
+  for(const area of R7502_AREAS){
+    (data[area.id]||[]).forEach((r,i)=>{
+      rows.push({id:r.id,area_id:area.id,codigo:r.codigo,nombre:r.nombre,
+        revision:r.revision,fecha:r.fecha,responsable:r.responsable,
+        area_label:r.area,orden:i});
+    });
+  }
+  if(!rows.length)return;
+  try{await sb.from('sgc_r7502').upsert(rows,{onConflict:'id'});}catch(e){}
+}
+async function cargarR7502Supabase(){
+  try{
+    const{data,error}=await sb.from('sgc_r7502').select('*').order('area_id').order('orden');
+    if(error||!data)return;
+    if(data.length===0){
+      const local=leerR7502()||JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
+      await _r7502SeedSupabase(local);
+      return;
+    }
+    const grouped={};
+    for(const area of R7502_AREAS)grouped[area.id]=[];
+    for(const row of data){
+      if(grouped[row.area_id]!==undefined){
+        grouped[row.area_id].push({
+          id:row.id,codigo:row.codigo,nombre:row.nombre,
+          revision:row.revision,fecha:row.fecha,
+          responsable:row.responsable,area:row.area_label
+        });
+      }
+    }
+    guardarR7502(grouped);
+    if(document.getElementById('sec-r7502')?.classList.contains('visible'))renderR7502();
+  }catch(e){}
+}
+window.r7502_resetData=async function(){
+  if(!confirm('¿Restablecer todos los procedimientos a los datos originales del documento? Se perderán los cambios realizados.'))return;
+  const inicial=JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
+  localStorage.removeItem(R7502_KEY);
+  try{await sb.from('sgc_r7502').delete().neq('id','__none__');}catch(e){}
+  await _r7502SeedSupabase(inicial);
+  guardarR7502(inicial);
+  renderR7502();
+};
+function renderR7502(){
+  const cont=document.getElementById('r7502-contenido');
+  if(!cont)return;
+  const data=leerR7502()||JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
+  const rol=rolUsuarioActual();
+  const canEdit=['admin','administrador','calidad','coordinacion_calidad','coordinador'].includes(rol);
+  const esAreaUser=['area','responsable_area','responsable'].includes(rol);
+  let areaIdsVisibles=null;
+  if(esAreaUser)areaIdsVisibles=driveAreaIdsUsuario();
+  let html='';
+  for(const area of R7502_AREAS){
+    if(areaIdsVisibles&&!areaIdsVisibles.includes(area.id))continue;
+    const _parseCode=c=>{const m=(c||'').match(/(\d+)(?:\/(\d+))?$/);return m?[parseInt(m[1]||0),parseInt(m[2]||0)]:[0,0];};
+    const recs=(data[area.id]||[]).slice().sort((a,b)=>{const[a1,a2]=_parseCode(a.codigo);const[b1,b2]=_parseCode(b.codigo);return a1!==b1?a1-b1:a2-b2;});
+    html+=`<div class="r75-area-block">
+      <div class="r75-area-hdr" onclick="r75toggleArea('r7502_${area.id}')">
+        <span>${area.label}</span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span class="r75-badge-count">${recs.length} procedimientos</span>
+          ${canEdit?`<button class="btn btn-sm r75-add-btn" style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:3px 10px;border-radius:6px;font-size:.8em" onclick="event.stopPropagation();r7502_openModal('${area.id}',null)">+ Agregar</button>`:''}
+          <svg id="r75-chev-r7502_${area.id}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:16px;height:16px;transition:transform .2s"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </span>
+      </div>
+      <div id="r75-body-r7502_${area.id}" class="r75-area-body">
+        <table class="r75-table">
+          <thead><tr>
+            <th>Código</th><th>Nombre del procedimiento</th>
+            <th style="text-align:center">Rev.</th><th>Fecha de aprobación</th>
+            <th>Responsable</th><th>Área</th>
+            ${canEdit?'<th style="text-align:center">Acciones</th>':''}
+          </tr></thead><tbody>`;
+    for(const r of recs){
+      html+=`<tr>
+        <td style="font-weight:600;white-space:nowrap">${esc(r.codigo)}</td>
+        <td>${esc(r.nombre)}</td>
+        <td style="text-align:center">${esc(r.revision)}</td>
+        <td style="white-space:nowrap">${esc(r.fecha)}</td>
+        <td>${esc(r.responsable)}</td><td>${esc(r.area)}</td>
+        ${canEdit?`<td class="r75-act" style="text-align:center">
+          <button class="btn btn-sm" style="padding:3px 10px;font-size:.78em" onclick="r7502_openModal('${area.id}','${r.id}')">Editar</button>
+        </td>`:''}
+      </tr>`;
+    }
+    html+=`</tbody></table></div></div>`;
+  }
+  if(!html)html='<p class="empty">No hay procedimientos disponibles para tu área.</p>';
+  cont.innerHTML=html;
+}
+window.r7502_openModal=function(areaId,recId){
+  const data=leerR7502()||JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
+  const modal=document.getElementById('r7502-modal-overlay');
+  const delBtn=document.getElementById('r7502-btn-delete');
+  document.getElementById('r7502-rec-id').value=recId||'';
+  const areaSel=document.getElementById('r7502-rec-area-sel');
+  if(areaId)areaSel.value=areaId;
+  if(recId){
+    let found=null,foundArea=areaId;
+    if(areaId){found=(data[areaId]||[]).find(r=>r.id===recId);}
+    else{for(const a of R7502_AREAS){found=(data[a.id]||[]).find(r=>r.id===recId);if(found){foundArea=a.id;break;}}}
+    if(found){
+      areaSel.value=foundArea;
+      document.getElementById('r7502-rec-codigo').value=found.codigo;
+      document.getElementById('r7502-rec-nombre').value=found.nombre;
+      document.getElementById('r7502-rec-revision').value=found.revision;
+      document.getElementById('r7502-rec-fecha').value=found.fecha;
+      document.getElementById('r7502-rec-responsable').value=found.responsable;
+      document.getElementById('r7502-rec-areadoc').value=found.area;
+    }
+    document.getElementById('r7502-modal-title').textContent='Editar procedimiento';
+    if(delBtn)delBtn.style.display='inline-flex';
+  }else{
+    const defaults={sgc:_SGC,ce:_CE,dir:_DR,sa:_SA,tit:_SA,doc:_DO};
+    const areaLabels={sgc:_CALIDAD,ce:_OSCE,dir:'DIRECCIÓN',sa:_SALAB,tit:_SALAB,doc:_DOCLAB};
+    document.getElementById('r7502-rec-codigo').value='';
+    document.getElementById('r7502-rec-nombre').value='';
+    document.getElementById('r7502-rec-revision').value='00';
+    document.getElementById('r7502-rec-fecha').value='';
+    document.getElementById('r7502-rec-responsable').value=defaults[areaId]||'';
+    document.getElementById('r7502-rec-areadoc').value=areaLabels[areaId]||'';
+    document.getElementById('r7502-modal-title').textContent='Nuevo procedimiento';
+    if(delBtn)delBtn.style.display='none';
+  }
+  modal.classList.add('open');
+  document.getElementById('r7502-rec-codigo').focus();
+};
+window.r7502_closeModal=function(){document.getElementById('r7502-modal-overlay').classList.remove('open');};
+window.r7502_saveRecord=async function(){
+  const data=leerR7502()||JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
+  const recId=document.getElementById('r7502-rec-id').value;
+  const areaId=document.getElementById('r7502-rec-area-sel').value;
+  const codigo=document.getElementById('r7502-rec-codigo').value.trim();
+  const nombre=document.getElementById('r7502-rec-nombre').value.trim();
+  const revision=document.getElementById('r7502-rec-revision').value.trim();
+  const fecha=document.getElementById('r7502-rec-fecha').value.trim();
+  const responsable=document.getElementById('r7502-rec-responsable').value.trim();
+  const areadoc=document.getElementById('r7502-rec-areadoc').value.trim();
+  if(!codigo||!nombre){alert('El código y el nombre son obligatorios.');return;}
+  if(!data[areaId])data[areaId]=[];
+  let savedRec=null;
+  if(recId){
+    let updated=false;
+    for(const a of R7502_AREAS){
+      const idx=(data[a.id]||[]).findIndex(r=>r.id===recId);
+      if(idx>=0){
+        const upd={...data[a.id][idx],codigo,nombre,revision,fecha,responsable,area:areadoc};
+        if(a.id!==areaId){data[a.id].splice(idx,1);data[areaId].push(upd);}else{data[a.id][idx]=upd;}
+        savedRec={rec:upd,areaId};updated=true;break;
+      }
+    }
+    if(!updated){
+      const nr={id:'p_'+Date.now(),codigo,nombre,revision,fecha,responsable,area:areadoc};
+      data[areaId].push(nr);savedRec={rec:nr,areaId};
+    }
+  }else{
+    const nr={id:'p_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),codigo,nombre,revision,fecha,responsable,area:areadoc};
+    data[areaId].push(nr);savedRec={rec:nr,areaId};
+  }
+  guardarR7502(data);r7502_closeModal();renderR7502();
+  if(savedRec){
+    const orden=(data[savedRec.areaId]||[]).findIndex(r=>r.id===savedRec.rec.id);
+    await _r7502UpsertSupa(savedRec.rec,savedRec.areaId,orden);
+  }
+};
+window.r7502_deleteRecord=async function(){
+  const recId=document.getElementById('r7502-rec-id').value;
+  if(!recId)return;
+  if(!confirm('¿Eliminar este procedimiento?'))return;
+  const data=leerR7502()||JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
+  for(const a of R7502_AREAS){
+    const idx=(data[a.id]||[]).findIndex(r=>r.id===recId);
+    if(idx>=0){data[a.id].splice(idx,1);break;}
+  }
+  guardarR7502(data);r7502_closeModal();renderR7502();
+  await _r7502DeleteSupa(recId);
+};
+window.r7502_exportar=function(){
+  const data=leerR7502()||JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
+  const cabecera=fmtHead('LISTADO DE PROCEDIMIENTOS','R-75/02',docVersion('R-75/02','03'),'13 de enero de 2026');
+  const b='border:0.5px solid #888';const bp='padding:6px 8px';
+  const thS=`${b};background:#fff;color:#000;${bp};font-size:11pt;font-weight:700;text-align:left;overflow-wrap:break-word;word-break:break-word`;
+  const tdS=`${b};${bp};font-size:11pt;overflow-wrap:break-word;word-break:break-word;vertical-align:top`;
+  const colHdr=`<tr>
+    <th style="${thS}">Código</th><th style="${thS}">Nombre del procedimiento</th>
+    <th style="${thS};text-align:center">Rev.</th><th style="${thS}">Fecha de aprobación</th>
+    <th style="${thS}">Responsable</th><th style="${thS}">Área</th></tr>`;
+  let filasCuerpo='';
+  for(const area of R7502_AREAS){
+    const recs=data[area.id]||[];if(!recs.length)continue;
+    filasCuerpo+=`<tr><td colspan="6" style="background:#fff;color:#000;font-weight:700;text-align:center;${bp};font-size:11pt;letter-spacing:.04em;${b}">${area.label}</td></tr>`;
+    filasCuerpo+=colHdr;
+    recs.forEach((r,i)=>{
+      const bg=i%2===0?'#ffffff':'#eff6ff';
+      filasCuerpo+=`<tr style="background:${bg}">
+        <td style="${tdS};font-weight:600;white-space:nowrap">${esc(r.codigo)}</td>
+        <td style="${tdS}">${esc(r.nombre)}</td>
+        <td style="${tdS};text-align:center">${esc(r.revision)}</td>
+        <td style="${tdS}">${esc(r.fecha)}</td>
+        <td style="${tdS}">${esc(r.responsable)}</td>
+        <td style="${tdS}">${esc(r.area)}</td></tr>`;
+    });
+  }
+  const css=`
+    @page{size:letter landscape;margin:0}
+    *{box-sizing:border-box}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:12pt;color:#111;margin:0 .45in .4in;padding:0}
+    .fmt-doc{width:100%;font-family:Arial,Helvetica,sans-serif;font-size:12pt;color:#111;padding:0}
+    .fmt-head{display:grid;grid-template-columns:1.2in 1fr 1.35in;border:1px solid #555;min-height:.82in;margin:0 0 .18in;width:100%}
+    .fmt-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;padding:5px}
+    .fmt-logo img{max-width:.72in;max-height:.72in;object-fit:contain;opacity:.68}
+    .fmt-title{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;text-align:center;font-weight:700;text-transform:uppercase;color:#444;line-height:1.15;font-size:13pt;padding:8px 14px}
+    .fmt-code{font-size:11pt;line-height:1.5;padding:9px 7px;color:#333}
+    table{border-collapse:collapse;width:100%;table-layout:fixed}
+    thead{display:table-header-group}tfoot{display:table-footer-group}
+    tbody tr{break-inside:avoid;page-break-inside:avoid}
+    td,th{overflow-wrap:break-word;word-break:break-word}
+    colgroup col:nth-child(1){width:10%}colgroup col:nth-child(2){width:27%}
+    colgroup col:nth-child(3){width:6%}colgroup col:nth-child(4){width:18%}
+    colgroup col:nth-child(5){width:23%}colgroup col:nth-child(6){width:16%}`;
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>R-75/02 Listado de Procedimientos · ENUFC</title>
+  <style>${css}</style></head><body>
+  <div class="fmt-doc"><table>
+    <colgroup><col><col><col><col><col><col></colgroup>
+    <thead><tr><td colspan="6" style="border:none;padding:.4in 0 .18in">${cabecera}</td></tr></thead>
+    <tfoot><tr><td colspan="6" style="border:none;padding:4px 0;font-size:9pt;color:#555;text-align:center">R-75/02 · Rev. 03</td></tr></tfoot>
+    <tbody>${filasCuerpo}</tbody>
+  </table></div>
+  <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`;
+  const w=window.open('','_blank','width=1100,height=900');
+  if(w){w.document.write(html);w.document.close();}
+};
+
+/* ═══════════════════════════════════════
    R-75/03 LISTADO DE REGISTROS
 ═══════════════════════════════════════ */
 const R7503_KEY='sgc_r7503_v1';
@@ -14594,7 +15525,7 @@ window.r7503_exportar=function(){
   const css=`
     @page{size:letter landscape;margin:0}
     *{box-sizing:border-box}
-    body{font-family:Arial,Helvetica,sans-serif;font-size:12pt;color:#111;margin:.4in .45in;padding:0}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:12pt;color:#111;margin:0 .45in .4in;padding:0}
     .fmt-doc{width:100%;font-family:Arial,Helvetica,sans-serif;font-size:12pt;color:#111;padding:0}
     .fmt-head{display:grid;grid-template-columns:1.2in 1fr 1.35in;border:1px solid #555;min-height:.82in;margin:0 0 .18in;width:100%}
     .fmt-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;padding:5px}
@@ -14611,8 +15542,7 @@ window.r7503_exportar=function(){
     colgroup col:nth-child(3){width:8%}
     colgroup col:nth-child(4){width:14%}
     colgroup col:nth-child(5){width:23%}
-    colgroup col:nth-child(6){width:14%}
-    @media print{body{margin:0}}`;
+    colgroup col:nth-child(6){width:14%}`;
 
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>R-75/03 Listado de Registros · ENUFC</title>
@@ -14622,7 +15552,7 @@ window.r7503_exportar=function(){
     <table>
       <colgroup><col><col><col><col><col><col></colgroup>
       <thead>
-        <tr><td colspan="6" style="border:none;padding:0 0 .18in">${cabecera}</td></tr>
+        <tr><td colspan="6" style="border:none;padding:.4in 0 .18in">${cabecera}</td></tr>
       </thead>
       <tfoot>
         <tr><td colspan="6" style="border:none;padding:4px 0;font-size:9pt;color:#555;text-align:center">R-75/03 · Rev. 03</td></tr>
@@ -16090,7 +17020,7 @@ function revImprimirPrograma(){
   if(w){w.document.write(html);w.document.close();}
 }
 
-/* ── Impresión R-93/02 Reporte de Revisión (mismo encabezado que R-75/03) ── */
+/* ── Impresión R-93/02 Reporte de Revisión ── */
 function revImprimirReporte(){
   const data=_revLeerFormulario();
   const logoSrc=document.querySelector('#login-screen img')?.src||'';
@@ -16099,106 +17029,105 @@ function revImprimirReporte(){
   const repFecha=fmtEs(data.rep_fecha);
   const horaIni=data.rep_hora_inicio?(data.rep_hora_inicio+' horas'):'';
   const horaCie=data.rep_hora_cierre?(data.rep_hora_cierre+' horas'):'';
-  const td=(content,style='')=>`<td style="border:1px solid #555;padding:5px 8px;font-size:9.5pt;vertical-align:top${style?';'+style:''}">${content}</td>`;
-  const th=(content,style='')=>`<th style="background:#d9d9d9;border:1px solid #555;padding:6px 8px;font-size:9.5pt;font-weight:700;text-align:center;vertical-align:middle${style?';'+style:''}">${content}</th>`;
-  const agendaRows=data.agenda.map(a=>`<tr>${td(esc(a.tema))}${td(esc(a.relevancia))}${td(esc(a.observaciones))}</tr>`).join('');
-  const decisionRows=data.decisiones.length
-    ?data.decisiones.map(d=>`<tr>${td(esc(d.tema))}${td(esc(d.descripcion))}${td(esc(d.responsable))}${td(esc(d.acciones))}${td(fmtEs(d.fecha_cumplimiento)||d.fecha_cumplimiento||'','text-align:center;white-space:nowrap')}</tr>`).join('')
-    :`<tr><td colspan="5" style="border:1px solid #555;padding:14px;height:.5in"></td></tr>`;
-  const encabezado=`
+  const tda=(c,s='')=>`<td style="border:1px solid #555;padding:4px 6px;font-size:9pt;vertical-align:top${s?';'+s:''}">${c}</td>`;
+  const td=(c,s='')=>`<td style="border:1px solid #555;padding:5px 8px;font-size:9.5pt;vertical-align:top${s?';'+s:''}">${c}</td>`;
+  const th=(c,s='')=>`<th style="background:#d9d9d9;border:1px solid #555;padding:5px 7px;font-size:9.5pt;font-weight:700;text-align:center;vertical-align:middle${s?';'+s:''}">${c}</th>`;
+  const agendaRows=data.agenda.map(a=>`<tr>${tda(esc(a.tema))}${tda(esc(a.relevancia))}${tda(esc(a.observaciones))}</tr>`).join('');
+  // Dividir decisiones en lotes de 14 filas → minimiza hojas y espacio vacío
+  const RPP=14;
+  const allDecs=data.decisiones.length?data.decisiones:[null];
+  const chunks=[];
+  for(let i=0;i<allDecs.length;i+=RPP)chunks.push(allDecs.slice(i,i+RPP));
+  const totalPgs=1+chunks.length;
+  const renderDec=ch=>!ch[0]
+    ?`<tr><td colspan="5" style="border:1px solid #555;padding:14px;height:.5in"></td></tr>`
+    :ch.map(d=>`<tr>${td(esc(d.tema))}${td(esc(d.descripcion))}${td(esc(d.responsable))}${td(esc(d.acciones))}${td(fmtEs(d.fecha_cumplimiento)||d.fecha_cumplimiento||'','text-align:center;white-space:nowrap')}</tr>`).join('');
+  const fmtHead=(n)=>`
     <div class="fmt-head">
       <div class="fmt-logo"><img src="${logoSrc}" alt="ENUFC"></div>
       <div class="fmt-title">REPORTE DE REVISIÓN POR LA DIRECCIÓN</div>
       <div class="fmt-code">
         Código: R-93/02<br>
-        Página: 1 de 3<br>
+        Página: ${n} de ${totalPgs}<br>
         <span style="color:#c0392b">Rev: 01</span>
       </div>
     </div>`;
+  const firmasFin=`
+    <table style="margin-top:.2in;break-inside:avoid;page-break-inside:avoid"><tr>
+      <td style="width:40%;padding:0 .15in 0 0;vertical-align:top">
+        <div style="border-top:1px solid #444;margin-top:.4in;padding-top:4px;font-size:9.5pt;line-height:1.6"><strong>Director:</strong> ${esc(data.firma_director_rep||'')}</div>
+      </td>
+      <td style="width:38%;padding:0 .1in;vertical-align:top">
+        <div style="border-top:1px solid #444;margin-top:.4in;padding-top:4px;font-size:9.5pt;line-height:1.6"><strong>Administrador de la Calidad:</strong> ${esc(data.firma_calidad_rep||'')}</div>
+      </td>
+      <td style="width:22%;padding:0 0 0 .1in;vertical-align:top">
+        <div style="border-top:1px solid #444;margin-top:.4in;padding-top:4px;font-size:9.5pt;line-height:1.6"><strong>Fecha:</strong> ${repFecha}</div>
+      </td>
+    </tr></table>`;
+  // Genera una sección por lote: el <thead> incluye el encabezado del documento
+  // para que se repita correctamente si hay desbordamiento dentro del lote
+  const decPages=chunks.map((ch,i)=>`
+    <div style="break-before:page;page-break-before:always">
+      <table>
+        <thead>
+          <tr><td colspan="5" style="padding:.45in 0 .08in;background:#fff">${fmtHead(2+i)}</td></tr>
+          <tr>
+            ${th('Tema a tratar','width:15%')}${th('Descripción','width:22%')}${th('Responsable(s)','width:16%')}${th('Acciones requeridas')}${th('Fecha de cumplimiento','width:12%;text-align:center;white-space:nowrap')}
+          </tr>
+        </thead>
+        <tbody>${renderDec(ch)}</tbody>
+      </table>
+      ${i===chunks.length-1?firmasFin:''}
+    </div>`).join('');
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>R-93/02 · Reporte de Revisión por la Dirección</title>
   <style>
-    @page{size:letter portrait;margin:0}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#111;padding:.5in .5in}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#111;background:#fff;padding:0 .5in .5in}
     table{border-collapse:collapse;width:100%}
-    .fmt-head{display:grid;grid-template-columns:1.1in 1fr 1.25in;border:1px solid #555;min-height:.9in;margin-bottom:.15in;width:100%}
-    .fmt-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;padding:5px}
-    .fmt-logo img{max-width:.75in;max-height:.75in;object-fit:contain;opacity:.68}
-    .fmt-title{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;text-align:center;font-weight:700;text-transform:uppercase;color:#444;line-height:1.25;font-size:11pt;padding:8px 14px}
-    .fmt-code{font-size:9.5pt;line-height:1.75;padding:8px 10px;color:#333}
-    .agenda-titulo{font-weight:700;font-size:11pt;text-align:center;margin:.18in 0 .15in}
-    .reunion-info{margin-bottom:.15in;font-size:10pt;line-height:1.8}
-    .reunion-info table{border-collapse:collapse;width:100%}
-    .reunion-info td{padding:2px 0;font-size:10pt;width:50%}
-    .page-break{page-break-before:always}
-    @media print{body{margin:0}}
+    .fmt-head{display:grid;grid-template-columns:1.1in 1fr 1.25in;border:1px solid #555;min-height:.8in;margin-bottom:.1in;width:100%}
+    .fmt-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;padding:4px}
+    .fmt-logo img{max-width:.7in;max-height:.7in;object-fit:contain;opacity:.68}
+    .fmt-title{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;text-align:center;font-weight:700;text-transform:uppercase;color:#444;line-height:1.2;font-size:10.5pt;padding:6px 12px}
+    .fmt-code{font-size:9.5pt;line-height:1.6;padding:7px 10px;color:#333}
+    @page{size:letter portrait;margin:0}
   </style></head><body>
 
-    ${encabezado}
-
-    <p class="agenda-titulo">Agenda de la Reunión de Revisión por la Dirección</p>
-
-    <!-- Datos de la reunión -->
-    <div class="reunion-info">
-      <table><tr>
-        <td><strong>Fecha:</strong> <u>${repFecha}</u></td>
-        <td><strong>Lugar:</strong> <u>${esc(data.rep_lugar)}</u></td>
+  <!-- ═══ PÁGINA 1: AGENDA ═══ -->
+  <div style="padding-top:.45in">
+    ${fmtHead(1)}
+    <p style="font-weight:700;font-size:10.5pt;text-align:center;margin:.1in 0 .09in">Agenda de la Reunión de Revisión por la Dirección</p>
+    <table style="margin-bottom:.1in">
+      <tr>
+        <td style="width:50%;padding:2px 0;font-size:9.5pt"><strong>Fecha:</strong> <u>${repFecha}</u></td>
+        <td style="width:50%;padding:2px 0;font-size:9.5pt"><strong>Lugar:</strong> <u>${esc(data.rep_lugar)}</u></td>
       </tr><tr>
-        <td><strong>Hora de inicio:</strong> <u>${horaIni}</u></td>
-        <td><strong>Hora de cierre:</strong> <u>${horaCie}</u></td>
-      </tr></table>
-    </div>
-
-    <!-- Tabla agenda -->
+        <td style="padding:2px 0;font-size:9.5pt"><strong>Hora de inicio:</strong> <u>${horaIni}</u></td>
+        <td style="padding:2px 0;font-size:9.5pt"><strong>Hora de cierre:</strong> <u>${horaCie}</u></td>
+      </tr>
+    </table>
     <table>
       <thead><tr>${th('Tema a tratar','width:30%')}${th('Relevancia con el SGC','width:28%')}${th('Observaciones')}</tr></thead>
       <tbody>${agendaRows}</tbody>
     </table>
-
-    <!-- Firmas después de agenda -->
-    <table style="margin-top:.2in;border-collapse:collapse;width:100%">
+    <table style="margin-top:.13in;break-inside:avoid;page-break-inside:avoid">
       <tr>
-        <th style="border:1px solid #555;padding:5px 8px;font-size:9.5pt;background:#d9d9d9;text-align:center;width:55%">Nombre</th>
-        <th style="border:1px solid #555;padding:5px 8px;font-size:9.5pt;background:#d9d9d9;text-align:center">Firma</th>
+        <th style="border:1px solid #555;padding:4px 7px;font-size:9pt;background:#d9d9d9;text-align:center;width:55%">Nombre</th>
+        <th style="border:1px solid #555;padding:4px 7px;font-size:9pt;background:#d9d9d9;text-align:center">Firma</th>
       </tr>
       <tr>
-        <td style="border:1px solid #555;padding:7px 8px;font-size:9.5pt">Director: ${esc(data.firma_director_rep||'')}</td>
-        <td style="border:1px solid #555;padding:22px 8px"></td>
+        <td style="border:1px solid #555;padding:5px 7px;font-size:9pt">Director: ${esc(data.firma_director_rep||'')}</td>
+        <td style="border:1px solid #555;padding:16px 8px"></td>
       </tr>
       <tr>
-        <td style="border:1px solid #555;padding:7px 8px;font-size:9.5pt">Administrador de la Calidad: ${esc(data.firma_calidad_rep||'')}</td>
-        <td style="border:1px solid #555;padding:22px 8px"></td>
+        <td style="border:1px solid #555;padding:5px 7px;font-size:9pt">Administrador de la Calidad: ${esc(data.firma_calidad_rep||'')}</td>
+        <td style="border:1px solid #555;padding:16px 8px"></td>
       </tr>
     </table>
+  </div>
 
-    <!-- Página 2: Toma de Decisiones -->
-    <div class="page-break"></div>
-    ${encabezado}
-
-    <table>
-      <thead><tr>${th('Tema a tratar','width:15%')}${th('Descripción','width:22%')}${th('Responsable(s)','width:16%')}${th('Acciones requeridas')}${th('Fecha de cumplimiento','width:12%;text-align:center;white-space:nowrap')}</tr></thead>
-      <tbody>${decisionRows}</tbody>
-    </table>
-
-    <!-- Firmas finales -->
-    <table style="margin-top:.25in;border-collapse:collapse;width:100%"><tr>
-      <td style="width:40%;padding:0 .15in 0 0;vertical-align:top">
-        <div style="border-top:1px solid #444;margin-top:.45in;padding-top:4px;font-size:9.5pt;line-height:1.6">
-          <strong>Director:</strong> ${esc(data.firma_director_rep||'')}
-        </div>
-      </td>
-      <td style="width:38%;padding:0 .1in;vertical-align:top">
-        <div style="border-top:1px solid #444;margin-top:.45in;padding-top:4px;font-size:9.5pt;line-height:1.6">
-          <strong>Administrador de la Calidad:</strong> ${esc(data.firma_calidad_rep||'')}
-        </div>
-      </td>
-      <td style="width:22%;padding:0 0 0 .1in;vertical-align:top">
-        <div style="border-top:1px solid #444;margin-top:.45in;padding-top:4px;font-size:9.5pt;line-height:1.6">
-          <strong>Fecha:</strong> ${repFecha}
-        </div>
-      </td>
-    </tr></table>
+  <!-- ═══ PÁGINAS 2+: decisiones paginadas, encabezado repite en desbordamiento ═══ -->
+  ${decPages}
 
   <script>window.onload=function(){window.print();}<\/script>
   </body></html>`;
@@ -17842,13 +18771,7 @@ function satLlenarIndicador(){
   goto('ind-captura',null);
   setTimeout(()=>{
     // Llenar campos de paso 1
-    const selSem=document.getElementById('ind-semestre');
-    if(selSem){
-      // Intentar seleccionar opción coincidente, si no agregarla
-      let found=false;
-      for(const opt of selSem.options){if(opt.value===semestre){selSem.value=semestre;found=true;break;}}
-      if(!found){const opt=document.createElement('option');opt.value=semestre;opt.textContent=semestre;selSem.appendChild(opt);selSem.value=semestre;}
-    }
+    setIndSemestre(semestre);
     const fechaEl=document.getElementById('ind-fecha');if(fechaEl)fechaEl.value=hoy;
     const respEl=document.getElementById('ind-responsable');if(respEl&&!respEl.value)respEl.value='Coordinación de Calidad';
 
@@ -18495,8 +19418,7 @@ function provListaImprimir(){
     .fmt-logo img{max-width:.75in;max-height:.75in;object-fit:contain}
     .fmt-title{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;text-align:center;font-size:11pt;color:#333;line-height:1.25;padding:8px 12px}
     .fmt-code{font-size:9.5pt;line-height:1.7;padding:8px 9px;color:#222}
-    table{border-collapse:collapse;width:100%}
-    @media print{body{margin:0}}`;
+    table{border-collapse:collapse;width:100%}`;
   const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <title>R-84/01 · Lista de Proveedores Aprobados · ENUFC</title>
   <style>${css}</style></head><body>
@@ -18875,8 +19797,7 @@ function _provEvalPrint({proveedor,producto,tipo,fecha,firma,totalPts,pct,result
     .fmt-title{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;text-align:center;font-weight:700;text-transform:uppercase;color:#444;line-height:1.2;font-size:12pt;padding:8px 14px}
     .fmt-code{font-size:10pt;line-height:1.6;padding:9px 8px;color:#333}
     table{border-collapse:collapse;width:100%}
-    .sec{font-weight:700;font-size:10.5pt;margin:.14in 0 .06in;text-transform:uppercase;border-bottom:1px solid #555;padding-bottom:3px;color:#444}
-    @media print{body{margin:0}}`;
+    .sec{font-weight:700;font-size:10.5pt;margin:.14in 0 .06in;text-transform:uppercase;border-bottom:1px solid #555;padding-bottom:3px;color:#444}`;
   const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <title>R-84-02 · Hoja de Evaluación de Proveedor · ENUFC</title>
   <style>${css}</style></head><body>
