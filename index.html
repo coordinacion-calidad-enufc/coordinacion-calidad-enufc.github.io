@@ -2904,7 +2904,7 @@ Coordinacion de Calidad</textarea>
   <!-- ═══ LISTADO DE PROCEDIMIENTOS (R-75/02) ═══ -->
   <div class="section" id="sec-r7502">
     <p class="page-title">Listado de Procedimientos</p>
-    <p class="page-sub">R-75/02 · Rev. 03 · 13 de enero de 2026 · Cláusula 7.5 ISO 9001:2015</p>
+    <p class="page-sub">R-75/02 · Rev. 03 · 22 de junio de 2026 · Cláusula 7.5 ISO 9001:2015</p>
     <div class="r75-toolbar">
       <button class="btn btn-primary btn-sm" onclick="r7502_openModal(null,null)" data-admin-only>+ Nuevo procedimiento</button>
       <button class="btn btn-secondary btn-sm" onclick="r7502_exportar()">&#128441; Exportar / Imprimir</button>
@@ -2950,7 +2950,7 @@ Coordinacion de Calidad</textarea>
   <!-- ═══ LISTADO DE REGISTROS (R-75/03) ═══ -->
   <div class="section" id="sec-r7503">
     <p class="page-title">Listado de Registros</p>
-    <p class="page-sub">R-75/03 · Rev. 03 · 13 de enero de 2026 · Cláusula 7.5 ISO 9001:2015</p>
+    <p class="page-sub">R-75/03 · Rev. 03 · 22 de junio de 2026 · Cláusula 7.5 ISO 9001:2015</p>
     <div class="r75-toolbar">
       <button class="btn btn-primary btn-sm" onclick="r7503_openModal(null,null)" data-admin-only>+ Nuevo registro</button>
       <button class="btn btn-secondary btn-sm" onclick="r7503_exportar()">&#128441; Exportar / Imprimir</button>
@@ -14983,7 +14983,7 @@ window.r7502_deleteRecord=async function(){
 };
 window.r7502_exportar=function(){
   const data=leerR7502()||JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
-  const cabecera=fmtHead('LISTADO DE PROCEDIMIENTOS','R-75/02',docVersion('R-75/02','03'),'13 de enero de 2026');
+  const cabecera=fmtHead('LISTADO DE PROCEDIMIENTOS','R-75/02',docVersion('R-75/02','03'),'22 de junio de 2026');
   const b='border:0.5px solid #888';const bp='padding:6px 8px';
   const thS=`${b};background:#fff;color:#000;${bp};font-size:11pt;font-weight:700;text-align:left;overflow-wrap:break-word;word-break:break-word`;
   const tdS=`${b};${bp};font-size:11pt;overflow-wrap:break-word;word-break:break-word;vertical-align:top`;
@@ -15083,7 +15083,7 @@ const R7503_DATA_INICIAL={
     _r75rec('R-72/01','REGISTRO DE FORMACIÓN','02','28 de septiembre de 2023',_SGC,_CALIDAD),
     _r75rec('R-75/01','CONTROL DE LA DISTRIBUCIÓN INTERNA','00','27 de septiembre de 2022',_SGC,_CALIDAD),
     _r75rec('R-75/02','LISTADO DE PROCEDIMIENTOS','02','29 de agosto de 2023',_SGC,_CALIDAD),
-    _r75rec('R-75/03','LISTADO DE REGISTROS','03','13 de enero de 2026',_SGC,_CALIDAD),
+    _r75rec('R-75/03','LISTADO DE REGISTROS','03','22 de junio de 2026',_SGC,_CALIDAD),
     _r75rec('R-75/04','CONTROL DE DISTRIBUCIÓN EXTERNA','03','22 de marzo de 2024',_SGC,_CALIDAD),
     _r75rec('R-84/01','LISTA PROVEEDORES ACEPTADOS','00','17 de abril de 2023',_SGC,_CALIDAD),
     _r75rec('R-84/02','HOJA DE EVALUACIÓN DE PROVEEDOR','00','17 de abril de 2023',_SGC,_CALIDAD),
@@ -15492,7 +15492,7 @@ window.r7503_deleteRecord=async function(){
 window.r7503_exportar=function(){
   const data=leerR7503()||JSON.parse(JSON.stringify(R7503_DATA_INICIAL));
   // Encabezado usando exactamente el mismo patrón que todos los demás formatos
-  const cabecera=fmtHead('LISTADO DE REGISTROS','R-75/03',docVersion('R-75/03','03'),'13 de enero de 2026');
+  const cabecera=fmtHead('LISTADO DE REGISTROS','R-75/03',docVersion('R-75/03','03'),'22 de junio de 2026');
 
   const b='border:0.5px solid #888';
   const bp='padding:6px 8px';
