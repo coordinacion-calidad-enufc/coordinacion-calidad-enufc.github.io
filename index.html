@@ -3597,6 +3597,11 @@ Coordinacion de Calidad</textarea>
     </div>
     <div id="sat-comp-deltas" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px"></div>
     <div id="sat-comp-analisis" style="margin-bottom:18px"></div>
+    <div id="sat-ia-bar" style="display:none;text-align:center;margin-bottom:20px;padding:16px;background:linear-gradient(135deg,#eff6ff,#f0f9ff);border:1px solid #bfdbfe;border-radius:12px">
+      <div style="font-size:13px;color:#1e40af;font-weight:600;margin-bottom:6px">📊 Informe Narrativo con Inteligencia Artificial</div>
+      <div style="font-size:12px;color:#3b82f6;margin-bottom:12px">Análisis detallado: qué mejoró, qué empeoró, lectura de comentarios positivos y negativos</div>
+      <button class="btn btn-primary" onclick="satInformeComparativaIA()" id="sat-ia-btn" style="font-size:13px;padding:9px 22px">🤖 Generar Informe Narrativo</button>
+    </div>
     <div class="card" style="margin-bottom:16px">
       <h3 style="font-size:13px;margin-bottom:10px">Ficha R-91/01 — Control Escolar</h3>
       <div style="position:relative;height:240px"><canvas id="chart-comp-ce"></canvas></div>
@@ -3658,7 +3663,7 @@ Coordinacion de Calidad</textarea>
     <!-- Comentarios -->
     <div class="card">
       <h3 style="font-size:13px;margin-bottom:10px">Comentarios del período</h3>
-      <div id="sat-periodo-comentarios" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;font-size:13px"></div>
+      <div id="sat-periodo-comentarios" style="max-height:480px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;font-size:13px"></div>
     </div>
   </div>
 
@@ -3718,7 +3723,7 @@ Coordinacion de Calidad</textarea>
     </div>
     <div class="card">
       <h3 style="font-size:13px;margin-bottom:10px">Comentarios y áreas de mejora</h3>
-      <div id="sat-comentarios" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;font-size:13px"></div>
+      <div id="sat-comentarios" style="max-height:520px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;font-size:13px"></div>
     </div>
   </div>
 </div>
@@ -14987,8 +14992,9 @@ window.r7502_exportar=function(){
     <th style="${thS};text-align:center">Rev.</th><th style="${thS}">Fecha de aprobación</th>
     <th style="${thS}">Responsable</th><th style="${thS}">Área</th></tr>`;
   let filasCuerpo='';
+  const numCod=cod=>{const m=String(cod||'').match(/\/(\d+)\s*$/);return m?parseInt(m[1]):0;};
   for(const area of R7502_AREAS){
-    const recs=data[area.id]||[];if(!recs.length)continue;
+    const recs=(data[area.id]||[]).slice().sort((a,b)=>numCod(a.codigo)-numCod(b.codigo));if(!recs.length)continue;
     filasCuerpo+=`<tr><td colspan="6" style="background:#fff;color:#000;font-weight:700;text-align:center;${bp};font-size:11pt;letter-spacing:.04em;${b}">${area.label}</td></tr>`;
     filasCuerpo+=colHdr;
     recs.forEach((r,i)=>{
@@ -15503,8 +15509,13 @@ window.r7503_exportar=function(){
   </tr>`;
 
   let filasCuerpo='';
+  // Función para extraer número de ordenamiento del código (ej. R-CE-85/41 → 41)
+  const numCodigo=cod=>{
+    const m=String(cod||'').match(/\/(\d+)\s*$/);
+    return m?parseInt(m[1]):0;
+  };
   for(const area of R7503_AREAS){
-    const recs=data[area.id]||[];
+    const recs=(data[area.id]||[]).slice().sort((a,b)=>numCodigo(a.codigo)-numCodigo(b.codigo));
     if(!recs.length)continue;
     filasCuerpo+=`<tr><td colspan="6" style="background:#fff;color:#000;font-weight:700;text-align:center;${bp};font-size:11pt;letter-spacing:.04em;${b}">${area.label}</td></tr>`;
     filasCuerpo+=colHdr;
@@ -18079,11 +18090,13 @@ function satRenderEncuesta(rows){
   // ── Comentarios ──
   const comentDiv=document.getElementById('sat-comentarios');
   if(comentDiv){
-    const coms=rows.filter(r=>r.comentarios&&r.comentarios.trim()).slice(-60).reverse();
+    const coms=rows.filter(r=>r.comentarios&&r.comentarios.trim()).reverse();
     if(!coms.length){
       comentDiv.innerHTML='<p style="color:var(--muted);font-size:13px">Sin comentarios registrados.</p>';
     }else{
-      comentDiv.innerHTML=coms.map(r=>`
+      comentDiv.innerHTML=
+        `<p style="color:var(--muted);font-size:12px;margin:0 0 8px">${coms.length} comentario${coms.length!==1?'s':''} en total</p>`+
+        coms.map(r=>`
         <div style="padding:8px 12px;background:var(--bg);border-radius:8px;border-left:3px solid var(--blue)">
           <div style="font-size:11px;color:var(--muted);margin-bottom:3px">${esc(r.semestre||'—')} · ${esc(r.licenciatura||'—')}</div>
           <div style="font-size:13px;line-height:1.5">${esc(r.comentarios)}</div>
@@ -18427,7 +18440,8 @@ async function satRenderPeriodo(){
   if(comsEl){
     const coms=eRows.filter(r=>r.comentarios&&r.comentarios.trim());
     comsEl.innerHTML=coms.length
-      ?coms.map(r=>`<div style="padding:10px 12px;background:var(--surface2);border-radius:8px;font-size:13px;line-height:1.5;border-left:3px solid var(--border2)">${esc(r.comentarios.trim())}</div>`).join('')
+      ?`<p style="color:var(--muted);font-size:12px;margin:0 0 6px">${coms.length} comentario${coms.length!==1?'s':''}</p>`+
+        coms.map(r=>`<div style="padding:10px 12px;background:var(--surface2);border-radius:8px;font-size:13px;line-height:1.5;border-left:3px solid var(--border2)">${esc(r.comentarios.trim())}</div>`).join('')
       :'<p style="color:var(--muted);font-size:13px;font-style:italic">Sin comentarios registrados en este período.</p>';
   }
 }
@@ -19037,7 +19051,250 @@ async function satRenderComp(){
   if(ctxInfra)_satCharts.compInfra=new Chart(ctxInfra,{type:'bar',
     data:{labels:['Salones','Aula medios','Baños','Biblioteca','Bib. escolar','Auditorio','Áreas verdes','Canchas','Salón danza'],
       datasets:mkDs(infraFields,encuestaP1,encuestaP2)},options:mkOpts});
+
+  // Mostrar botón de informe IA si ambos períodos están seleccionados
+  const iaBar=document.getElementById('sat-ia-bar');
+  if(iaBar)iaBar.style.display=(p1&&p2)?'':'none';
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   INFORME COMPARATIVO NARRATIVO CON IA — SATISFACCIÓN DEL ALUMNO
+═══════════════════════════════════════════════════════════════ */
+window.satInformeComparativaIA=async function(){
+  const apiKey=localStorage.getItem('sgc_ia_key')||'';
+  const proveedor=localStorage.getItem('sgc_ia_proveedor')||'gemini';
+
+  if(!apiKey){
+    alert('Configura tu API Key de IA primero (ícono ⚙️ en la barra superior) para poder generar el informe.');
+    return;
+  }
+  if(!_satDataCache){alert('Carga los datos de satisfacción primero.');return;}
+  const{ficha,encuesta}=_satDataCache;
+
+  const selA=document.getElementById('sat-periodo-a');
+  const selB=document.getElementById('sat-periodo-b');
+  const p1=selA?.value,p2=selB?.value;
+  if(!p1||!p2){alert('Selecciona dos períodos para comparar.');return;}
+
+  // ── Overlay con pantalla de carga ──────────────────────────────────────
+  const existOv=document.getElementById('sat-ia-overlay');if(existOv)existOv.remove();
+  const overlay=document.createElement('div');
+  overlay.className='sgc-informe-overlay';
+  overlay.id='sat-ia-overlay';
+  overlay.innerHTML=`
+    <div class="sgc-informe-container">
+      <div class="sgc-informe-topbar">
+        <h2>📊 Informe Comparativo de Satisfacción del Alumno</h2>
+        <div class="sgc-informe-btns">
+          <button class="sgc-inf-print" id="sat-ia-print-btn" style="display:none" onclick="satImprimirInformeComp()">🖨 Imprimir / PDF</button>
+          <button class="sgc-inf-close" onclick="document.getElementById('sat-ia-overlay').remove()">✕ Cerrar</button>
+        </div>
+      </div>
+      <div class="sgc-informe-body" id="sat-ia-body">
+        <div class="sgc-informe-content" id="sat-ia-content">
+          <div style="text-align:center;padding:70px 20px">
+            <div style="font-size:48px;margin-bottom:18px">🤖</div>
+            <div style="font-size:16px;font-weight:700;color:#1e3a8a;margin-bottom:8px">Generando informe…</div>
+            <div style="font-size:13px;color:#64748b;line-height:1.7">La IA está analizando los datos de satisfacción<br>y los comentarios de los alumnos.<br><br><span style="font-size:12px;color:#94a3b8">Esto puede tomar entre 10 y 30 segundos.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  // ── Recopilar datos ────────────────────────────────────────────────────
+  const fichaP1=ficha.filter(r=>satPeriodo(r.marca_temporal)===p1);
+  const fichaP2=ficha.filter(r=>satPeriodo(r.marca_temporal)===p2);
+  const encuestaP1=encuesta.filter(r=>satPeriodo(r.marca_temporal)===p1);
+  const encuestaP2=encuesta.filter(r=>satPeriodo(r.marca_temporal)===p2);
+
+  const ceFields=['ce_inscripcion','ce_reinscripcion','ce_constancias','ce_credenciales','ce_duplicado_boleta','ce_boleta_calif'];
+  const ceLabels=['Inscripción','Reinscripción','Constancias','Credenciales','Duplicado de boleta','Boleta de calificaciones'];
+  const titFields=['tit_asesor','tit_constancia_cursos','tit_respuesta_carta'];
+  const titLabels=['Asesor de tesis','Constancia de cursos','Carta de exposición'];
+  const docFields=['doc_dominio_materia','doc_estrategias_ensenanza','doc_recursos_didacticos','doc_estrategias_eval','doc_asesoria_academica','doc_satisfaccion_formacion','doc_acompanamiento_prac'];
+  const docLabels=['Dominio de materia','Estrategias de enseñanza','Recursos didácticos','Estrategias de evaluación','Asesoría académica','Satisfacción con la formación','Acompañamiento en prácticas'];
+  const infraFields=['infra_salones','infra_aula_medios','infra_banos','infra_biblioteca','infra_biblioteca_escolar','infra_auditorio','infra_areas_verdes','infra_canchas','infra_salon_danza'];
+  const infraLabels=['Salones','Aula de medios','Baños','Biblioteca','Biblioteca escolar','Auditorio','Áreas verdes','Canchas','Salón de danza'];
+  const extFields=['satisfaccion_cultural','calif_talleres','limpieza'];
+  const extLabels=['Actividades culturales','Talleres','Limpieza general'];
+
+  // Construir tabla de datos campo a campo
+  const _av=(rows,f)=>satAvg(rows,[f]);
+  const _delta=(a1,a2)=>(a1!=null&&a2!=null)?+(a2-a1).toFixed(2):null;
+
+  let dataStr='';
+  const allGroups=[
+    {cat:'FICHA R-91/01 — Control Escolar',fields:ceFields,labels:ceLabels,r1:fichaP1,r2:fichaP2},
+    {cat:'FICHA R-91/01 — Titulación',fields:titFields,labels:titLabels,r1:fichaP1,r2:fichaP2},
+    {cat:'ENCUESTA R-91/02 — Docentes',fields:docFields,labels:docLabels,r1:encuestaP1,r2:encuestaP2},
+    {cat:'ENCUESTA R-91/02 — Infraestructura',fields:infraFields,labels:infraLabels,r1:encuestaP1,r2:encuestaP2},
+    {cat:'ENCUESTA R-91/02 — Servicios y Limpieza',fields:extFields,labels:extLabels,r1:encuestaP1,r2:encuestaP2},
+  ];
+  allGroups.forEach(({cat,fields,labels,r1,r2})=>{
+    const catAvg1=satAvg(r1,fields),catAvg2=satAvg(r2,fields);
+    const catD=_delta(catAvg1,catAvg2);
+    dataStr+=`\n[${cat}] (Promedio categ: ${catAvg1??'s/d'} → ${catAvg2??'s/d'}, delta: ${catD!=null?(catD>0?'+'+catD:String(catD)):'s/d'})\n`;
+    fields.forEach((f,i)=>{
+      const a1=_av(r1,f),a2=_av(r2,f);
+      const d=_delta(a1,a2);
+      const dStr=d!=null?(d>0?`+${d}`:String(d)):'s/d';
+      dataStr+=`  • ${labels[i]}: ${a1??'s/d'} → ${a2??'s/d'} (Δ${dStr})${a2!=null&&a2<3?' ⚠CRÍTICO':''}${a2!=null&&a2<a1&&d!=null&&d<-0.3?' ↓RETROCESO':a2!=null&&a2>a1&&d!=null&&d>0.3?' ↑MEJORA':''}\n`;
+    });
+  });
+
+  // Comentarios (hasta 20 por período, truncados a 120 chars para no saturar el contexto)
+  const allP1=[...fichaP1,...encuestaP1];
+  const allP2=[...fichaP2,...encuestaP2];
+  const comsP1=allP1.filter(r=>r.comentarios&&r.comentarios.trim()).slice(0,20);
+  const comsP2=allP2.filter(r=>r.comentarios&&r.comentarios.trim()).slice(0,20);
+  const fmtC=arr=>arr.length?arr.map(r=>`- "${r.comentarios.trim().replace(/"/g,"'").slice(0,120)}"`).join('\n'):'(sin comentarios)';
+
+  dataStr+=`\n[COMENTARIOS PERÍODO A — ${p1}] (${allP1.filter(r=>r.comentarios?.trim()).length} total, muestra de ${comsP1.length}):\n${fmtC(comsP1)}\n`;
+  dataStr+=`\n[COMENTARIOS PERÍODO B — ${p2}] (${allP2.filter(r=>r.comentarios?.trim()).length} total, muestra de ${comsP2.length}):\n${fmtC(comsP2)}\n`;
+
+  // ── Construir prompt ───────────────────────────────────────────────────
+  const systemPrompt=`Eres el especialista en Gestión de la Calidad ISO 9001:2015 de la Escuela Normal Urbana Federal Cuautla (ENUFC). Redactas informes institucionales formales dirigidos a la Dirección General.
+
+INSTRUCCIONES DE FORMATO:
+- Escribe en ESPAÑOL FORMAL, en párrafos continuos y descriptivos
+- Usa Markdown: ## para encabezados de sección, **texto** para valores numéricos y aspectos clave
+- IMPORTANTE: Cada sección debe ser breve pero informativa (2-4 oraciones por sección, excepto la sección 3 que puede tener más)
+- Escala de calificación 1 a 5: 1.0–2.4=Insatisfactorio | 2.5–3.4=Aceptable | 3.5–4.4=Satisfactorio | 4.5–5.0=Excelente
+- COMPLETA LAS 9 SECCIONES SIN EXCEPCIÓN. Si no hay datos para una sección escribe "No se identificaron casos en este período."
+
+SECCIONES OBLIGATORIAS — escríbelas TODAS:
+## 1. Presentación
+## 2. Datos Generales del Estudio
+## 3. Análisis Comparativo por Categoría
+### 3.1 Ficha R-91/01 — Control Escolar
+### 3.2 Ficha R-91/01 — Titulación
+### 3.3 Encuesta R-91/02 — Docentes
+### 3.4 Encuesta R-91/02 — Infraestructura
+### 3.5 Encuesta R-91/02 — Servicios y Limpieza
+## 4. Aspectos con Mejora Significativa
+## 5. Aspectos con Retroceso o Áreas de Oportunidad
+## 6. Aspectos que se Mantuvieron Estables
+## 7. Análisis de los Comentarios de los Alumnos
+## 8. Aspectos Críticos (calificación menor a 3.0)
+## 9. Conclusiones y Recomendaciones`;
+
+  const userMsg=`Genera el informe comparativo de satisfacción del alumno con los siguientes datos:
+
+PERÍODO A: ${p1} — Ficha R-91/01: ${fichaP1.length} respuestas | Encuesta R-91/02: ${encuestaP1.length} respuestas
+PERÍODO B: ${p2} — Ficha R-91/01: ${fichaP2.length} respuestas | Encuesta R-91/02: ${encuestaP2.length} respuestas
+
+RESULTADOS CAMPO POR CAMPO (formato: valor_A → valor_B (delta)):
+${dataStr}`;
+
+  // ── Llamada a la API según proveedor ──────────────────────────────────
+  let respText='';
+  const hoy=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+  try{
+    if(proveedor==='gemini'){
+      const _savedModels=JSON.parse(localStorage.getItem('sgc_ia_gemini_models')||'[]');
+      const geminiModels=_savedModels.length?_savedModels:['gemini-2.0-flash','gemini-2.0-flash-lite','gemini-1.5-flash','gemini-1.5-flash-8b'];
+      const geminiBody=JSON.stringify({
+        system_instruction:{parts:[{text:systemPrompt}]},
+        contents:[{role:'user',parts:[{text:userMsg}]}],
+        generationConfig:{maxOutputTokens:8192,temperature:0.6}
+      });
+      let geminiData=null;
+      for(const model of geminiModels){
+        const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+          {method:'POST',headers:{'content-type':'application/json'},body:geminiBody});
+        const d=await r.json();
+        if(d.error){const m=d.error.message||'';if(d.error.code===503||m.includes('503')||m.includes('overload')||m.includes('unavailable')||m.includes('UNAVAILABLE')||m.includes('not found')||m.includes('NOT_FOUND'))continue;throw new Error(m);}
+        geminiData=d;break;
+      }
+      if(!geminiData)throw new Error('Los modelos de Gemini no están disponibles en este momento. Intenta de nuevo.');
+      respText=geminiData.candidates?.[0]?.content?.parts?.[0]?.text||'Sin respuesta.';
+
+    }else if(['openai','groq','openrouter'].includes(proveedor)){
+      const _cfg={
+        openai:    {url:'https://api.openai.com/v1/chat/completions',      model:'gpt-4o-mini',                           headers:{},maxTokens:6000},
+        groq:      {url:'https://api.groq.com/openai/v1/chat/completions', model:'llama-3.3-70b-versatile',               headers:{},maxTokens:6000},
+        openrouter:{url:'https://openrouter.ai/api/v1/chat/completions',   model:'google/gemma-2-9b-it:free',             headers:{'HTTP-Referer':window.location.origin||'https://sgc.enufc.mx','X-Title':'QualiRAR SGC ENUFC'},maxTokens:3000}
+      }[proveedor];
+      const r=await fetch(_cfg.url,{method:'POST',
+        headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json',..._cfg.headers},
+        body:JSON.stringify({model:_cfg.model,max_tokens:_cfg.maxTokens,temperature:0.7,
+          messages:[{role:'system',content:systemPrompt},{role:'user',content:userMsg}]})});
+      const data=await r.json();
+      if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));
+      respText=data.choices?.[0]?.message?.content||'Sin respuesta.';
+
+    }else{
+      // Anthropic Claude
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+        headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:6000,system:systemPrompt,messages:[{role:'user',content:userMsg}]})});
+      const data=await r.json();
+      if(data.error)throw new Error(data.error.message);
+      respText=data.content?.[0]?.text||'Sin respuesta.';
+    }
+
+    // ── Detectar si la respuesta está incompleta ───────────────────────
+    const seccionesEsperadas=['## 1.','## 2.','## 3.','## 4.','## 5.','## 6.','## 7.','## 8.','## 9.'];
+    const secFaltantes=seccionesEsperadas.filter(s=>!respText.includes(s));
+    const truncado=secFaltantes.length>0;
+    const avisoTruncado=truncado?`
+      <div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px">
+        <div style="font-size:18px;line-height:1">⚠️</div>
+        <div>
+          <div style="font-weight:700;color:#92400e;font-size:12px;margin-bottom:3px">Informe posiblemente incompleto</div>
+          <div style="font-size:12px;color:#78350f">Faltan secciones: ${secFaltantes.map(s=>s.replace('## ','')).join(', ')}. El modelo alcanzó su límite de salida.
+            <button onclick="satInformeComparativaIA()" style="margin-left:8px;background:#d97706;color:#fff;border:none;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px">🔄 Regenerar</button>
+          </div>
+        </div>
+      </div>`:'';
+
+    // ── Renderizar resultado ───────────────────────────────────────────
+    const contentEl=document.getElementById('sat-ia-content');
+    if(contentEl){
+      contentEl.innerHTML=`
+        <div style="border-bottom:3px solid #1e3a8a;padding-bottom:18px;margin-bottom:24px">
+          <div style="font-size:10pt;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Escuela Normal Urbana Federal Cuautla · SGC ISO 9001:2015</div>
+          <div style="font-size:18pt;font-weight:700;color:#1e3a8a;line-height:1.2;margin-bottom:6px">Informe de Satisfacción del Alumno</div>
+          <div style="font-size:12pt;color:#334155">Análisis comparativo: <strong>${esc(p1)}</strong> → <strong>${esc(p2)}</strong></div>
+          <div style="font-size:10pt;color:#94a3b8;margin-top:6px">Generado el ${hoy} · IA: ${proveedor.toUpperCase()}</div>
+        </div>
+        ${avisoTruncado}
+        <div id="sat-ia-narrative" style="font-size:11pt;line-height:1.75;color:#1a1a1a">${mdToHtml(respText)}</div>
+        <div style="margin-top:32px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:8.5pt;color:#94a3b8;text-align:center">
+          Informe generado automáticamente por el Sistema de Gestión de la Calidad · ENUFC · ISO 9001:2015<br>
+          Para uso interno del área de Gestión de la Calidad y Revisión por la Dirección (Cláusula 9.3)
+        </div>`;
+    }
+    const printBtn=document.getElementById('sat-ia-print-btn');
+    if(printBtn)printBtn.style.display='';
+
+  }catch(err){
+    const contentEl=document.getElementById('sat-ia-content');
+    if(contentEl)contentEl.innerHTML=`
+      <div style="padding:24px;background:#fef2f2;border-left:5px solid #ef4444;border-radius:8px;margin:20px">
+        <div style="font-weight:700;color:#dc2626;margin-bottom:8px">❌ Error al generar el informe</div>
+        <div style="font-size:13px;color:#7f1d1d">${esc(err.message)}</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:8px">Verifica que tu API Key sea válida y que tengas conexión a internet.</div>
+      </div>`;
+  }
+};
+
+window.satImprimirInformeComp=function(){
+  const body=document.getElementById('sat-ia-body');
+  if(!body)return;
+  const win=window.open('','_blank','width=900,height=700');
+  if(!win){document.body.classList.add('sgc-printing');window.print();document.body.classList.remove('sgc-printing');return;}
+  const css=Array.from(document.styleSheets).map(s=>{try{return Array.from(s.cssRules).map(r=>r.cssText).join('\n');}catch(e){return '';}}).join('\n');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe Satisfacción — ENUFC</title><style>
+    body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.75;color:#1a1a1a;margin:20mm 18mm}
+    h1,h2,h3{color:#1e3a8a}h2{font-size:13pt;margin-top:22px;border-bottom:1px solid #e2e8f0;padding-bottom:4px}
+    p{margin:10px 0}strong{font-weight:700}
+    @media print{body{margin:10mm 12mm}}
+  </style></head><body>${body.innerHTML}</body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),600);
+};
 
 // Importar CSV histórico
 let _satImportTipo='ficha';
