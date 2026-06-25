@@ -822,7 +822,11 @@ textarea{resize:vertical;min-height:70px}
 .fmt-nc-listado{font-size:9.6pt;line-height:1.08}
 .fmt-nc-listado th,.fmt-nc-listado td{padding:4px 5px}
 .fmt-nc-listado .num{width:10%}.fmt-nc-listado .area{width:16%}.fmt-nc-listado .numeral{width:10%}.fmt-nc-listado .desc{width:29%}.fmt-nc-listado .accion{width:25%}.fmt-nc-listado .fecha{width:10%}
-.fmt-nc-sign{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:.4in;font-size:10.5pt}
+/* Encabezado que se repite en cada hoja impresa (va dentro de <thead>) */
+.fmt-nc-listado thead{display:table-header-group}
+.fmt-nc-listado .fmt-nc-hdrcell{border:none!important;padding:0 0 6px!important;background:#fff!important}
+.fmt-nc-listado .fmt-nc-hdrcell .fmt-head{margin-bottom:0}
+.fmt-nc-sign{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:.28in;font-size:10.5pt;break-inside:avoid;page-break-inside:avoid}
 .fmt-nc-sign .sign-block{text-align:center}
 .fmt-nc-sign .sign-line{border-top:1px solid #111;margin-top:30px;padding-top:5px;font-size:10pt}
 .fmt-nc-sign .sign-fecha{margin-top:8px;font-size:9.5pt;color:#333}
@@ -2904,7 +2908,7 @@ Coordinacion de Calidad</textarea>
   <!-- ═══ LISTADO DE PROCEDIMIENTOS (R-75/02) ═══ -->
   <div class="section" id="sec-r7502">
     <p class="page-title">Listado de Procedimientos</p>
-    <p class="page-sub">R-75/02 · Rev. 03 · 22 de junio de 2026 · Cláusula 7.5 ISO 9001:2015</p>
+    <p class="page-sub">R-75/02 · Rev. 03 · 15 de junio de 2026 · Cláusula 7.5 ISO 9001:2015</p>
     <div class="r75-toolbar">
       <button class="btn btn-primary btn-sm" onclick="r7502_openModal(null,null)" data-admin-only>+ Nuevo procedimiento</button>
       <button class="btn btn-secondary btn-sm" onclick="r7502_exportar()">&#128441; Exportar / Imprimir</button>
@@ -2950,7 +2954,7 @@ Coordinacion de Calidad</textarea>
   <!-- ═══ LISTADO DE REGISTROS (R-75/03) ═══ -->
   <div class="section" id="sec-r7503">
     <p class="page-title">Listado de Registros</p>
-    <p class="page-sub">R-75/03 · Rev. 03 · 22 de junio de 2026 · Cláusula 7.5 ISO 9001:2015</p>
+    <p class="page-sub">R-75/03 · Rev. 03 · 15 de junio de 2026 · Cláusula 7.5 ISO 9001:2015</p>
     <div class="r75-toolbar">
       <button class="btn btn-primary btn-sm" onclick="r7503_openModal(null,null)" data-admin-only>+ Nuevo registro</button>
       <button class="btn btn-secondary btn-sm" onclick="r7503_exportar()">&#128441; Exportar / Imprimir</button>
@@ -2969,7 +2973,6 @@ Coordinacion de Calidad</textarea>
           <option value="ce">OFICINA DE CONTROL ESCOLAR</option>
           <option value="dir">DIRECCIÓN</option>
           <option value="sa">SUBDIRECCIÓN ACADÉMICA</option>
-          <option value="tit">TITULACIÓN</option>
           <option value="doc">DOCENCIA</option>
         </select>
         <label>Código del documento</label>
@@ -3030,6 +3033,22 @@ Coordinacion de Calidad</textarea>
           <button class="btn btn-secondary btn-sm" onclick="driveCloseModal()">Cancelar</button>
           <button class="btn btn-danger btn-sm" id="drive-btn-delete" onclick="driveEliminar()" style="display:none;margin-right:auto">Eliminar</button>
           <button class="btn btn-primary btn-sm" onclick="driveGuardar()">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal carpeta general SGC ENUFC (solo admin) -->
+    <div class="drive-modal-overlay" id="drive-general-modal-overlay" onclick="if(event.target===this)driveGeneralCloseModal()">
+      <div class="drive-modal">
+        <h3>Carpeta general · SGC ENUFC</h3>
+        <label>Nombre (opcional)</label>
+        <input type="text" id="drive-general-nombre" placeholder="Carpeta general del SGC ENUFC">
+        <label>Enlace de Google Drive</label>
+        <input type="url" id="drive-general-url" placeholder="https://drive.google.com/drive/folders/...">
+        <div class="drive-modal-btns">
+          <button class="btn btn-secondary btn-sm" onclick="driveGeneralCloseModal()">Cancelar</button>
+          <button class="btn btn-danger btn-sm" id="drive-general-btn-delete" onclick="driveGeneralEliminar()" style="display:none;margin-right:auto">Quitar enlace</button>
+          <button class="btn btn-primary btn-sm" onclick="driveGeneralGuardar()">Guardar</button>
         </div>
       </div>
     </div>
@@ -7903,7 +7922,9 @@ window.nc_imprimirFormato=function(){
 
 function htmlListadoNCFormato(list,cicloLabel){
   const ordenada=[...(list||[])].sort((a,b)=>String(a.numero||'').localeCompare(String(b.numero||''),undefined,{numeric:true}));
-  const minRows=Math.max(8,ordenada.length);
+  // Si ya hay registros, agregar solo unas pocas filas vacías de relleno para
+  // no empujar la firma a otra hoja. Si está vacío, mostrar 8 filas (formato en blanco).
+  const minRows=ordenada.length?ordenada.length+2:8;
   const rows=[];
   for(let i=0;i<minRows;i++){
     const nc=ordenada[i]||{};
@@ -7921,12 +7942,17 @@ function htmlListadoNCFormato(list,cicloLabel){
     '</tr>');
   }
   const subHeader=cicloLabel&&cicloLabel!=='Sin ciclo asignado'
-    ?'<div style="text-align:center;font-size:10pt;font-weight:600;color:#374151;margin-bottom:8px">'+esc(cicloLabel)+'</div>':''
-  return '<div class="fmt-doc">'+fmtHead('LISTADO DE NO CONFORMIDADES','R-102/03',docVersion('R-102/03','01'),'')+
-    subHeader+
+    ?'<div style="text-align:center;font-size:10pt;font-weight:600;color:#374151;margin:6px 0 0">'+esc(cicloLabel)+'</div>':''
+  const encabezado=fmtHead('LISTADO DE NO CONFORMIDADES','R-102/03',docVersion('R-102/03','01'),'');
+  // El encabezado y los títulos de columna van dentro de <thead> para que el
+  // navegador los repita automáticamente en cada hoja al imprimir.
+  return '<div class="fmt-doc">'+
     '<table class="fmt-table fmt-nc-listado"><colgroup><col class="num"><col class="area"><col class="numeral"><col class="desc"><col class="accion"><col class="fecha"></colgroup>'+
-    '<tr><th>N&deg; AC/P</th><th>Area</th><th>Numeral</th><th>Breve Descripcion</th><th>Accion Correctiva</th><th>Fecha<br>Inicio/ Termino</th></tr>'+
-    rows.join('')+'</table>'+
+    '<thead>'+
+      '<tr><td colspan="6" class="fmt-nc-hdrcell">'+encabezado+subHeader+'</td></tr>'+
+      '<tr><th>N&deg; AC/P</th><th>Area</th><th>Numeral</th><th>Breve Descripcion</th><th>Accion Correctiva</th><th>Fecha<br>Inicio/ Termino</th></tr>'+
+    '</thead>'+
+    '<tbody>'+rows.join('')+'</tbody></table>'+
     '<div class="fmt-nc-sign">'+
     '<div class="sign-block"><b>Nombre y Firma del Representante de la Dirección</b><div class="sign-line">Mtro. Samir Gómez Calderón</div><div class="sign-fecha"><b>Fecha:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></div>'+
     '<div class="sign-block"><b>Nombre y Firma del Coordinador de Calidad</b><div class="sign-line">Mtro. Roberto Carlos Aguilar Pedroza</div><div class="sign-fecha"><b>Fecha:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></div>'+
@@ -7945,7 +7971,14 @@ window.nc_listadoImprimir=function(ciclo){
   const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
   const w=window.open('','_blank');
   if(!w){alert('Por favor permite las ventanas emergentes para imprimir.');return;}
-  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>R-102/03 Listado NC</title><style>body{margin:0;background:#fff}'+css+'@page{size:letter landscape;margin:0}</style></head><body>'+html+'</body></html>');
+  // @page margin:0 evita que el navegador imprima su propio encabezado/pie
+  // (fecha, título, URL). El espacio superior lo aporta el <thead> repetido
+  // (padding-top en la celda del encabezado), por lo que es igual en todas las
+  // hojas; el .fmt-doc solo da los márgenes laterales e inferior.
+  const overrides='@page{size:letter landscape;margin:0}'+
+    '.fmt-doc{padding:0 .5in .3in!important;min-height:0!important;width:100%!important;margin:0!important}'+
+    '.fmt-nc-listado .fmt-nc-hdrcell{padding:.34in 0 6px!important}';
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>R-102/03 Listado NC</title><style>body{margin:0;background:#fff}'+css+overrides+'</style></head><body>'+html+'</body></html>');
   w.document.close();
   w.addEventListener('load',function(){w.focus();w.print();});
 };
@@ -12618,6 +12651,11 @@ async function cargarPlanificacionSupabase(){
    REPOSITORIO DRIVE
 ═══════════════════════════════════════ */
 const DRIVE_KEY='sgc_drive_links';
+// Carpeta general SGC ENUFC — un solo enlace, visible/administrable solo por admin
+const DRIVE_GENERAL_KEY='sgc_drive_general';
+const DRIVE_GENERAL_ID='drive_general_folder';
+function leerDriveGeneral(){try{return JSON.parse(localStorage.getItem(DRIVE_GENERAL_KEY)||'{}');}catch(e){return{};}}
+function guardarDriveGeneralLocal(obj){localStorage.setItem(DRIVE_GENERAL_KEY,JSON.stringify(obj||{}));}
 // Áreas para el Repositorio Drive — SA y Titulación agrupadas en una sola tarjeta
 const DRIVE_AREAS=[
   {id:'sgc', label:'COORDINACIÓN DE CALIDAD'},
@@ -12760,11 +12798,46 @@ window.renderDrive=function(){
       <span style="font-size:13px;color:#64748b">${total} ${total===1?'documento enlazado':'documentos enlazados'}${areaLabel}</span>
       ${canEdit?`<button class="btn btn-primary btn-sm" onclick="driveAbrirModal(null)">+ Agregar enlace</button>`:''}
     </div>`+
+  // Carpeta general SGC ENUFC — solo visible para admin (canEdit)
+  (canEdit?_driveRenderGeneralCard():'')+
   areasVisibles.map(area=>area.grouped
     ?_driveRenderGroupedCard(area,data,canEdit)
     :_driveRenderSimpleCard(area,data,canEdit)
   ).join('');
 };
+
+// Tarjeta de la carpeta general SGC ENUFC (solo admin). Un único enlace.
+function _driveRenderGeneralCard(){
+  const gen=leerDriveGeneral();
+  const url=gen.url||'';
+  const nombre=gen.nombre||'Carpeta general del SGC ENUFC';
+  return`<div class="drive-area-card" style="border:1px solid #c7d2fe;background:linear-gradient(135deg,#eef2ff,#f8fafc)">
+    <div class="drive-area-hdr" style="cursor:default">
+      <div class="drive-area-hdr-left">
+        <div class="drive-area-icon" style="background:linear-gradient(135deg,#4338ca,#6366f1)">${_ICON_FOLDER}</div>
+        <span class="drive-area-title">CARPETA GENERAL · SGC ENUFC</span>
+        <span class="drive-area-count" style="background:#e0e7ff;color:#4338ca">Solo admin</span>
+      </div>
+    </div>
+    <div class="drive-area-body">
+      <div class="drive-links-list">
+        <div class="drive-link-item">
+          <span class="drive-link-badge" style="background:#e0e7ff;color:#4338ca">SGC</span>
+          <div class="drive-link-info">
+            <div class="drive-link-name">${esc(nombre)}</div>
+            <div class="drive-link-desc">${url?'Acceso directo a la carpeta general en Google Drive':'Aún no se ha configurado el enlace de la carpeta general'}</div>
+          </div>
+          <div class="drive-link-actions">
+            ${url
+              ?`<a class="drive-btn-open" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${_ICON_OPEN} Abrir</a>`
+              :`<span style="font-size:11px;color:#94a3b8;padding:0 8px">Sin enlace</span>`}
+            <button class="drive-btn-edit" title="${url?'Editar enlace':'Agregar enlace'}" onclick="driveGeneralAbrirModal()">${_ICON_EDIT}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
 
 window.driveToggleArea=function(areaId,hdrEl){
   const body=document.getElementById('drive-body-'+areaId);
@@ -12872,6 +12945,44 @@ window.driveEliminar=function(){
   _driveDeleteSupa(id);
 };
 
+/* ── Carpeta general SGC ENUFC (solo admin) ── */
+window.driveGeneralAbrirModal=function(){
+  const gen=leerDriveGeneral();
+  document.getElementById('drive-general-nombre').value=gen.nombre||'';
+  document.getElementById('drive-general-url').value=gen.url||'';
+  document.getElementById('drive-general-btn-delete').style.display=gen.url?'':'none';
+  document.getElementById('drive-general-modal-overlay').classList.add('open');
+};
+window.driveGeneralCloseModal=function(){
+  document.getElementById('drive-general-modal-overlay').classList.remove('open');
+};
+window.driveGeneralGuardar=function(){
+  const nombre=document.getElementById('drive-general-nombre').value.trim();
+  const url=document.getElementById('drive-general-url').value.trim();
+  if(!url){alert('Pega el enlace de la carpeta general de Google Drive.');return;}
+  const obj={nombre:nombre||'Carpeta general del SGC ENUFC',url};
+  guardarDriveGeneralLocal(obj);
+  driveGeneralCloseModal();
+  renderDrive();
+  _driveGeneralUpsertSupa(obj);
+};
+window.driveGeneralEliminar=function(){
+  if(!confirm('¿Quitar el enlace de la carpeta general?'))return;
+  guardarDriveGeneralLocal({});
+  driveGeneralCloseModal();
+  renderDrive();
+  _driveDeleteSupa(DRIVE_GENERAL_ID);
+};
+async function _driveGeneralUpsertSupa(obj){
+  try{
+    await sb.from('sgc_drive_links').upsert({
+      id:DRIVE_GENERAL_ID, area_id:'general', tipo:'general', codigo:'SGC',
+      nombre:obj.nombre||'', url:obj.url||'', descripcion:'', orden:0,
+      updated_at:new Date().toISOString()
+    },{onConflict:'id'});
+  }catch(e){}
+}
+
 /* ── Supabase helpers Drive ── */
 async function _driveUpsertSupa(item,areaId,tipo,orden){
   try{
@@ -12892,6 +13003,11 @@ async function cargarDriveSupabase(){
     const grouped={};
     DRIVE_FLAT_IDS.forEach(aid=>{grouped[aid]={procedimientos:[],registros:[]};});
     for(const row of data){
+      // Registro reservado de la carpeta general SGC ENUFC
+      if(row.area_id==='general'||row.id===DRIVE_GENERAL_ID){
+        guardarDriveGeneralLocal({nombre:row.nombre||'',url:row.url||''});
+        continue;
+      }
       if(!grouped[row.area_id])continue;
       const tipo=row.tipo==='registros'?'registros':'procedimientos';
       grouped[row.area_id][tipo].push({
@@ -14983,7 +15099,7 @@ window.r7502_deleteRecord=async function(){
 };
 window.r7502_exportar=function(){
   const data=leerR7502()||JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
-  const cabecera=fmtHead('LISTADO DE PROCEDIMIENTOS','R-75/02',docVersion('R-75/02','03'),'22 de junio de 2026');
+  const cabecera=fmtHead('LISTADO DE PROCEDIMIENTOS','R-75/02',docVersion('R-75/02','03'),'15 de junio de 2026');
   const b='border:0.5px solid #888';const bp='padding:6px 8px';
   const thS=`${b};background:#fff;color:#000;${bp};font-size:11pt;font-weight:700;text-align:left;overflow-wrap:break-word;word-break:break-word`;
   const tdS=`${b};${bp};font-size:11pt;overflow-wrap:break-word;word-break:break-word;vertical-align:top`;
@@ -15049,7 +15165,6 @@ const R7503_AREAS=[
   {id:'ce',  label:'OFICINA DE CONTROL ESCOLAR'},
   {id:'dir', label:'DIRECCIÓN'},
   {id:'sa',  label:'SUBDIRECCIÓN ACADÉMICA'},
-  {id:'tit', label:'TITULACIÓN'},
   {id:'doc', label:'DOCENCIA'}
 ];
 
@@ -15083,7 +15198,7 @@ const R7503_DATA_INICIAL={
     _r75rec('R-72/01','REGISTRO DE FORMACIÓN','02','28 de septiembre de 2023',_SGC,_CALIDAD),
     _r75rec('R-75/01','CONTROL DE LA DISTRIBUCIÓN INTERNA','00','27 de septiembre de 2022',_SGC,_CALIDAD),
     _r75rec('R-75/02','LISTADO DE PROCEDIMIENTOS','02','29 de agosto de 2023',_SGC,_CALIDAD),
-    _r75rec('R-75/03','LISTADO DE REGISTROS','03','22 de junio de 2026',_SGC,_CALIDAD),
+    _r75rec('R-75/03','LISTADO DE REGISTROS','03','15 de junio de 2026',_SGC,_CALIDAD),
     _r75rec('R-75/04','CONTROL DE DISTRIBUCIÓN EXTERNA','03','22 de marzo de 2024',_SGC,_CALIDAD),
     _r75rec('R-84/01','LISTA PROVEEDORES ACEPTADOS','00','17 de abril de 2023',_SGC,_CALIDAD),
     _r75rec('R-84/02','HOJA DE EVALUACIÓN DE PROVEEDOR','00','17 de abril de 2023',_SGC,_CALIDAD),
@@ -15184,9 +15299,7 @@ const R7503_DATA_INICIAL={
     _r75rec('R-SA-85/26','HOJA DE LIBERACIÓN','01',_AGO23,_SA,_SALAB),
     _r75rec('R-SA-85/29','CONCENTRADO DE JEFES DE SECTOR Y DIRECTIVOS DE LA EDUCACIÓN BÁSICA','01',_AGO23,_SA,_SALAB),
     _r75rec('R-SA-85/30','PROYECTOS ACADÉMICOS','00','19 de agosto de 2024',_SA,_SALAB),
-    _r75rec('R-SA-85/31','SEGUIMIENTO A LA CALENDARIZACIÓN DE ACTIVIDADES','00','19 de agosto de 2024',_SA,_SALAB)
-  ],
-  tit:[
+    _r75rec('R-SA-85/31','SEGUIMIENTO A LA CALENDARIZACIÓN DE ACTIVIDADES','00','19 de agosto de 2024',_SA,_SALAB),
     _r75rec('R-SA-85/01','OFICIOS DE COMISIÓN','01',_AGO23,_SA,_SALAB),
     _r75rec('R-SA-85/02','PLAN DE TRABAJO ANUAL DE LA COMISIÓN DE TITULACIÓN','01',_AGO23,_SA,_SALAB),
     _r75rec('R-SA-85/03','INFORME DEL PLAN DE TRABAJO DE LA COMISIÓN DE TITULACIÓN','01',_AGO23,_SA,_SALAB),
@@ -15230,10 +15343,26 @@ const R7503_DATA_INICIAL={
   ]
 };
 
+// Fusiona los registros del antiguo área "Titulación" (tit) dentro de
+// "Subdirección Académica" (sa) y elimina la clave tit. Mantiene compatibilidad
+// con datos guardados antes de la fusión.
+function _r7503MigrarTit(data){
+  if(!data||typeof data!=='object')return data;
+  let cambio=false;
+  if(Array.isArray(data.tit)&&data.tit.length){
+    if(!Array.isArray(data.sa))data.sa=[];
+    const ids=new Set(data.sa.map(r=>r&&r.id));
+    for(const r of data.tit){if(r&&!ids.has(r.id)){data.sa.push(r);ids.add(r.id);}}
+    cambio=true;
+  }
+  if('tit' in data){delete data.tit;cambio=true;}
+  if(cambio){try{localStorage.setItem(R7503_KEY,JSON.stringify(data));}catch(e){}}
+  return data;
+}
 function leerR7503(){
   const raw=localStorage.getItem(R7503_KEY);
   if(!raw)return null;
-  try{return JSON.parse(raw);}catch(e){return null;}
+  try{return _r7503MigrarTit(JSON.parse(raw));}catch(e){return null;}
 }
 function guardarR7503(data){localStorage.setItem(R7503_KEY,JSON.stringify(data));}
 
@@ -15276,8 +15405,10 @@ async function cargarR7503Supabase(){
     const grouped={};
     for(const area of R7503_AREAS)grouped[area.id]=[];
     for(const row of data){
-      if(grouped[row.area_id]!==undefined){
-        grouped[row.area_id].push({
+      // El área "Titulación" se fusionó dentro de "Subdirección Académica"
+      const aid=row.area_id==='tit'?'sa':row.area_id;
+      if(grouped[aid]!==undefined){
+        grouped[aid].push({
           id:row.id, codigo:row.codigo, titulo:row.titulo,
           revision:row.revision, fecha:row.fecha,
           responsable:row.responsable, area:row.area_label
@@ -15492,7 +15623,7 @@ window.r7503_deleteRecord=async function(){
 window.r7503_exportar=function(){
   const data=leerR7503()||JSON.parse(JSON.stringify(R7503_DATA_INICIAL));
   // Encabezado usando exactamente el mismo patrón que todos los demás formatos
-  const cabecera=fmtHead('LISTADO DE REGISTROS','R-75/03',docVersion('R-75/03','03'),'22 de junio de 2026');
+  const cabecera=fmtHead('LISTADO DE REGISTROS','R-75/03',docVersion('R-75/03','03'),'15 de junio de 2026');
 
   const b='border:0.5px solid #888';
   const bp='padding:6px 8px';
