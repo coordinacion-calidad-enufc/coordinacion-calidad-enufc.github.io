@@ -818,6 +818,10 @@ textarea{resize:vertical;min-height:70px}
 .fmt-check{font-family:Arial,Helvetica,sans-serif;font-size:10pt;border:1px solid #111;display:inline-flex;width:13px;height:13px;align-items:center;justify-content:center;line-height:1;margin:0 6px 0 3px}
 .fmt-plan-table{font-size:9.6pt;line-height:1.08}
 .fmt-plan-table th,.fmt-plan-table td{padding:3px 4px}
+/* Encabezado del Plan de Acción que se repite en cada hoja (va dentro de <thead>) */
+.fmt-plan-table thead{display:table-header-group}
+.fmt-plan-table .fmt-plan-hdrcell{border:none!important;padding:0 0 6px!important;background:#fff!important}
+.fmt-plan-table .fmt-plan-hdrcell .fmt-head{margin-bottom:8px}
 .fmt-row-keep{break-inside:avoid;page-break-inside:avoid}
 .fmt-nc-listado{font-size:9.6pt;line-height:1.08}
 .fmt-nc-listado th,.fmt-nc-listado td{padding:4px 5px}
@@ -1075,6 +1079,7 @@ textarea{resize:vertical;min-height:70px}
 
 /* R-75/03 Listado de Registros */
 .r75-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.r75-print-area-sel{font-size:13px;padding:6px 10px;border:1px solid var(--border,#cbd5e1);border-radius:8px;background:var(--surface,#fff);color:var(--text,#0f172a);cursor:pointer;max-width:230px}
 .r75-area-block{margin-bottom:16px;border:1px solid #93c5fd;border-radius:8px;overflow:hidden}
 .r75-area-hdr{background:#1e40af;color:#fff;font-weight:700;padding:10px 16px;font-size:.91em;letter-spacing:.04em;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
 .r75-area-hdr:hover{background:#1d4ed8}
@@ -1873,6 +1878,7 @@ Coordinacion de Calidad</textarea>
         <button class="btn" onclick="showIndPaso(1)">← Regresar</button>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn" onclick="vistaPreviaIndicador()">Vista previa formato</button>
+          <button class="btn btn-primary" onclick="imprimirVistaPreviaIndicador()">&#128424;&#65039; Imprimir / PDF</button>
           <button class="btn btn-green" onclick="guardarIndicador()">✓ Guardar indicador</button>
         </div>
       </div>
@@ -2912,6 +2918,7 @@ Coordinacion de Calidad</textarea>
     <div class="r75-toolbar">
       <button class="btn btn-primary btn-sm" onclick="r7502_openModal(null,null)" data-admin-only>+ Nuevo procedimiento</button>
       <button class="btn btn-secondary btn-sm" onclick="r7502_exportar()">&#128441; Exportar / Imprimir</button>
+      <select id="r7502-print-area" class="r75-print-area-sel" onchange="if(this.value){r7502_exportar(this.value);this.value='';}"><option value="">&#128424;&#65039; Imprimir por área…</option></select>
       <button class="btn btn-secondary btn-sm" onclick="r7502_resetData()" style="color:#dc2626;border-color:#fca5a5" data-admin-only>&#9888; Restablecer originales</button>
     </div>
     <div id="r7502-contenido"></div>
@@ -2958,6 +2965,7 @@ Coordinacion de Calidad</textarea>
     <div class="r75-toolbar">
       <button class="btn btn-primary btn-sm" onclick="r7503_openModal(null,null)" data-admin-only>+ Nuevo registro</button>
       <button class="btn btn-secondary btn-sm" onclick="r7503_exportar()">&#128441; Exportar / Imprimir</button>
+      <select id="r7503-print-area" class="r75-print-area-sel" onchange="if(this.value){r7503_exportar(this.value);this.value='';}"><option value="">&#128424;&#65039; Imprimir por área…</option></select>
       <button class="btn btn-secondary btn-sm" onclick="r7503_resetData()" style="color:#dc2626;border-color:#fca5a5" data-admin-only>&#9888; Restablecer originales</button>
     </div>
     <div id="r7503-contenido"></div>
@@ -5668,7 +5676,7 @@ function fichaIndicadorHTML(m){
     '</tbody></table>',
     '<div class="fb-comentarios"><span class="fb-comentarios-lbl">Comentarios: </span>'+esc(comentarios)+'</div>',
     '<div class="fb-aprobacion"><div>Aprobado por: '+esc(aprobadoPor)+'</div><div>Fecha: '+esc(fechaAprobacion)+'</div><div>Firma: ___________________________</div></div>',
-    '<div class="fb-footer">R-44/01 Rev.: 01</div></div></div>'
+    '<div class="fb-footer">R-44/01 Rev. 01</div></div></div>'
   ].join('');
 }
 
@@ -5684,8 +5692,20 @@ window.vistaPreviaIndicador=function(){
 };
 window.cerrarVistaPreviaIndicador=function(){const box=document.getElementById('ind-preview-card');if(box)box.style.display='none';};
 window.imprimirVistaPreviaIndicador=function(){
-  if(document.getElementById('ind-preview-card')?.style.display==='none')vistaPreviaIndicador();
-  _imprimirPagina('only-print-preview');
+  calcularIndicador();
+  const r=datosIndicadorActual();
+  if(r.error){showMsg('ind-msg','err',r.error);return;}
+  const html=fichaIndicadorHTML(r.data);
+  const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
+  const w=window.open('','_blank');
+  if(!w){alert('Permite las ventanas emergentes para poder imprimir la ficha.');return;}
+  // Margen real de página (evita el corte superior) y ficha ajustada a una hoja
+  const overrides='@page{size:letter;margin:.4in .45in}'+
+    'body{margin:0;background:#fff}'+
+    '.ficha-ind{width:100%!important;min-height:0!important;margin:0!important;padding:0!important;border:none!important;page-break-after:auto!important}';
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>R-44/01 Ficha del Indicador</title><style>'+css+overrides+'</style></head><body>'+html+'</body></html>');
+  w.document.close();
+  w.addEventListener('load',function(){w.focus();w.print();});
 };
 
 window.guardarIndicador = async function(){
@@ -7997,14 +8017,35 @@ function htmlPlanFormato(p){
   const groups=[['mayor','NO CONFORMIDADES MAYORES'],['menor','NO CONFORMIDADES MENORES'],['obs','OBSERVACIONES'],['op','AREAS DE OPORTUNIDAD']];
   let rows='';
   groups.forEach(([k,label])=>{if((p.items[k]||[]).length){rows+='<tr class="fmt-gray"><td colspan="6">'+label+'</td></tr>';p.items[k].forEach(i=>{rows+='<tr class="fmt-row-keep"><td>'+esc(i.numeral)+'</td><td>'+nl2br(i.situacion)+'</td><td>'+nl2br(i.accion)+'</td><td class="fmt-center">'+esc(i.fecha_rev)+'</td><td class="fmt-center"></td><td class="fmt-center"></td></tr>';});}});
-  return '<div class="fmt-doc">'+fmtHead('PLAN DE ACCION','R-93/03',docVersion('R-93/03','01'),'')+
-    '<div class="fmt-small"><b>SEMESTRE:</b> '+esc(p.semestre)+'<br><b>FECHA DE ELABORACION:</b> '+esc(p.fecha)+'<br><b>ORIGEN:</b> AUDITORIA INTERNA '+chk(p.origen==='int')+' AUDITORIA EXTERNA '+chk(p.origen==='ext')+'</div>'+
-    '<table class="fmt-table fmt-plan-table" style="margin-top:6px"><colgroup><col style="width:8%"><col style="width:30%"><col style="width:34%"><col style="width:14%"><col style="width:7%"><col style="width:7%"></colgroup><tr><th>Numeral</th><th>Situacion</th><th>Accion/Responsable</th><th>Fecha de Revision</th><th colspan="2">Cumplio<br>Si&nbsp;&nbsp;&nbsp;&nbsp;No</th></tr>'+rows+'</table>'+
+  const headHtml=fmtHead('PLAN DE ACCION','R-93/03',docVersion('R-93/03','01'),'');
+  const infoHtml='<div class="fmt-small"><b>SEMESTRE:</b> '+esc(p.semestre)+'<br><b>FECHA DE ELABORACION:</b> '+esc(p.fecha)+'<br><b>ORIGEN:</b> AUDITORIA INTERNA '+chk(p.origen==='int')+' AUDITORIA EXTERNA '+chk(p.origen==='ext')+'</div>';
+  // El encabezado, los datos del semestre y los títulos de columna van dentro de
+  // <thead> para que el navegador los repita en cada hoja al imprimir.
+  return '<div class="fmt-doc">'+
+    '<table class="fmt-table fmt-plan-table"><colgroup><col style="width:11%"><col style="width:29%"><col style="width:32%"><col style="width:14%"><col style="width:7%"><col style="width:7%"></colgroup>'+
+    '<thead>'+
+      '<tr><td colspan="6" class="fmt-plan-hdrcell">'+headHtml+infoHtml+'</td></tr>'+
+      '<tr><th style="white-space:nowrap">Numeral</th><th>Situacion</th><th>Accion/Responsable</th><th>Fecha de Revision</th><th colspan="2">Cumplio<br>Si&nbsp;&nbsp;&nbsp;&nbsp;No</th></tr>'+
+    '</thead>'+
+    '<tbody>'+rows+'</tbody></table>'+
     '<div class="fmt-sign-grid"><div><b>ELABORO (Nombre, firma):</b><br>'+esc(p.elaboro)+'</div><div><b>REVISO (Nombre, firma):</b><br>'+esc(p.reviso)+'</div></div>'+
     '<div class="fmt-box fmt-tall"><b>Observaciones:</b><br>'+nl2br(p.obs)+'</div><div class="fmt-box"><b>SEGUIMIENTO (Nombre y firma):</b><br>'+esc(p.seguimiento)+'</div><div class="fmt-footer">R-93/03 Rev 01</div></div>';
 }
 window.plan_vistaPrevia=function(){activarVistaFormato('plan-preview-card',htmlPlanFormato(leerPlanActual()));};
-window.plan_imprimirFormato=function(){imprimirSoloFormato('sec-plan',plan_vistaPrevia);};
+window.plan_imprimirFormato=function(){
+  const html=htmlPlanFormato(leerPlanActual());
+  const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
+  const w=window.open('','_blank');
+  if(!w){alert('Por favor permite las ventanas emergentes para imprimir.');return;}
+  // El espacio superior lo da el <thead> repetido para que sea igual en TODAS
+  // las hojas; @page margin:0 evita el encabezado del navegador.
+  const overrides='@page{size:letter;margin:0}'+
+    '.fmt-doc{padding:0 .35in .3in!important;min-height:0!important}'+
+    '.fmt-plan-table .fmt-plan-hdrcell{padding-top:.35in!important}';
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>R-93/03 Plan de Acción</title><style>body{margin:0;background:#fff}'+css+overrides+'</style></head><body>'+html+'</body></html>');
+  w.document.close();
+  w.addEventListener('load',function(){w.focus();w.print();});
+};
 
 function leerSolActual(){
   return {fecha:v('sol-fecha'),area:v('sol-area'),tipo:selId('sol-tipo-'),descripcion:v('sol-descripcion'),solicitante:v('sol-solicitante'),entrega:selId('sol-ent-'),fecha_entrega:v('sol-fecha-entrega'),quien:v('sol-quien-recibe'),fecha_recepcion:v('sol-fecha-recepcion'),vobo:v('sol-vobo'),obs:v('sol-observaciones')};
@@ -14791,7 +14832,7 @@ function efic_htmlFormato(){
   '<tr><th style="width:14%">N&deg; de Registro</th><th colspan="2" style="width:22%">Tipo de Hallazgo</th><th style="width:12%">Numeral</th><th style="width:16%">&Aacute;rea</th><th style="width:36%">Descripci&oacute;n</th></tr>'+
   '<tr style="height:2.5em"><td>'+esc(e.num_registro||'')+'</td><td colspan="2">'+esc(e.tipo_hallazgo||'')+'</td><td>'+esc(e.numeral||'')+'</td><td>'+esc(e.area||'')+'</td><td style="text-align:justify">'+esc(e.descripcion||'')+'</td></tr>'+
   '</table>'+
-  '<table class="fmt-table" style="margin-top:6px"><tr><th colspan="4" class="fmt-gray">DESCRIPCION DE ACCIONES CORRECTIVAS</th></tr>'+
+  '<table class="fmt-table" style="margin-top:6px"><colgroup><col style="width:20%"><col style="width:20%"><col style="width:30%"><col style="width:30%"></colgroup><tr><th colspan="4" class="fmt-gray">DESCRIPCION DE ACCIONES CORRECTIVAS</th></tr>'+
   '<tr><th>Fecha Comprometida</th><th>Fecha real de atenci&oacute;n</th><th>Acci&oacute;n comprometida</th><th>Acci&oacute;n realizada</th></tr>'+
   accRows+'</table>'+
   '<table class="fmt-table" style="margin-top:6px"><tr><th class="fmt-gray">EVIDENCIA ADJUNTA</th></tr>'+
@@ -14824,7 +14865,13 @@ window.efic_imprimir=function(){
   const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
   const w=window.open('','_blank');
   if(!w){alert('Por favor permite las ventanas emergentes para imprimir.');return;}
-  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>R-93/04 Verificación de Eficacia</title><style>body{margin:0;background:#fff}'+css+'@page{size:letter;margin:0}</style></head><body>'+html+'</body></html>');
+  // El espacio superior lo da el <thead> repetido (padding-top) para que sea
+  // igual en TODAS las hojas; se anula el padding-top del .fmt-doc para no
+  // duplicarlo en la 1ª. @page margin:0 evita el encabezado del navegador.
+  const overrides='@page{size:letter;margin:0}'+
+    '.fmt-doc{padding:0 .4in .35in!important;min-height:0!important}'+
+    '.fmt-doc thead td{padding-top:.4in!important}';
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>R-93/04 Verificación de Eficacia</title><style>body{margin:0;background:#fff}'+css+overrides+'</style></head><body>'+html+'</body></html>');
   w.document.close();
   w.addEventListener('load',function(){w.focus();w.print();});
 };
@@ -14962,6 +15009,15 @@ window.r7502_resetData=async function(){
   guardarR7502(inicial);
   renderR7502();
 };
+// Llena el menú "Imprimir por área…" respetando las áreas visibles del usuario
+function _r75poblarSelectImprimir(selectId,areas,areaIdsVisibles){
+  const sel=document.getElementById(selectId);
+  if(!sel)return;
+  const visibles=areaIdsVisibles?areas.filter(a=>areaIdsVisibles.includes(a.id)):areas;
+  sel.innerHTML='<option value="">&#128424;&#65039; Imprimir por área…</option>'+
+    visibles.map(a=>`<option value="${a.id}">${esc(a.label)}</option>`).join('');
+}
+
 function renderR7502(){
   const cont=document.getElementById('r7502-contenido');
   if(!cont)return;
@@ -15009,6 +15065,7 @@ function renderR7502(){
   }
   if(!html)html='<p class="empty">No hay procedimientos disponibles para tu área.</p>';
   cont.innerHTML=html;
+  _r75poblarSelectImprimir('r7502-print-area',R7502_AREAS,areaIdsVisibles);
 }
 window.r7502_openModal=function(areaId,recId){
   const data=leerR7502()||JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
@@ -15097,7 +15154,7 @@ window.r7502_deleteRecord=async function(){
   guardarR7502(data);r7502_closeModal();renderR7502();
   await _r7502DeleteSupa(recId);
 };
-window.r7502_exportar=function(){
+window.r7502_exportar=function(areaId){
   const data=leerR7502()||JSON.parse(JSON.stringify(R7502_DATA_INICIAL));
   const cabecera=fmtHead('LISTADO DE PROCEDIMIENTOS','R-75/02',docVersion('R-75/02','03'),'15 de junio de 2026');
   const b='border:0.5px solid #888';const bp='padding:6px 8px';
@@ -15108,9 +15165,10 @@ window.r7502_exportar=function(){
     <th style="${thS};text-align:center">Rev.</th><th style="${thS}">Fecha de aprobación</th>
     <th style="${thS}">Responsable</th><th style="${thS}">Área</th></tr>`;
   let filasCuerpo='';
-  const numCod=cod=>{const m=String(cod||'').match(/\/(\d+)\s*$/);return m?parseInt(m[1]):0;};
-  for(const area of R7502_AREAS){
-    const recs=(data[area.id]||[]).slice().sort((a,b)=>numCod(a.codigo)-numCod(b.codigo));if(!recs.length)continue;
+  const _parseCode=c=>{const m=String(c||'').match(/(\d+)(?:\/(\d+))?$/);return m?[parseInt(m[1]||0),parseInt(m[2]||0)]:[0,0];};
+  const _areasImp=areaId?R7502_AREAS.filter(a=>a.id===areaId):R7502_AREAS;
+  for(const area of _areasImp){
+    const recs=(data[area.id]||[]).slice().sort((a,b)=>{const[a1,a2]=_parseCode(a.codigo);const[b1,b2]=_parseCode(b.codigo);return a1!==b1?a1-b1:a2-b2;});if(!recs.length)continue;
     filasCuerpo+=`<tr><td colspan="6" style="background:#fff;color:#000;font-weight:700;text-align:center;${bp};font-size:11pt;letter-spacing:.04em;${b}">${area.label}</td></tr>`;
     filasCuerpo+=colHdr;
     recs.forEach((r,i)=>{
@@ -15135,7 +15193,7 @@ window.r7502_exportar=function(){
     .fmt-title{display:flex;align-items:center;justify-content:center;border-right:1px solid #555;text-align:center;font-weight:700;text-transform:uppercase;color:#444;line-height:1.15;font-size:13pt;padding:8px 14px}
     .fmt-code{font-size:11pt;line-height:1.5;padding:9px 7px;color:#333}
     table{border-collapse:collapse;width:100%;table-layout:fixed}
-    thead{display:table-header-group}tfoot{display:table-footer-group}
+    thead{display:table-header-group}
     tbody tr{break-inside:avoid;page-break-inside:avoid}
     td,th{overflow-wrap:break-word;word-break:break-word}
     colgroup col:nth-child(1){width:10%}colgroup col:nth-child(2){width:27%}
@@ -15147,7 +15205,6 @@ window.r7502_exportar=function(){
   <div class="fmt-doc"><table>
     <colgroup><col><col><col><col><col><col></colgroup>
     <thead><tr><td colspan="6" style="border:none;padding:.4in 0 .18in">${cabecera}</td></tr></thead>
-    <tfoot><tr><td colspan="6" style="border:none;padding:4px 0;font-size:9pt;color:#555;text-align:center">R-75/02 · Rev. 03</td></tr></tfoot>
     <tbody>${filasCuerpo}</tbody>
   </table></div>
   <script>window.onload=function(){window.print();}<\/script>
@@ -15490,6 +15547,7 @@ function renderR7503(){
   }
   if(!html)html='<p class="empty">No hay registros disponibles para tu área.</p>';
   cont.innerHTML=html;
+  _r75poblarSelectImprimir('r7503-print-area',R7503_AREAS,areaIdsVisibles);
 }
 
 window.r75toggleArea=function(areaId){
@@ -15620,7 +15678,7 @@ window.r7503_deleteRecord=async function(){
   await _r7503DeleteSupa(recId);
 };
 
-window.r7503_exportar=function(){
+window.r7503_exportar=function(areaId){
   const data=leerR7503()||JSON.parse(JSON.stringify(R7503_DATA_INICIAL));
   // Encabezado usando exactamente el mismo patrón que todos los demás formatos
   const cabecera=fmtHead('LISTADO DE REGISTROS','R-75/03',docVersion('R-75/03','03'),'15 de junio de 2026');
@@ -15640,13 +15698,12 @@ window.r7503_exportar=function(){
   </tr>`;
 
   let filasCuerpo='';
-  // Función para extraer número de ordenamiento del código (ej. R-CE-85/41 → 41)
-  const numCodigo=cod=>{
-    const m=String(cod||'').match(/\/(\d+)\s*$/);
-    return m?parseInt(m[1]):0;
-  };
-  for(const area of R7503_AREAS){
-    const recs=(data[area.id]||[]).slice().sort((a,b)=>numCodigo(a.codigo)-numCodigo(b.codigo));
+  // Ordena por número principal y luego por subnúmero (ej. R-43/02 → [43,2]),
+  // igual que la vista en pantalla. Ignora el prefijo de área (CE, SA, DR, DO).
+  const _parseCode=c=>{const m=String(c||'').match(/(\d+)(?:\/(\d+))?$/);return m?[parseInt(m[1]||0),parseInt(m[2]||0)]:[0,0];};
+  const _areasImp=areaId?R7503_AREAS.filter(a=>a.id===areaId):R7503_AREAS;
+  for(const area of _areasImp){
+    const recs=(data[area.id]||[]).slice().sort((a,b)=>{const[a1,a2]=_parseCode(a.codigo);const[b1,b2]=_parseCode(b.codigo);return a1!==b1?a1-b1:a2-b2;});
     if(!recs.length)continue;
     filasCuerpo+=`<tr><td colspan="6" style="background:#fff;color:#000;font-weight:700;text-align:center;${bp};font-size:11pt;letter-spacing:.04em;${b}">${area.label}</td></tr>`;
     filasCuerpo+=colHdr;
@@ -15676,7 +15733,6 @@ window.r7503_exportar=function(){
     .fmt-code{font-size:11pt;line-height:1.5;padding:9px 7px;color:#333}
     table{border-collapse:collapse;width:100%;table-layout:fixed}
     thead{display:table-header-group}
-    tfoot{display:table-footer-group}
     tbody tr{break-inside:avoid;page-break-inside:avoid}
     td,th{overflow-wrap:break-word;word-break:break-word}
     colgroup col:nth-child(1){width:11%}
@@ -15696,9 +15752,6 @@ window.r7503_exportar=function(){
       <thead>
         <tr><td colspan="6" style="border:none;padding:.4in 0 .18in">${cabecera}</td></tr>
       </thead>
-      <tfoot>
-        <tr><td colspan="6" style="border:none;padding:4px 0;font-size:9pt;color:#555;text-align:center">R-75/03 · Rev. 03</td></tr>
-      </tfoot>
       <tbody>${filasCuerpo}</tbody>
     </table>
   </div>
@@ -17191,7 +17244,7 @@ function revImprimirReporte(){
       <div class="fmt-code">
         Código: R-93/02<br>
         Página: ${n} de ${totalPgs}<br>
-        <span style="color:#c0392b">Rev: 01</span>
+        <span style="color:#c0392b">Rev: 02</span>
       </div>
     </div>`;
   const firmasFin=`
