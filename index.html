@@ -2022,12 +2022,20 @@ Coordinacion de Calidad</textarea>
         <div>
           <label class="lbl">Area / Proceso</label>
           <select id="nc-area-numeral">
-            <option value="">-- Seleccionar area --</option>
-            <option value="Direccion">Direccion</option>
-            <option value="Subdireccion Academica">Subdireccion Academica</option>
+            <option value="">-- Seleccionar área --</option>
+            <option value="Direccion">Dirección</option>
+            <option value="Subdireccion Academica">Subdirección Académica</option>
             <option value="Docencia">Docencia</option>
             <option value="Control Escolar">Control Escolar</option>
-            <option value="Coordinacion de Calidad">Coordinacion de Calidad</option>
+            <option value="Coordinacion de Calidad">Coordinación de Calidad</option>
+          </select>
+          <select id="nc-area-numeral-2" style="margin-top:6px">
+            <option value="">-- Segunda área (opcional) --</option>
+            <option value="Direccion">Dirección</option>
+            <option value="Subdireccion Academica">Subdirección Académica</option>
+            <option value="Docencia">Docencia</option>
+            <option value="Control Escolar">Control Escolar</option>
+            <option value="Coordinacion de Calidad">Coordinación de Calidad</option>
           </select>
         </div>
         <div>
@@ -6995,9 +7003,22 @@ function nc_fillCicloSelect(current){
   }
   inp.value=current||'';
 }
+// Áreas válidas del campo Área/Proceso, con su forma acentuada correcta.
+const _NC_AREAS_MAP={'direccion':'Dirección','subdireccion academica':'Subdirección Académica','docencia':'Docencia','control escolar':'Control Escolar','coordinacion de calidad':'Coordinación de Calidad'};
+function _ncNorm(v){return String(v||'').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+// Reconoce un área aunque venga sin acentos (compatibilidad con registros previos)
+function _ncEsAreaValida(v){return Object.prototype.hasOwnProperty.call(_NC_AREAS_MAP,_ncNorm(v));}
+// Devuelve el/los nombre(s) de área con los acentos correctos para mostrar en el informe
+function _ncAreaAcentos(txt){return String(txt||'').split('/').map(p=>_NC_AREAS_MAP[_ncNorm(p)]||p.trim()).filter(Boolean).join(' / ');}
+// Combina las dos áreas seleccionadas en un solo texto "Área1 / Área2"
+function ncAreaCombinada(){
+  const a1=(document.getElementById('nc-area-numeral')?.value||'').trim();
+  const a2=(document.getElementById('nc-area-numeral-2')?.value||'').trim();
+  return a2&&a2!==a1?(a1?a1+' / '+a2:a2):a1;
+}
 window.nc_nuevo=function(){
   // Reset form
-  ['nc-area-numeral','nc-numero','nc-numeral','nc-responsable-area','nc-descripcion','nc-correccion','nc-causa-raiz-desc','nc-elaborador',
+  ['nc-area-numeral','nc-area-numeral-2','nc-numero','nc-numeral','nc-responsable-area','nc-descripcion','nc-correccion','nc-causa-raiz-desc','nc-elaborador',
    'nc-ishi-personal','nc-ishi-procesos_metodos','nc-ishi-recursos','nc-ishi-informacion_datos','nc-ishi-entorno_contexto',
    'nc-5p-problema','nc-5p-1','nc-5p-2','nc-5p-3','nc-5p-4','nc-5p-5','nc-5p-resultado',
    'nc-fecha-verif','nc-obs-cierre'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -7014,9 +7035,13 @@ window.nc_nuevo=function(){
 };
 window.nc_editar=function(i){
   const nc=leerNCs()[i];if(!nc)return;
-  const areaLegacy=(nc.area_numeral||'').split('/').map(x=>x.trim());
+  const areaLegacy=(nc.area_numeral||nc.area||'').split('/').map(x=>x.trim());
   document.getElementById('nc-area-numeral').value=areaLegacy[0]||'';
-  document.getElementById('nc-numeral').value=nc.numeral||areaLegacy[1]||'';
+  // Si la 2ª parte es un área válida → es la segunda área; si no, es numeral legacy
+  const _seg=areaLegacy[1]||'';
+  const _segEsArea=_ncEsAreaValida(_seg);
+  const _a2=document.getElementById('nc-area-numeral-2');if(_a2)_a2.value=_segEsArea?_seg:'';
+  document.getElementById('nc-numeral').value=nc.numeral||(_segEsArea?'':_seg);
   document.getElementById('nc-responsable-area').value=nc.responsable_area||'';
   document.getElementById('nc-numero').value=nc.numero||'';
   document.getElementById('nc-fecha').value=nc.fecha||hoy();
@@ -7084,8 +7109,8 @@ window.nc_addPAC=function(){
   c.appendChild(div);
 };
 window.nc_guardar=async function(){
-  const area=document.getElementById('nc-area-numeral').value.trim();
-  if(!area){showMsg('nc-msg','err','Ingresa el área y numeral.');return;}
+  const area=ncAreaCombinada();
+  if(!area){showMsg('nc-msg','err','Selecciona el área.');return;}
   const origenes=[];
   document.querySelectorAll('[id^="nc-orig-"].sel-c').forEach(el=>origenes.push(el.id.replace('nc-orig-','')));
   const tipoEl=document.querySelector('[id^="nc-tipo-"].sel-c');
@@ -7760,7 +7785,7 @@ function leerNCActual(){
     });
   });
   return {
-    area:v('nc-area-numeral'),numeral:v('nc-numeral'),responsable_area:v('nc-responsable-area'),fecha:v('nc-fecha'),numero:v('nc-numero'),elaborador:v('nc-elaborador'),
+    area:ncAreaCombinada(),numeral:v('nc-numeral'),responsable_area:v('nc-responsable-area'),fecha:v('nc-fecha'),numero:v('nc-numero'),elaborador:v('nc-elaborador'),
     descripcion:v('nc-descripcion'),correccion:v('nc-correccion'),causa:v('nc-causa-raiz-desc'),
     ishikawa:{personal:v('nc-ishi-personal'),procesos_metodos:v('nc-ishi-procesos_metodos'),recursos:v('nc-ishi-recursos'),informacion_datos:v('nc-ishi-informacion_datos'),entorno_contexto:v('nc-ishi-entorno_contexto')},
     problema:v('nc-5p-problema'),p1:v('nc-5p-1'),p2:v('nc-5p-2'),p3:v('nc-5p-3'),p4:v('nc-5p-4'),p5:v('nc-5p-5'),
@@ -7786,10 +7811,6 @@ function generarIshikawaSVG(ishi,efecto){
   const eLines=wrap(efecto||'Sin descripción',22,20); // 22 chars/línea, hasta 20 líneas
   const boxW=160;
   const eBoxH=Math.max(90,hdrH+padV+eLines.length*lineH+padV);
-  // H mínimo para que quepan 3 causas (4 líneas c/u) arriba y abajo con margen
-  const causaBlockH=(4-1)*cLH+10+subLen+10; // espacio vertical por causa: ~77px
-  const H=Math.max(eBoxH+60, 520);          // al menos 520px, crece con el efecto
-  const CY=Math.round(H/2);
   const CATS=[
     {key:'personal',          label:'Personal',        bx:175,side:1 },
     {key:'procesos_metodos',  label:'Proc./Métodos',   bx:370,side:1 },
@@ -7797,6 +7818,23 @@ function generarIshikawaSVG(ishi,efecto){
     {key:'informacion_datos', label:'Info./Datos',     bx:265,side:-1},
     {key:'entorno_contexto',  label:'Entorno/Ctx',     bx:460,side:-1},
   ];
+  // Separador de causas: salto de línea o " - " (guion con espacios). La COMA ya
+  // NO separa (se conserva en el texto). "R-93/02" se preserva porque su guion no
+  // lleva espacios alrededor.
+  const parseCausas=txt=>(txt||'').split(/\n|\s+[-–]\s+/).map(x=>x.replace(/^\s*[-–]\s*/,'').trim()).filter(Boolean).slice(0,3);
+  const capLineas=n=>n<=1?8:(n===2?6:4); // más líneas si hay una sola causa
+  // Pre-calcular causas y líneas envueltas para dimensionar el alto dinámicamente
+  let maxLinesUsed=1;
+  CATS.forEach(cat=>{
+    const causes=parseCausas(ishi[cat.key]);
+    cat._raw=causes;
+    cat._causes=causes.map(c=>wrap(c,26,capLineas(causes.length)));
+    cat._causes.forEach(w=>{if(w.length>maxLinesUsed)maxLinesUsed=w.length;});
+  });
+  // Alto que garantiza que el texto de las ramas no se corte por arriba/abajo
+  const neededCY=Math.ceil((20+subLen+(maxLinesUsed-1)*cLH)/0.5766);
+  const H=Math.max(eBoxH+60, 520, neededCY*2);
+  const CY=Math.round(H/2);
   const spineEnd=710;
   const boxX=spineEnd+20,boxCX=boxX+boxW/2;
   const boxH=eBoxH;
@@ -7824,7 +7862,7 @@ function generarIshikawaSVG(ishi,efecto){
     s+=`<line x1="${cat.bx}" y1="${CY}" x2="${tipX}" y2="${tipY}" stroke="${GRAY}" stroke-width="2"/>`;
     const lblY=cat.side===1?tipY-22:tipY+26;
     s+=`<text x="${tipX}" y="${lblY}" text-anchor="middle" font-size="9.5" font-weight="bold" fill="${BLUE}">${ee(cat.label)}</text>`;
-    const causes=(ishi[cat.key]||'').split(/[\n,]/).map(x=>x.trim()).filter(Boolean).slice(0,3);
+    const causes=cat._raw||[];
     if(!causes.length){
       const mx=Math.round((cat.bx+tipX)/2),my=Math.round((CY+tipY)/2);
       s+=`<text x="${mx}" y="${cat.side===1?my-8:my+14}" text-anchor="middle" font-size="7" fill="#BAC4D0" font-style="italic">(sin causas)</text>`;
@@ -7838,8 +7876,7 @@ function generarIshikawaSVG(ishi,efecto){
         const sbEndX=px+10;
         const sbEndY=cat.side===1?py-subLen:py+subLen;
         s+=`<line x1="${px}" y1="${py}" x2="${sbEndX}" y2="${sbEndY}" stroke="${LGRAY}" stroke-width="1.2"/>`;
-        // 4 líneas × 24 chars = 96 chars visibles por causa
-        const cLines=wrap(cause,24,4);
+        const cLines=cat._causes[ci];
         if(cat.side===1){
           // Texto crece hacia ARRIBA desde la punta de la sub-rama
           const cBaseY=sbEndY-(cLines.length-1)*cLH;
@@ -7869,23 +7906,23 @@ function htmlNCFormato(nc){
   const tipo=t=>nc.tipo===t;
   const efSi=nc.efectividad==='si', efNo=nc.efectividad==='no';
   const pacRows=(nc.pac.length?nc.pac:[{},{}]).map(p=>'<tr><td style="padding:6px 8px;word-break:break-word">'+nl2br(p.accion||'')+'</td><td style="padding:6px 8px;word-break:break-word">'+nl2br(p.responsable||'')+'</td><td style="padding:6px 8px;word-break:break-word">'+nl2br(p.fechas||'')+'</td><td style="padding:6px 8px;word-break:break-word">'+nl2br(p.evidencia||'')+'</td></tr>').join('');
-  const _rv=docVersion('R-102/02','02'), _cod='R-102/02', _tit='INFORME DE NO CONFORMIDAD Y<br>ACCION CORRECTIVA', _tot=5;
+  const _rv=docVersion('R-102/02','02'), _cod='R-102/02', _tit='INFORME DE NO CONFORMIDAD Y<br>ACCIÓN CORRECTIVA', _tot=5;
   return '<div class="fmt-doc fmt-page">'+fmtHead(_tit,_cod,_rv,'',1,_tot)+
   '<table class="fmt-table">'+
   '<tr>'+
-    '<td colspan="3" style="padding:10px 10px"><b>AREA/PROCESO:</b> '+esc(nc.area)+(nc.numeral?' / Numerales '+esc(nc.numeral):'')+'<br><b>N&deg; de registro:</b> '+esc(nc.numero)+'</td>'+
+    '<td colspan="3" style="padding:10px 10px"><b>ÁREA/PROCESO:</b> '+esc(_ncAreaAcentos(nc.area||nc.area_numeral||''))+(nc.numeral?' / Numerales '+esc(nc.numeral):'')+'<br><b>N&deg; de registro:</b> '+esc(nc.numero)+'</td>'+
     '<td style="padding:10px 10px"><b>FECHA:</b> '+esc(nc.fecha)+'</td>'+
   '</tr>'+
   '<tr>'+
     '<td colspan="4" style="padding:10px 10px"><b>Origen de la No Conformidad</b><br>'+
-    'SERVICIO '+chk(origen('servicio'))+' ENCUESTA '+chk(origen('encuesta'))+' AUDITORIA INT. '+chk(origen('int'))+'<br>'+
-    'AUDITORIA EXT. '+chk(origen('ext'))+' QUEJA DIRECTA '+chk(origen('queja'))+'</td>'+
+    'SERVICIO '+chk(origen('servicio'))+' ENCUESTA '+chk(origen('encuesta'))+' AUDITORÍA INT. '+chk(origen('int'))+'<br>'+
+    'AUDITORÍA EXT. '+chk(origen('ext'))+' QUEJA DIRECTA '+chk(origen('queja'))+'</td>'+
   '</tr>'+
   '<tr>'+
-    '<td colspan="4" style="padding:10px 10px;min-height:1.1in"><b>Descripcion:</b><br>'+nl2br(nc.descripcion)+'</td>'+
+    '<td colspan="4" style="padding:10px 10px;min-height:1.1in"><b>Descripción:</b><br>'+nl2br(nc.descripcion)+'</td>'+
   '</tr>'+
   '<tr>'+
-    '<td colspan="4" style="padding:10px 10px"><b>Mayor</b> '+chk(tipo('mayor'))+' <b>Menor</b> '+chk(tipo('menor'))+' <b>Observacion</b> '+chk(tipo('obs'))+' <b>Area de oportunidad</b> '+chk(tipo('op'))+'</td>'+
+    '<td colspan="4" style="padding:10px 10px"><b>Mayor</b> '+chk(tipo('mayor'))+' <b>Menor</b> '+chk(tipo('menor'))+' <b>Observación</b> '+chk(tipo('obs'))+' <b>Área de oportunidad</b> '+chk(tipo('op'))+'</td>'+
   '</tr>'+
   '<tr>'+
     '<td colspan="4" style="padding:10px 10px;min-height:.45in"><b>Elaborada por:</b> '+esc(nc.elaborador)+'</td>'+
@@ -7894,10 +7931,10 @@ function htmlNCFormato(nc){
     '<td colspan="4" style="padding:10px 10px;min-height:.55in"><b>Administrador de la Calidad: (Fecha y firma)</b></td>'+
   '</tr>'+
   '<tr>'+
-    '<td colspan="4" style="padding:10px 10px;min-height:1.2in"><b>Correccion o accion inmediata</b><br>'+nl2br(nc.correccion)+'</td>'+
+    '<td colspan="4" style="padding:10px 10px;min-height:1.2in"><b>Corrección o acción inmediata</b><br>'+nl2br(nc.correccion)+'</td>'+
   '</tr>'+
   '<tr>'+
-    '<td colspan="4" style="padding:10px 10px;min-height:1.2in"><b>Investigacion de la Causa Raiz:</b><br>'+nl2br(nc.causa)+'</td>'+
+    '<td colspan="4" style="padding:10px 10px;min-height:1.2in"><b>Investigación de la Causa Raíz:</b><br>'+nl2br(nc.causa)+'</td>'+
   '</tr>'+
   '</table></div>'+
   // ── Página 2: Ishikawa tabla de causas (portrait) ──
@@ -7916,18 +7953,18 @@ function htmlNCFormato(nc){
   '<div class="fmt-doc fmt-page fmt-ishi-landscape">'+
   fmtHead(_tit,_cod,_rv,'',3,_tot)+
   '<div style="text-align:center;font-size:10pt;font-weight:bold;color:#1E3A8A;margin:.08in 0 .06in;letter-spacing:.5px">DIAGRAMA DE ISHIKAWA &mdash; AN&Aacute;LISIS DE CAUSA RA&Iacute;Z</div>'+
-  '<div style="font-size:9pt;color:#374151;margin-bottom:.08in"><b>NC N&deg;:</b> '+esc(nc.numero)+'&nbsp;&nbsp;&nbsp;<b>&Aacute;rea:</b> '+esc(nc.area)+'&nbsp;&nbsp;&nbsp;<b>Fecha:</b> '+esc(nc.fecha)+'</div>'+
+  '<div style="font-size:9pt;color:#374151;margin-bottom:.08in"><b>NC N&deg;:</b> '+esc(nc.numero)+'&nbsp;&nbsp;&nbsp;<b>&Aacute;rea:</b> '+esc(_ncAreaAcentos(nc.area||nc.area_numeral||''))+'&nbsp;&nbsp;&nbsp;<b>Fecha:</b> '+esc(nc.fecha)+'</div>'+
   '<div style="width:100%;text-align:center">'+generarIshikawaSVG(nc.ishikawa||{},nc.descripcion)+'</div>'+
   '</div>'+
   // ── Página 4: 5 Porqués ──
   '<div class="fmt-doc fmt-page">'+fmtHead(_tit,_cod,_rv,'',4,_tot)+
-  '<table class="fmt-table fmt-xs"><tr><th colspan="7">Análisis de la Causa Raíz (5 Porqués)</th></tr><tr><th>Planteamiento del problema</th><th>Por que 1</th><th>Por que 2</th><th>Por que 3</th><th>Por que 4</th><th>Por que 5</th><th>Resultado</th></tr>'+
+  '<table class="fmt-table fmt-xs"><tr><th colspan="7">Análisis de la Causa Raíz (5 Porqués)</th></tr><tr><th>Planteamiento del problema</th><th>Por qué 1</th><th>Por qué 2</th><th>Por qué 3</th><th>Por qué 4</th><th>Por qué 5</th><th>Resultado</th></tr>'+
   '<tr style="height:3.3in"><td>'+nl2br(nc.problema)+'</td><td>'+nl2br(nc.p1)+'</td><td>'+nl2br(nc.p2)+'</td><td>'+nl2br(nc.p3)+'</td><td>'+nl2br(nc.p4)+'</td><td>'+nl2br(nc.p5)+'</td><td>'+nl2br(nc.resultado)+'</td></tr><tr><td style="height:.32in"></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table></div>'+
   // ── Página 5: Plan de Acción Correctiva ──
   '<div class="fmt-doc">'+fmtHead(_tit,_cod,_rv,'',5,_tot)+
-  '<table class="fmt-table" style="word-break:break-word"><colgroup><col style="width:38%"><col style="width:20%"><col style="width:22%"><col style="width:20%"></colgroup><tr><th colspan="4">Plan de Accion Correctiva</th></tr><tr><th>Accion</th><th>Responsable</th><th>Fechas de inicio y termino</th><th>Evidencia a obtener</th></tr>'+pacRows+
-  '<tr><td colspan="4"><b>Fecha de verificacion del Plan de Accion:</b> '+esc(nc.fecha_verif)+'</td></tr><tr><td colspan="4"><b>Nombre y firma del responsable del area:</b><br>'+esc(nc.responsable_area||nc.area.split('/')[0].trim())+'<br><br><b>Administrador de la Calidad:</b><br>'+esc(nc.elaborador)+'</td></tr>'+
-  '<tr><td colspan="4"><b>Verificacion de la Efectividad de la Accion Correctiva</b><br>&iquest;La accion correctiva fue efectiva? SI '+chk(efSi)+' NO '+chk(efNo)+'<br><br>Observaciones:<div class="fmt-hand">'+nl2br(nc.obs_cierre)+'</div><br><b>Nombre y Firma de Cierre del Representante de la Direccion</b><span style="float:right"><b>Fecha</b></span><br>Mtro. Samir Gomez Calderon<br><br><b>Nombre y Firma de Aceptacion del Responsable del Area</b><span style="float:right"><b>Fecha</b></span><br>'+esc(nc.responsable_area||nc.area.split('/')[0].trim())+'</td></tr></table></div>';
+  '<table class="fmt-table" style="word-break:break-word"><colgroup><col style="width:38%"><col style="width:20%"><col style="width:22%"><col style="width:20%"></colgroup><tr><th colspan="4">Plan de Acción Correctiva</th></tr><tr><th>Acción</th><th>Responsable</th><th>Fechas de inicio y término</th><th>Evidencia a obtener</th></tr>'+pacRows+
+  '<tr><td colspan="4"><b>Fecha de verificación del Plan de Acción:</b> '+esc(nc.fecha_verif)+'</td></tr><tr><td colspan="4"><b>Nombre y firma del responsable del área:</b><br>'+esc(nc.responsable_area||_ncAreaAcentos(nc.area||'').split('/')[0].trim())+'<br><br><b>Administrador de la Calidad:</b><br>'+esc(nc.elaborador)+'</td></tr>'+
+  '<tr><td colspan="4"><b>Verificación de la Efectividad de la Acción Correctiva</b><br>&iquest;La acción correctiva fue efectiva? SÍ '+chk(efSi)+' NO '+chk(efNo)+'<br><br>Observaciones:<div class="fmt-hand">'+nl2br(nc.obs_cierre)+'</div><br><b>Nombre y Firma de Cierre del Representante de la Dirección</b><span style="float:right"><b>Fecha</b></span><br>Mtro. Samir Gómez Calderón<br><br><b>Nombre y Firma de Aceptación del Responsable del Área</b><span style="float:right"><b>Fecha</b></span><br>'+esc(nc.responsable_area||_ncAreaAcentos(nc.area||'').split('/')[0].trim())+'</td></tr></table></div>';
 }
 window.nc_vistaPrevia=function(){activarVistaFormato('nc-preview-card',htmlNCFormato(leerNCActual()));};
 window.nc_imprimirFormato=function(){
@@ -7948,14 +7985,20 @@ function htmlListadoNCFormato(list,cicloLabel){
   const rows=[];
   for(let i=0;i<minRows;i++){
     const nc=ordenada[i]||{};
-    const areaPart=String(nc.area_numeral||nc.area||'').split('/').map(x=>x.trim());
+    const areaFull=String(nc.area_numeral||nc.area||'').trim();
+    const areaPart=areaFull.split('/').map(x=>x.trim());
+    // Si la 2ª parte es un área válida → doble área (se muestra completa);
+    // si no, es el formato legacy "área/numeral".
+    const _segEsArea=_ncEsAreaValida(areaPart[1]);
+    const areaCol=_segEsArea?areaFull:(areaPart[0]||'');
+    const numeralCol=nc.numeral||(_segEsArea?'':(areaPart[1]||''));
     const pac=Array.isArray(nc.pac)?nc.pac:[];
     const accion=pac.map(p=>p.accion).filter(Boolean).join('\n')||(nc.accion||nc.correccion||'');
     const fechas=pac.map(p=>p.fechas).filter(Boolean).join('\n')||(nc.fecha_compromiso||nc.fecha_verif||'');
     rows.push('<tr class="fmt-row-keep">'+
       '<td class="fmt-center">'+esc(nc.numero||'')+'</td>'+
-      '<td>'+esc(areaPart[0]||'')+'</td>'+
-      '<td class="fmt-center">'+esc(nc.numeral||areaPart[1]||'')+'</td>'+
+      '<td>'+esc(_ncAreaAcentos(areaCol))+'</td>'+
+      '<td class="fmt-center">'+esc(numeralCol)+'</td>'+
       '<td>'+nl2br(nc.descripcion||'')+'</td>'+
       '<td>'+nl2br(accion)+'</td>'+
       '<td class="fmt-center">'+nl2br(fechas)+'</td>'+
@@ -12084,7 +12127,9 @@ window.chatAplicarNC=function(dataStr){
     setTimeout(()=>{
       nc_nuevo();
       const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
-      s('nc-area-numeral',c.area_numeral||'');
+      const _apart=String(c.area_numeral||'').split('/').map(x=>x.trim());
+      s('nc-area-numeral',_apart[0]||'');
+      s('nc-area-numeral-2',_ncEsAreaValida(_apart[1])?_apart[1]:'');
       s('nc-numeral',c.numeral||'');
       s('nc-descripcion',c.descripcion||'');
       s('nc-correccion',c.correccion||'');
