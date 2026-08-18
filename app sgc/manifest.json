@@ -1,0 +1,26 @@
+{
+  "name": "Sistema de Calidad — ENUFC",
+  "short_name": "SGC ENUFC",
+  "description": "Sistema de Gestión de Calidad ISO 9001:2015 — Escuela Normal Urbana Federal Cuautla",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f7f5",
+  "theme_color": "#185FA5",
+  "orientation": "any",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/coordinacion_calidad_hero.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/coordinacion_calidad_hero.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
