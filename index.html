@@ -1636,7 +1636,17 @@ textarea{resize:vertical;min-height:70px}
       <label class="lbl">Área a auditar</label>
       <select id="aud-area"><option value="">&mdash; Seleccionar &aacute;rea &mdash;</option></select>
       <div class="row2" style="margin-top:12px">
-        <div><label class="lbl">No. de auditor&iacute;a</label><input type="text" id="aud-numero" placeholder="Ej. 01"></div>
+        <div><label class="lbl">No. de auditor&iacute;a (ciclo que agrupa el informe general)</label>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <select id="aud-num-tipo" style="width:auto;min-width:118px" onchange="audNumCompose()"><option value="AI">AI &middot; Interna</option><option value="AE">AE &middot; Externa</option></select>
+            <input type="text" id="aud-num-cons" inputmode="numeric" maxlength="3" style="width:62px" placeholder="01" oninput="audNumCompose()">
+            <span style="color:var(--muted)">/</span>
+            <input type="text" id="aud-num-anio" inputmode="numeric" maxlength="4" style="width:74px" placeholder="2026" oninput="audNumCompose()">
+            <span style="color:var(--muted)">=</span>
+            <strong id="aud-num-preview" style="color:var(--blue);font-size:15px">AI-01/2026</strong>
+          </div>
+          <input type="hidden" id="aud-numero">
+        </div>
         <div><label class="lbl">Responsable del &aacute;rea auditada</label><input type="text" id="aud-responsable-area" placeholder="Nombre completo"></div>
       </div>
       <div class="row2">
@@ -1654,7 +1664,7 @@ textarea{resize:vertical;min-height:70px}
     </div>
     <div class="card" id="paso2" style="display:none">
       <div class="step-hdr"><h3>Paso 2 &mdash; Banco de preguntas</h3><span class="badge badge-blue">2 de 4</span></div>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Selecciona los criterios a aplicar</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Vienen <b>ya marcadas</b> las preguntas asignadas a esta &aacute;rea. Desmarca las que no apliquen solo para esta auditor&iacute;a. Para elegir y <b>guardar</b> de forma permanente qu&eacute; preguntas tiene cada &aacute;rea, usa <b>Administrar &rarr; Banco de preguntas</b>.</p>
       <div style="display:flex;gap:8px;margin-bottom:10px">
         <button class="btn btn-sm" onclick="selAll(true)">Seleccionar todo</button>
         <button class="btn btn-sm" onclick="selAll(false)">Limpiar</button>
@@ -1675,7 +1685,7 @@ textarea{resize:vertical;min-height:70px}
       <label class="lbl">Observaciones generales</label>
       <textarea id="aud-obs" placeholder="Observaciones adicionales..."></textarea>
       <div style="display:flex;justify-content:space-between;margin-top:14px">
-        <button class="btn" onclick="showPaso(2)">&larr; Regresar</button>
+        <button class="btn" onclick="audPasoAtras3()">&larr; Regresar</button>
         <button class="btn btn-primary" onclick="irPaso4()">Siguiente &mdash; Hallazgos y resumen &rarr;</button>
       </div>
       <div id="aud-msg"></div>
@@ -2499,10 +2509,14 @@ Coordinacion de Calidad</textarea>
       <h3>Banco de preguntas</h3>
       <label class="lbl">Área</label>
       <select id="sel-area-admin" onchange="renderBancoAdmin()"><option value="">— Seleccionar —</option></select>
-      <div class="input-row" style="margin-top:10px">
-        <input type="text" id="nueva-preg" placeholder="Texto del criterio o pregunta">
+      <label class="lbl" style="margin-top:10px">Agregar una pregunta nueva</label>
+      <div class="input-row" style="gap:8px;flex-wrap:wrap;align-items:flex-start">
+        <input type="text" id="nueva-preg-clausula" placeholder="Cláusula (ej. 7.5.3)" style="max-width:150px" onkeydown="if(event.key==='Enter')addPregunta()">
+        <input type="text" id="nueva-preg" placeholder="Texto de la pregunta" style="flex:1;min-width:220px" onkeydown="if(event.key==='Enter')addPregunta()">
         <button class="btn btn-primary" onclick="addPregunta()">Agregar</button>
       </div>
+      <div id="banco-msg" style="margin-top:6px"></div>
+      <p style="font-size:11px;color:var(--muted);margin:4px 0 0">La cláusula es opcional; si la pones (ej. 8.5.1) la pregunta se ubica en el capítulo correcto de la norma y queda asignada al área seleccionada.</p>
       <div id="banco-admin" style="margin-top:12px"></div>
     </div>
     <div class="card">
@@ -2517,6 +2531,17 @@ Coordinacion de Calidad</textarea>
       <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Estos datos se usar&aacute;n en todos los informes de auditor&iacute;a.</p>
       <label class="lbl">Auditor l&iacute;der / Coordinador de calidad</label>
       <input type="text" id="cfg-auditor-lider" placeholder="Nombre completo">
+      <div style="border-top:1px solid var(--line,#e5e7eb);margin:16px 0 10px"></div>
+      <h4 style="margin:0 0 4px;font-size:13px">C&oacute;digo y revisi&oacute;n de los informes</h4>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px">N&uacute;mero de registro y revisi&oacute;n que aparecen en el encabezado. Sube la revisi&oacute;n cuando cambie el formato.</p>
+      <div class="row2">
+        <div><label class="lbl">Informe de &aacute;rea &mdash; C&oacute;digo</label><input type="text" id="cfg-aud-cod-area" placeholder="R-92/02"></div>
+        <div><label class="lbl">Informe de &aacute;rea &mdash; Revisi&oacute;n</label><input type="text" id="cfg-aud-rev-area" placeholder="02"></div>
+      </div>
+      <div class="row2">
+        <div><label class="lbl">Informe general &mdash; C&oacute;digo</label><input type="text" id="cfg-aud-cod-gen" placeholder="R-92/03"></div>
+        <div><label class="lbl">Informe general &mdash; Revisi&oacute;n</label><input type="text" id="cfg-aud-rev-gen" placeholder="00"></div>
+      </div>
       <div style="text-align:right;margin-top:10px">
         <button class="btn btn-primary" onclick="guardarConfigInstitucional()">Guardar configuraci&oacute;n</button>
       </div>
@@ -3363,13 +3388,25 @@ Coordinacion de Calidad</textarea>
             <button class="btn btn-sm btn-primary" onclick="foda_imprimir()">Imprimir / PDF</button>
           </div>
         </div>
-        <div class="row2">
-          <div><label class="lbl">Período de Aplicación</label><input type="text" id="foda-periodo" placeholder="Ej. Septiembre 2025 – Enero 2026"></div>
-          <div><label class="lbl">Fecha</label><input type="date" id="foda-fecha"></div>
+        <!-- Selector de ámbito: FODA General o por área -->
+        <div class="no-print" style="background:#f1f5f9;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+          <label class="lbl" style="margin-bottom:4px">Ámbito de la matriz</label>
+          <select id="foda-area-sel" onchange="fodaSelArea(this.value)" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff"></select>
+          <div id="foda-ctx-hint" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
         </div>
-        <div class="row2" style="margin-top:10px">
-          <div><label class="lbl">Elaboró</label><input type="text" id="foda-elaboro" placeholder="Nombre — Cargo"></div>
-          <div><label class="lbl">Revisó y Aprobó</label><input type="text" id="foda-reviso" placeholder="Nombre — Cargo"></div>
+        <!-- Período / Fecha: dato del documento, compartido por el general y todas las áreas -->
+        <div class="row2" id="foda-doc-periodo">
+          <div><label class="lbl">Período de Aplicación <span style="font-weight:400;color:var(--muted)">(común a todas las áreas)</span></label><input type="text" id="foda-periodo" placeholder="Ej. Septiembre 2025 – Enero 2026" onchange="fodaDocHeaderChange()"></div>
+          <div><label class="lbl">Fecha</label><input type="date" id="foda-fecha" onchange="fodaDocHeaderChange()"></div>
+        </div>
+        <div id="foda-meta-area" style="display:none;margin-top:10px">
+          <div><label class="lbl">Jefe del área (elabora y firma)</label><input type="text" id="foda-area-jefe" placeholder="Nombre — Cargo del responsable del área" onchange="fodaAreaJefeChange(this.value)"></div>
+        </div>
+        <div id="foda-meta-general">
+          <div class="row2" style="margin-top:10px">
+            <div><label class="lbl">Elaboró</label><input type="text" id="foda-elaboro" placeholder="Nombre — Cargo"></div>
+            <div><label class="lbl">Revisó y Aprobó</label><input type="text" id="foda-reviso" placeholder="Nombre — Cargo"></div>
+          </div>
         </div>
         <!-- FODA visual 2x2 -->
         <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:0;border:2px solid #1f3864;border-radius:10px;overflow:hidden">
@@ -3412,8 +3449,15 @@ Coordinacion de Calidad</textarea>
             </div>
           </div>
         </div>
+        <!-- Consolidación del FODA General -->
+        <div id="foda-general-tools" class="no-print" style="margin-top:14px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:12px">
+          <div style="font-weight:700;color:#1f3864;font-size:13px;margin-bottom:4px">Consolidar desde las áreas</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Reúne los FODA de todas las áreas en esta matriz general, sin duplicados. Reemplaza el contenido actual del FODA General.</div>
+          <button class="btn btn-sm btn-primary" onclick="foda_generarDesdeAreas()">⟳ Generar FODA General desde las áreas</button>
+          <button class="btn btn-sm" onclick="foda_imprimirTodas()" style="margin-left:6px">🖨 Imprimir todas las áreas</button>
+        </div>
         <div id="foda-msg" style="margin-top:8px"></div>
-        <button class="btn btn-primary" style="margin-top:12px" onclick="foda_guardar()">Guardar FODA</button>
+        <button class="btn btn-primary" id="foda-btn-guardar" style="margin-top:12px" onclick="foda_guardar()">Guardar FODA</button>
       </div>
       <div id="foda-preview" class="fmt-preview"></div>
       <div id="foda-revisiones-card" class="card no-print" style="margin-top:1rem"></div>
@@ -4661,7 +4705,7 @@ const AUDITORIA_ISO_BANCO=[
 ];
 
 const AREAS_SGC = ["Direcci\u00f3n","Subdirecci\u00f3n Acad\u00e9mica","Docencia","Control Escolar","Coordinaci\u00f3n de Calidad"];
-const CONFIG_DEFAULT = {auditor_lider:"Mtro. Roberto Carlos Aguilar Pedroza"};
+const CONFIG_DEFAULT = {auditor_lider:"Mtro. Roberto Carlos Aguilar Pedroza",aud_cod_area:"R-92/02",aud_rev_area:"02",aud_cod_gen:"R-92/03",aud_rev_gen:"00"};
 const INDICADOR_AREA = {
   "01":"Coordinaci\u00f3n de Calidad","02":"Coordinaci\u00f3n de Calidad","03":"Coordinaci\u00f3n de Calidad",
   "04":"Docencia","05":"Docencia","06":"Docencia",
@@ -4706,6 +4750,12 @@ let S = {
   config: {...CONFIG_DEFAULT}
 };
 let _sel={}, _resps={}, _idxs=[], _indSelId=null, _infTab='ind';
+/* Edición de auditoría guardada: cuando _editItems != null, el asistente
+   (Pasos 3/4 y el guardado) trabaja sobre la auditoría guardada en vez del
+   banco de preguntas del área, y guardar ACTUALIZA el registro existente. */
+let _editId=null, _editIdx=null, _editItems=null;
+let _infAudNum=undefined; // número de ciclo seleccionado en el informe general de auditorías
+let _infAudVista='__general__'; // vista del informe: '__general__' o el nombre de un área
 let _session = null;
 
 /* ═══════════════════════════════════════
@@ -4787,7 +4837,7 @@ async function cargarConfigInstitucional(){
     S.config={...CONFIG_DEFAULT,...saved};
   }catch(e){S.config={...CONFIG_DEFAULT};}
   try{
-    const {data,error}=await sb.from('configuracion_sgc').select('clave,valor').in('clave',['auditor_lider','coordinador_calidad']).order('clave');
+    const {data,error}=await sb.from('configuracion_sgc').select('clave,valor').in('clave',['auditor_lider','coordinador_calidad','aud_cod_area','aud_rev_area','aud_cod_gen','aud_rev_gen']).order('clave');
     if(!error&&data&&data.length){
       data.forEach(r=>{if(r.clave&&r.valor)S.config[r.clave]=r.valor;});
       localStorage.setItem('sgc_config_institucional',JSON.stringify(S.config));
@@ -4801,15 +4851,29 @@ function aplicarConfigAuditoria(){
 function renderConfigInstitucional(){
   const el=document.getElementById('cfg-auditor-lider');
   if(el)el.value=S.config.auditor_lider||CONFIG_DEFAULT.auditor_lider;
+  const setCfg=(id,k)=>{const e=document.getElementById(id);if(e)e.value=S.config[k]||CONFIG_DEFAULT[k];};
+  setCfg('cfg-aud-cod-area','aud_cod_area');
+  setCfg('cfg-aud-rev-area','aud_rev_area');
+  setCfg('cfg-aud-cod-gen','aud_cod_gen');
+  setCfg('cfg-aud-rev-gen','aud_rev_gen');
 }
 window.guardarConfigInstitucional=async function(){
   const val=v('cfg-auditor-lider')||CONFIG_DEFAULT.auditor_lider;
   S.config.auditor_lider=val;
+  const codArea=v('cfg-aud-cod-area')||CONFIG_DEFAULT.aud_cod_area;
+  const revArea=v('cfg-aud-rev-area')||CONFIG_DEFAULT.aud_rev_area;
+  const codGen=v('cfg-aud-cod-gen')||CONFIG_DEFAULT.aud_cod_gen;
+  const revGen=v('cfg-aud-rev-gen')||CONFIG_DEFAULT.aud_rev_gen;
+  S.config.aud_cod_area=codArea;S.config.aud_rev_area=revArea;S.config.aud_cod_gen=codGen;S.config.aud_rev_gen=revGen;
   setSyncStatus('sync','Guardando configuracion...');
   try{
     const payload=[
       {clave:'auditor_lider',valor:val,descripcion:'Auditor lider institucional'},
-      {clave:'coordinador_calidad',valor:val,descripcion:'Coordinador de calidad institucional'}
+      {clave:'coordinador_calidad',valor:val,descripcion:'Coordinador de calidad institucional'},
+      {clave:'aud_cod_area',valor:codArea,descripcion:'Codigo del informe de auditoria por area'},
+      {clave:'aud_rev_area',valor:revArea,descripcion:'Revision del informe de auditoria por area'},
+      {clave:'aud_cod_gen',valor:codGen,descripcion:'Codigo del informe general de auditoria'},
+      {clave:'aud_rev_gen',valor:revGen,descripcion:'Revision del informe general de auditoria'}
     ];
     const {error}=await sb.from('configuracion_sgc').upsert(payload,{onConflict:'clave'});
     if(error)throw error;
@@ -4834,25 +4898,102 @@ function withTimeout(promise,label,ms=9000){
 /* ═══════════════════════════════════════
    CARGA DESDE SUPABASE
 ═══════════════════════════════════════ */
+// Normaliza un nombre de área para comparar sin distinguir mayúsculas/acentos
+function _normAreaTxt(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+// Devuelve las áreas personalizadas (las que NO son parte de las 5 institucionales)
+function areasPersonalizadas(){return (S.areas||[]).filter(a=>!AREAS_SGC.some(b=>_normAreaTxt(b)===_normAreaTxt(a)));}
 async function cargarAreas(){
-  S.areas=[...AREAS_SGC];
-  // Catalogo institucional fijo del SGC: Direccion, Subdireccion Academica,
-  // Docencia, Control Escolar y Coordinacion de Calidad.
+  // Catálogo institucional fijo del SGC + áreas personalizadas que agregue el usuario.
+  const seen=new Set(AREAS_SGC.map(_normAreaTxt));
+  const out=[...AREAS_SGC];
+  const agregar=nombre=>{const k=_normAreaTxt(nombre);if(nombre&&!seen.has(k)){seen.add(k);out.push(String(nombre).trim());}};
+  // 1) Personalizadas guardadas localmente
+  try{(JSON.parse(localStorage.getItem('sgc_areas_custom')||'[]')||[]).forEach(agregar);}catch(e){}
+  // 2) Personalizadas en Supabase (áreas de la tabla que no sean institucionales)
+  try{const {data}=await sb.from('areas').select('nombre');(data||[]).forEach(r=>agregar(r.nombre));}catch(e){}
+  S.areas=out;
+  // Re-guardar las personalizadas consolidadas en localStorage
+  try{localStorage.setItem('sgc_areas_custom',JSON.stringify(areasPersonalizadas()));}catch(e){}
 }
 
 
+// Copia de las preguntas de fábrica para restaurar un área si su clave se perdiera
+const PREGUNTAS_DEFAULT = JSON.parse(JSON.stringify((S&&S.preguntas)||{}));
+// Garantiza que cada área institucional tenga su clave (con sus preguntas de fábrica
+// si la clave se hubiera perdido). No re-agrega preguntas que el usuario borró a mano.
+function _asegurarPreguntasBase(){
+  if(!S.preguntas||typeof S.preguntas!=='object')S.preguntas={};
+  Object.keys(PREGUNTAS_DEFAULT).forEach(area=>{if(S.preguntas[area]===undefined)S.preguntas[area]=[...PREGUNTAS_DEFAULT[area]];});
+}
+// Guarda el banco de preguntas en localStorage (fuente confiable de las ediciones)
+function _guardarPreguntasLocal(){try{localStorage.setItem('sgc_preguntas_custom',JSON.stringify(S.preguntas||{}));}catch(e){}}
 async function cargarPreguntas(){
+  // 1) Si hay un banco guardado localmente, ese manda (conserva ediciones/eliminaciones)
+  try{const loc=JSON.parse(localStorage.getItem('sgc_preguntas_custom')||'null');if(loc&&typeof loc==='object'&&Object.keys(loc).length){S.preguntas=loc;_asegurarPreguntasBase();return;}}catch(e){}
+  // 2) Primer uso: combinar preguntas sincronizadas en Supabase con las de fábrica (sin borrar)
   try{
     const {data,error}=await sb.from('preguntas_auditoria').select('pregunta,areas(nombre)').order('id');
-    if(!error && data && data.length){
-      const tmp={};
+    if(!error && data){
       data.forEach(r=>{
         const area=r.areas?.nombre;
-        if(area){if(!tmp[area])tmp[area]=[];tmp[area].push(r.pregunta);}
+        if(area && r.pregunta){
+          if(!S.preguntas[area])S.preguntas[area]=[];
+          if(!S.preguntas[area].some(p=>String(p).trim()===String(r.pregunta).trim()))S.preguntas[area].push(r.pregunta);
+        }
       });
-      if(Object.keys(tmp).length) S.preguntas=tmp;
     }
   }catch(e){console.warn('preguntas locales',e);}
+  _asegurarPreguntasBase();
+}
+
+/* ═══════════════════════════════════════
+   BANCO MAESTRO DE PREGUNTAS DE AUDITORÍA + ASIGNACIÓN POR ÁREA
+   - S.bancoMaestro: [{id,capitulo,requisito,pregunta,origen}]  (editable)
+   - S.bancoAsig: {área: [ids asignados]}  (qué preguntas aplican a cada área)
+   - La auditoría de un área solo muestra las preguntas asignadas a esa área.
+═══════════════════════════════════════ */
+function _guardarBanco(){try{localStorage.setItem('sgc_banco_maestro',JSON.stringify(S.bancoMaestro||[]));localStorage.setItem('sgc_banco_asig',JSON.stringify(S.bancoAsig||{}));}catch(e){}}
+async function cargarBanco(){
+  // 1) NUBE (fuente compartida entre equipos) — misma tabla sgc_planificacion.
+  //    Así, al publicar en GitHub, todos ven la misma configuración del banco.
+  try{
+    const {data}=await sb.from('sgc_planificacion').select('valor').eq('clave','banco_auditoria').maybeSingle();
+    if(data&&data.valor&&Array.isArray(data.valor.maestro)&&data.valor.maestro.length){
+      S.bancoMaestro=data.valor.maestro;
+      S.bancoAsig=data.valor.asig||{};
+      _guardarBanco(); // cachear en este equipo
+      return;
+    }
+  }catch(e){}
+  // 2) RESPALDO LOCAL (localStorage) y, si existe, subirlo a la nube
+  let maestro=null;
+  try{maestro=JSON.parse(localStorage.getItem('sgc_banco_maestro')||'null');}catch(e){}
+  if(Array.isArray(maestro)&&maestro.length){
+    S.bancoMaestro=maestro;
+    try{S.bancoAsig=JSON.parse(localStorage.getItem('sgc_banco_asig')||'{}')||{};}catch(e){S.bancoAsig={};}
+    _bancoSyncSupa();
+    return;
+  }
+  // 3) SEMILLA INICIAL (primera vez): ISO + migrar preguntas personalizadas
+  maestro=AUDITORIA_ISO_BANCO.map((q,i)=>({id:'iso_'+i,capitulo:q.capitulo,requisito:q.requisito,pregunta:q.pregunta,origen:'iso'}));
+  const isoIds=maestro.map(q=>q.id);
+  const asig={};
+  // Migrar preguntas personalizadas por área (si las hay) y asignar todo el ISO a cada área
+  const areasBase=new Set([...(S.areas||[]),...Object.keys(S.preguntas||{})]);
+  areasBase.forEach(area=>{
+    asig[area]=[...isoIds];
+    (S.preguntas&&S.preguntas[area]||[]).forEach(p=>{
+      const texto=typeof p==='string'?p:(p&&p.pregunta);
+      if(!texto)return;
+      let q=maestro.find(m=>m.pregunta.trim().toLowerCase()===String(texto).trim().toLowerCase());
+      if(!q){q={id:'cust_'+Math.random().toString(36).slice(2,8),capitulo:'Preguntas personalizadas del área',requisito:'',pregunta:String(texto).trim(),origen:'custom'};maestro.push(q);}
+      if(!asig[area].includes(q.id))asig[area].push(q.id);
+    });
+  });
+  S.bancoMaestro=maestro;
+  S.bancoAsig=asig;
+  _guardarBanco();
+  _bancoSyncSupa(); // subir la semilla inicial a la nube
 }
 
 async function cargarIndicadores(){
@@ -5093,6 +5234,7 @@ async function arrancarApp(){
       withTimeout(cargarProveedoresSupabase(),'proveedores')
     ];
     await Promise.allSettled(tareas);
+    await withTimeout(cargarBanco(),'banco de preguntas').catch(e=>console.warn('banco',e));
     determinarUsuarioActual();
   }catch(e){
     console.error('Error al iniciar app',e);
@@ -5157,8 +5299,8 @@ window.goto=function(sec,navEl){
   if(sec==='ind-historial') withTimeout(loadIndicadores(),'mediciones').then(()=>{renderHistorial();fillFiltroInd();});
   if(sec==='ind-graficas') withTimeout(loadIndicadores(),'mediciones').then(()=>renderGraficas());
   if(sec==='informes') Promise.allSettled([withTimeout(loadAuditorias(),'auditorias'),withTimeout(loadIndicadores(),'mediciones')]).then(renderInformes);
-  if(sec==='admin'){fillSelects();renderAreasAdmin();renderIndCatalogo();renderUsuarios();renderConfigInstitucional();renderAdminIA();loadAsignaciones().then(renderAdminAsignaciones);}
-  if(sec==='aud-nueva'||sec==='ind-captura'){fillSelects();aplicarConfigAuditoria();aplicarPermisos();loadAsignaciones().then(renderIndLista);}
+  if(sec==='admin'){fillSelects();renderAreasAdmin();bancoAdminAutoSel();renderIndCatalogo();renderUsuarios();renderConfigInstitucional();renderAdminIA();loadAsignaciones().then(renderAdminAsignaciones);}
+  if(sec==='aud-nueva'||sec==='ind-captura'){fillSelects();aplicarConfigAuditoria();aplicarPermisos();loadAsignaciones().then(renderIndLista);if(sec==='aud-nueva')audNumSugerir();}
   if(sec==='documentos'){fillDocAreaSelect();docDiagnosticarSync();withTimeout(loadDocumentos(),'documentos').then(renderDocs);}
   if(sec==='memorandum'){renderMemorandum();withTimeout(loadMemorandums(),'memorandums').then(renderMemorandum);}
   if(sec==='sol-cambios'){fillSelectSC();withTimeout(loadSolicitudesCambio(),'sol-cambios').then(renderSolicitudesCambio);sc_nueva();}
@@ -5234,30 +5376,91 @@ function fillSelects(){
 }
 
 function preguntasAuditoria(area){
-  const base=AUDITORIA_ISO_BANCO.map(p=>({...p,origen:'institucional'}));
-  const existentes=new Set(base.map(p=>String(p.pregunta).trim().toLowerCase()));
-  const extras=(S.preguntas[area]||[])
-    .map(p=>typeof p==='string'?{capitulo:'Preguntas personalizadas del area',requisito:'',pregunta:p,origen:'area'}:{...p,origen:'area'})
-    .filter(p=>p.pregunta&&!existentes.has(String(p.pregunta).trim().toLowerCase()));
-  return base.concat(extras);
+  const maestro=S.bancoMaestro||[];
+  const asig=(S.bancoAsig&&Array.isArray(S.bancoAsig[area]))?S.bancoAsig[area]:null;
+  // Con asignación → solo las marcadas para esa área. Sin asignación (área nueva
+  // aún sin curar) → todas las del banco ISO por defecto, para no dejar la auditoría vacía.
+  const lista=asig?maestro.filter(q=>asig.includes(q.id)):maestro.filter(q=>q.origen!=='custom');
+  return lista.map(p=>({capitulo:p.capitulo,requisito:p.requisito,pregunta:p.pregunta,origen:p.origen==='custom'?'area':'institucional'}));
 }
+/* Banco activo del asistente: en edición usa las preguntas guardadas de la
+   auditoría (para no perder nada si el banco del área cambió); si no, el banco
+   normal por área. */
+function _audBank(area){return _editItems||preguntasAuditoria(area);}
 
 /* ═══════════════════════════════════════
    AUDITORÍAS — PASOS
 ═══════════════════════════════════════ */
 window.showPaso=function(n){[1,2,3,4].forEach(i=>{const el=document.getElementById('paso'+i);if(el)el.style.display=i===n?'block':'none';});};
+
+/* ── Número de auditoría: nomenclatura AI-01/2026 (tipo-consecutivo/año) ──
+   Es la CLAVE DE CICLO: el informe general agrupa las auditorías que comparten
+   este número. aud-numero (hidden) guarda el valor armado que lee guardarAuditoria. */
+window.audNumCompose=function(){
+  const t=(document.getElementById('aud-num-tipo')?.value)||'AI';
+  let c=(document.getElementById('aud-num-cons')?.value||'').replace(/\D/g,'');
+  if(c)c=c.padStart(2,'0');
+  let y=(document.getElementById('aud-num-anio')?.value||'').replace(/\D/g,'');
+  if(y.length===2)y='20'+y;
+  const num=t+'-'+(c||'01')+'/'+(y||String(new Date().getFullYear()));
+  const h=document.getElementById('aud-numero'); if(h)h.value=num;
+  const pv=document.getElementById('aud-num-preview'); if(pv)pv.textContent=num;
+  return num;
+};
+function audNumPartes(str){
+  const m=String(str||'').match(/(AI|AE)?\s*-?\s*(\d+)?\s*\/?\s*(\d{2,4})?/i);
+  let tipo=(m&&m[1])?m[1].toUpperCase():'AI';
+  let cons=(m&&m[2])?m[2].replace(/\D/g,''):'';
+  let anio=(m&&m[3])?m[3]:'';
+  if(anio.length===2)anio='20'+anio;
+  return {tipo:(tipo==='AE'?'AE':'AI'),cons,anio};
+}
+function audNumClave(str){const p=audNumPartes(str);return (parseInt(p.anio||0,10)*1000)+parseInt(p.cons||0,10);}
+window.audNumSet=function(str){
+  const p=audNumPartes(str);
+  const t=document.getElementById('aud-num-tipo'); if(t)t.value=p.tipo;
+  const c=document.getElementById('aud-num-cons'); if(c)c.value=p.cons;
+  const y=document.getElementById('aud-num-anio'); if(y)y.value=p.anio||String(new Date().getFullYear());
+  audNumCompose();
+};
+/* Sugiere el siguiente consecutivo del mismo tipo+año (solo si está vacío). */
+window.audNumSugerir=function(){
+  const c=document.getElementById('aud-num-cons'); if(!c||c.value.trim())return;
+  const anio=String(new Date().getFullYear());
+  const y=document.getElementById('aud-num-anio'); if(y&&!y.value.trim())y.value=anio;
+  const tipo=(document.getElementById('aud-num-tipo')?.value)||'AI';
+  let max=0;
+  (S.auditorias||[]).forEach(a=>{const p=audNumPartes(a.meta&&a.meta.numero);if(p.tipo===tipo&&(p.anio||anio)===anio){const n=parseInt(p.cons||0,10);if(n>max)max=n;}});
+  c.value=String(max+1).padStart(2,'0');
+  audNumCompose();
+};
+/* En edición, "Regresar" del Paso 3 salta el Paso 2 (banco) y va a datos generales. */
+window.audPasoAtras3=function(){showPaso(_editItems?1:2);};
 window.irPaso2=function(){
   const nom=v('aud-nombre'),fec=v('aud-fecha'),area=v('aud-area'),msg=document.getElementById('msg-p1');
   if(!nom||!fec||!area){msg.innerHTML='<div class="alert alert-err">Completa todos los campos.</div>';return;}
   msg.innerHTML='';
+  if(_editItems){
+    // EDICIÓN: NO se re-arma el banco. Se conservan las preguntas, respuestas y
+    // observaciones ya capturadas en el Paso 3; solo refrescamos el encabezado
+    // (por si cambiaron datos generales) y volvemos al Paso 3 intacto.
+    const chip=document.getElementById('area-chip');
+    if(chip)chip.textContent='✏️ Editando auditoría guardada — '+area+' | Auditor: '+nom+' | Fecha: '+fec;
+    showPaso(3);
+    return;
+  }
+  _editId=null;_editIdx=null;_editItems=null; // Paso 2 = selección normal del banco (no edición)
   const pregs=preguntasAuditoria(area);
   if(!pregs.length){msg.innerHTML='<div class="alert alert-err">No hay preguntas disponibles.</div>';return;}
+  // Las preguntas que aplican al área (asignadas en Administrar → Banco de preguntas)
+  // vienen YA marcadas; el auditor solo desmarca lo que no aplique en esta auditoría.
   _sel={};
   let cap='';
   document.getElementById('banco-lista').innerHTML=pregs.map((p,i)=>{
+    _sel[i]=true;
     const header=p.capitulo!==cap?'<div class="aud-section-title no-print" style="margin:12px 0 6px;text-align:left;padding-left:10px">'+esc(p.capitulo||'Preguntas')+'</div>':'';
     cap=p.capitulo;
-    return header+'<div class="preg-item" id="pi-'+i+'" onclick="togglePreg('+i+')"><div class="preg-check"></div><span style="font-size:11px;color:var(--blue);min-width:48px;flex-shrink:0;font-weight:700">'+esc(p.requisito||'')+'</span><span class="preg-text">'+esc(p.pregunta||'')+'</span></div>';
+    return header+'<div class="preg-item selected" id="pi-'+i+'" onclick="togglePreg('+i+')"><div class="preg-check"></div><span style="font-size:11px;color:var(--blue);min-width:48px;flex-shrink:0;font-weight:700">'+esc(p.requisito||'')+'</span><span class="preg-text">'+esc(p.pregunta||'')+'</span></div>';
   }).join('');
   updateSelCount();showPaso(2);
 };
@@ -5270,12 +5473,12 @@ window.irPaso3=function(){
   if(!sel.length){msg.innerHTML='<div class="alert alert-err">Selecciona al menos una pregunta.</div>';return;}
   msg.innerHTML='';
   const area=v('aud-area');
-  document.getElementById('area-chip').textContent=area+' | Auditor: '+v('aud-nombre')+' | Fecha: '+v('aud-fecha');
+  document.getElementById('area-chip').textContent=(_editItems?'✏️ Editando auditoría guardada — ':'')+area+' | Auditor: '+v('aud-nombre')+' | Fecha: '+v('aud-fecha');
   _idxs=sel;_resps={};
-  const pregs=preguntasAuditoria(area);
+  const pregs=_audBank(area);
   document.getElementById('lista-verif').innerHTML=sel.map((idx,j)=>{
     const p=pregs[idx]||{};
-    return '<div class="verif-item"><div class="verif-hdr"><span class="verif-num">'+(j+1)+'.</span><span class="verif-q"><strong>'+esc(p.requisito||'')+'</strong> '+esc(p.pregunta||'')+'<br><small style="color:var(--muted)">'+esc(p.capitulo||'')+'</small></span></div><div class="verif-body"><div class="row2"><div><label class="lbl">Requisito ISO / SGC</label><input class="obs-input" type="text" placeholder="Ej. 7.5.3" id="vreq-'+j+'" value="'+esc(p.requisito||'')+'"></div><div><label class="lbl">Clasificacion del hallazgo</label><select id="vhallazgo-'+j+'"><option value="">Sin clasificar</option><option value="fortaleza">Fortaleza</option><option value="nc_mayor">No conformidad mayor</option><option value="nc_menor">No conformidad menor</option><option value="oportunidad">Area de oportunidad / observacion</option></select></div></div><div class="check-group"><span class="check-opt" id="vc-'+j+'" onclick="setResp('+j+',&quot;cumple&quot;)">Cumple</span><span class="check-opt" id="vn-'+j+'" onclick="setResp('+j+',&quot;no cumple&quot;)">No cumple</span><span class="check-opt" id="va-'+j+'" onclick="setResp('+j+',&quot;n/a&quot;)">N/A</span></div><input class="obs-input" type="text" placeholder="Observacion (opcional)" id="vobs-'+j+'"></div></div>';
+    return '<div class="verif-item"><div class="verif-hdr"><span class="verif-num">'+(j+1)+'.</span><span class="verif-q"><strong>'+esc(p.requisito||'')+'</strong> '+esc(p.pregunta||'')+'<br><small style="color:var(--muted)">'+esc(p.capitulo||'')+'</small></span></div><div class="verif-body"><div class="row2"><div><label class="lbl">Requisito ISO / SGC</label><input class="obs-input" type="text" placeholder="Ej. 7.5.3" id="vreq-'+j+'" value="'+esc(p.requisito||'')+'"></div><div><label class="lbl">Clasificacion del hallazgo</label><select id="vhallazgo-'+j+'"><option value="">Sin clasificar</option><option value="fortaleza">Fortaleza</option><option value="nc_mayor">No conformidad mayor</option><option value="nc_menor">No conformidad menor</option><option value="observacion">Observacion</option><option value="oportunidad">Area de oportunidad</option></select></div></div><div class="check-group"><span class="check-opt" id="vc-'+j+'" onclick="setResp('+j+',&quot;cumple&quot;)">Cumple</span><span class="check-opt" id="vn-'+j+'" onclick="setResp('+j+',&quot;no cumple&quot;)">No cumple</span><span class="check-opt" id="va-'+j+'" onclick="setResp('+j+',&quot;n/a&quot;)">N/A</span></div><input class="obs-input" type="text" placeholder="Observacion (opcional)" id="vobs-'+j+'"></div></div>';
   }).join('');
   showPaso(3);
 };
@@ -5290,7 +5493,7 @@ window.setResp=function(j,val){
 
 window.irPaso4=function(){
   const area=v('aud-area');
-  const pregs=preguntasAuditoria(area);
+  const pregs=_audBank(area);
   const cont=document.getElementById('lista-hallazgos-aud');
   const sinRespuesta=_idxs.map((idx,j)=>_resps[j]?null:j+1).filter(Boolean);
   if(sinRespuesta.length&&!confirm('Hay preguntas sin marcar Cumple, No cumple o N/A: '+sinRespuesta.join(', ')+'. Deseas continuar al analisis de hallazgos?'))return;
@@ -5301,8 +5504,11 @@ window.irPaso4=function(){
     const resp=_resps[j]||'sin respuesta';
     const obs=document.getElementById('vobs-'+j)?.value||'';
     const suggested=resp==='cumple'?'fortaleza':resp==='no cumple'?'oportunidad':'';
-    const desc=obs||pregunta;
-    return '<div class="verif-item"><div class="verif-hdr"><span class="verif-num">'+(j+1)+'.</span><span class="verif-q"><strong>'+esc(requisito)+'</strong> '+esc(pregunta)+'<br><small style="color:var(--muted)">Cumplimiento: '+esc(resp)+'</small></span></div><div class="verif-body"><label class="lbl">Descripci&oacute;n del hallazgo / evidencia objetiva</label><textarea id="hdesc-'+j+'">'+esc(desc)+'</textarea><label class="lbl">Clasificaci&oacute;n del hallazgo</label><select id="hclass-'+j+'"><option value="">Sin clasificar</option><option value="fortaleza" '+(suggested==='fortaleza'?'selected':'')+'>Fortaleza</option><option value="nc_mayor">No conformidad mayor</option><option value="nc_menor">No conformidad menor</option><option value="oportunidad" '+(suggested==='oportunidad'?'selected':'')+'>Observaci&oacute;n / &Aacute;rea de oportunidad</option></select></div></div>';
+    const it=_editItems?(_editItems[idx]||{}):null; // en edición: conservar evidencia/clasificación guardadas
+    const desc=(it&&it.evidencia)||obs||pregunta;
+    const hsel=(it&&it.hallazgo)||suggested;
+    const opt=(vv,lbl)=>'<option value="'+vv+'" '+(hsel===vv?'selected':'')+'>'+lbl+'</option>';
+    return '<div class="verif-item"><div class="verif-hdr"><span class="verif-num">'+(j+1)+'.</span><span class="verif-q"><strong>'+esc(requisito)+'</strong> '+esc(pregunta)+'<br><small style="color:var(--muted)">Cumplimiento: '+esc(resp)+'</small></span></div><div class="verif-body"><label class="lbl">Descripci&oacute;n del hallazgo / evidencia objetiva</label><textarea id="hdesc-'+j+'">'+esc(desc)+'</textarea><label class="lbl">Clasificaci&oacute;n del hallazgo</label><select id="hclass-'+j+'"><option value="">Sin clasificar</option>'+opt('fortaleza','Fortaleza')+opt('nc_mayor','No conformidad mayor')+opt('nc_menor','No conformidad menor')+opt('observacion','Observaci&oacute;n')+opt('oportunidad','&Aacute;rea de oportunidad')+'</select></div></div>';
   }).join('');
   cont.innerHTML=rows||'<p class="empty">No hay preguntas seleccionadas.</p>';
   const juicio=document.getElementById('aud-juicio');
@@ -5313,6 +5519,49 @@ window.irPaso4=function(){
     resumen.value='Se aplicaron '+total+' criterios de auditoria. Cumplimientos: '+cum+'; No cumplimientos: '+nc+'; No aplica: '+na+'.';
   }
   showPaso(4);
+};
+
+/* Editar una auditoría ya guardada: reabre el asistente pre-llenado con lo
+   guardado y, al guardar, ACTUALIZA el mismo registro (no crea un duplicado). */
+window.editarAuditoria=function(idx){
+  const a=S.auditorias[idx];
+  if(!a){alert('No se encontró la auditoría.');return;}
+  if(!a.items||!a.items.length){alert('Esta auditoría no tiene preguntas guardadas, así que no se puede editar paso a paso. Puedes eliminarla y crearla de nuevo.');return;}
+  _editId=a.id||null;_editIdx=idx;
+  _editItems=a.items.map(it=>({
+    capitulo:it.capitulo||'',requisito:it.requisito||'',pregunta:it.pregunta||'',
+    respuesta:it.respuesta||'sin respuesta',obs:it.obs||'',hallazgo:it.hallazgo||'',evidencia:it.evidencia||''
+  }));
+  const meta=a.meta||{};
+  // Entrar a Nueva auditoría primero (reinicia selects/campos), luego pre-llenar.
+  goto('aud-nueva',null);
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
+  set('aud-nombre',a.auditor||meta.auditor_lider);
+  set('aud-fecha',a.fecha);
+  audNumSet(meta.numero); // reconstruir tipo/consecutivo/año del número de ciclo
+  set('aud-responsable-area',meta.responsable_area);
+  set('aud-equipo',meta.equipo);
+  set('aud-participantes',meta.participantes);
+  set('aud-objetivo',meta.objetivo);
+  set('aud-alcance',meta.alcance);
+  set('aud-obs',a.obs);
+  set('aud-juicio',meta.juicio);
+  set('aud-resumen-general',meta.resumen_general);
+  const selArea=document.getElementById('aud-area');
+  if(selArea&&a.area){
+    let found=Array.from(selArea.options).some(o=>o.value===a.area);
+    if(!found){const o=document.createElement('option');o.value=a.area;o.textContent=a.area;selArea.appendChild(o);}
+    selArea.value=a.area;
+  }
+  // Renderizar Paso 3 desde las preguntas guardadas y pre-llenar sus campos.
+  _sel={};_editItems.forEach((_,i)=>_sel[i]=true);
+  irPaso3();
+  _editItems.forEach((it,j)=>{
+    if(it.respuesta&&it.respuesta!=='sin respuesta')setResp(j,it.respuesta);
+    const vr=document.getElementById('vreq-'+j);if(vr)vr.value=it.requisito||'';
+    const vh=document.getElementById('vhallazgo-'+j);if(vh&&it.hallazgo)vh.value=it.hallazgo;
+    const vo=document.getElementById('vobs-'+j);if(vo)vo.value=it.obs||'';
+  });
 };
 
 window.importarAuditoriaCalidad2026=async function(){
@@ -5385,7 +5634,8 @@ window.importarAuditoriaCalidad2026=async function(){
 window.guardarAuditoria = async function(){
   const nom=v('aud-nombre'),fec=v('aud-fecha'),area=v('aud-area'),obs=v('aud-obs');
   const msg=document.getElementById('msg-p4')||document.getElementById('aud-msg');
-  const pregs=preguntasAuditoria(area);
+  const esEdit=!!_editId;
+  const pregs=_audBank(area);
   const meta={
     numero:v('aud-numero')||'01',
     auditor_lider:S.config.auditor_lider||nom,
@@ -5408,7 +5658,7 @@ window.guardarAuditoria = async function(){
   }));
   meta.items_snapshot=items;
 
-  msg.innerHTML='<div class="alert alert-info">Guardando auditoria en Supabase...</div>';
+  msg.innerHTML='<div class="alert alert-info">'+(esEdit?'Actualizando auditoria en Supabase...':'Guardando auditoria en Supabase...')+'</div>';
   setSyncStatus('sync','Sincronizando...');
   try{
     const session = await sb.auth.getSession();
@@ -5416,17 +5666,32 @@ window.guardarAuditoria = async function(){
 
     const {data:areaRow}=await sb.from('areas').select('id').eq('nombre',area).maybeSingle();
     const {data:usuarioRow}=await sb.from('usuarios').select('id').eq('correo',userEmail).maybeSingle();
-    const folio='AUD-'+Date.now();
 
-    const {data:aud,error:audErr}=await sb.from('auditorias').insert([{
-      folio,fecha_ejecucion:fec,
-      area_id:areaRow?.id||null,
-      auditor_lider_id:usuarioRow?.id||null,
-      observaciones_generales:packAuditMeta(obs,meta),
-      conclusion:'',estatus:'completada'
-    }]).select().single();
-
-    if(audErr) throw audErr;
+    let audId,folio;
+    if(esEdit){
+      // EDICIÓN: actualizar el registro existente y reemplazar sus resultados.
+      audId=_editId;
+      const prevEdit=S.auditorias.find(x=>x.id===_editId);
+      folio=(prevEdit&&prevEdit.folio)||('AUD-'+Date.now());
+      const {error:updErr}=await sb.from('auditorias').update({
+        fecha_ejecucion:fec,
+        area_id:areaRow?.id||null,
+        observaciones_generales:packAuditMeta(obs,meta)
+      }).eq('id',_editId);
+      if(updErr) throw updErr;
+      await sb.from('auditoria_resultados').delete().eq('auditoria_id',_editId);
+    }else{
+      folio='AUD-'+Date.now();
+      const {data:aud,error:audErr}=await sb.from('auditorias').insert([{
+        folio,fecha_ejecucion:fec,
+        area_id:areaRow?.id||null,
+        auditor_lider_id:usuarioRow?.id||null,
+        observaciones_generales:packAuditMeta(obs,meta),
+        conclusion:'',estatus:'completada'
+      }]).select().single();
+      if(audErr) throw audErr;
+      audId=aud.id;
+    }
 
     for(const item of items){
       const resMap={'cumple':'cumple','no cumple':'no_cumple','n/a':'no_aplica','sin respuesta':'observacion'};
@@ -5438,26 +5703,35 @@ window.guardarAuditoria = async function(){
       }
       if(pRow){
         const {error:resErr}=await sb.from('auditoria_resultados').insert([{
-          auditoria_id:aud.id,pregunta_auditoria_id:pRow.id,
+          auditoria_id:audId,pregunta_auditoria_id:pRow.id,
           resultado:resMap[item.respuesta]||'observacion',
           observacion:packAuditItemObs(item.obs,item.requisito,item.hallazgo,item.evidencia,item.capitulo),evidencia_textual:item.evidencia||''
         }]);
         if(resErr) console.warn('No se guardo resultado individual; queda respaldo en la auditoria',resErr);
       }
     }
-    const nueva={id:aud.id,folio,auditor:S.config.auditor_lider||nom,fecha:fec,area,obs,meta,items,timestamp:Date.now()};
-    S.auditorias.unshift(nueva);
-    window._ultimaAuditoriaId=aud.id;
-    msg.innerHTML=`<div class="alert alert-ok">OK Auditoria guardada. <button class="btn btn-sm btn-primary" onclick="abrirInformeAuditoriaActual()">Ver informe del &aacute;rea</button> <button class="btn btn-sm" onclick="goto('informes',null);switchInfTab('aud')">Ver informe general</button></div>`;
+
+    if(esEdit){
+      const i=S.auditorias.findIndex(x=>x.id===audId);
+      const prev=i>=0?S.auditorias[i]:{};
+      const actualizada={id:audId,folio,auditor:prev.auditor||S.config.auditor_lider||nom,fecha:fec,area,obs,meta,items,timestamp:prev.timestamp||Date.now()};
+      if(i>=0)S.auditorias[i]=actualizada; else S.auditorias.unshift(actualizada);
+    }else{
+      S.auditorias.unshift({id:audId,folio,auditor:S.config.auditor_lider||nom,fecha:fec,area,obs,meta,items,timestamp:Date.now()});
+    }
+    window._ultimaAuditoriaId=audId;
+    msg.innerHTML=`<div class="alert alert-ok">OK Auditoria ${esEdit?'actualizada':'guardada'}. <button class="btn btn-sm btn-primary" onclick="abrirInformeAuditoriaActual()">Ver informe del &aacute;rea</button> <button class="btn btn-sm" onclick="goto('informes',null);switchInfTab('aud')">Ver informe general</button></div>`;
     document.getElementById('aud-nombre').value='';document.getElementById('aud-obs').value='';
     document.getElementById('aud-area').value='';document.getElementById('aud-fecha').value=hoy();
-    ['aud-numero','aud-equipo','aud-participantes','aud-responsable-area'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['aud-equipo','aud-participantes','aud-responsable-area'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const cc=document.getElementById('aud-num-cons');if(cc)cc.value='';audNumSugerir(); // dejar listo el siguiente consecutivo
+    _editId=null;_editIdx=null;_editItems=null;
     _sel={};_resps={};_idxs=[];
     setSyncStatus('ok','Sincronizado');
     setTimeout(()=>{abrirInformeAuditoriaActual();showPaso(1);},900);
   }catch(e){
     setSyncStatus('err','Error de sync');
-    msg.innerHTML='<div class="alert alert-err">No se pudo guardar en Supabase. Revisa tu conexion o permisos.</div>';
+    msg.innerHTML='<div class="alert alert-err">No se pudo '+(esEdit?'actualizar':'guardar')+' en Supabase. Revisa tu conexion o permisos.</div>';
     console.error(e);
   }
 };
@@ -5476,12 +5750,13 @@ window.renderRegistro=function(){
     const bc=pct>=80?'badge-ok':pct>=50?'badge-mid':'badge-nok';
     return`<div class="reg-item" data-aud-id="${esc(a.id||'')}">
       <div class="reg-top"><span class="reg-area">${esc(a.area)}</span><span class="badge ${bc}">${pct}%</span></div>
-      <div class="reg-meta">${a.folio?'Folio: '+esc(a.folio)+' &nbsp;·&nbsp; ':''} Auditor: ${esc(a.auditor)} &nbsp;·&nbsp; ${esc(a.fecha)} &nbsp;·&nbsp; ${tot} criterios</div>
+      <div class="reg-meta">No. auditor&iacute;a: <strong>${esc((a.meta&&a.meta.numero)||a.folio||'—')}</strong> &nbsp;·&nbsp; Auditor: ${esc(a.auditor)} &nbsp;·&nbsp; ${esc(a.fecha)} &nbsp;·&nbsp; ${tot} criterios</div>
       ${a.obs?`<div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:3px">${esc(a.obs)}</div>`:''}
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         <button class="btn btn-ghost btn-sm" style="color:var(--blue)" onclick="toggleDet(this)">Ver detalle ▾</button>
                 <button class="btn btn-sm" style="color:var(--blue);border-color:var(--blue)" onclick="abrirInformeAuditoria(${idx})">Informe &aacute;rea</button>
         <button class="btn btn-sm" onclick="goto('informes',null);switchInfTab('aud')">Informe general</button>
+        <button class="btn btn-sm" style="color:var(--amber);border-color:var(--amber-bd)" onclick="editarAuditoria(${idx})">✏️ Editar</button>
         <button class="btn btn-sm btn-danger" onclick="eliminarAuditoria('${a.id||''}',${idx})">🗑 Eliminar</button>
       </div>
       <div class="reg-detail">
@@ -6407,12 +6682,13 @@ function listaHtml(t){
   const arr=String(t||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);
   return arr.length?arr.map(x=>esc(x)).join('<br>'):'-';
 }
-function hallazgoLabel(v){return v==='fortaleza'?'Fortaleza':v==='nc_mayor'?'No conformidad mayor':v==='nc_menor'?'No conformidad menor':v==='oportunidad'?'Observacion/Area de oportunidad':'';}
+function hallazgoLabel(v){return v==='fortaleza'?'Fortaleza':v==='nc_mayor'?'No conformidad mayor':v==='nc_menor'?'No conformidad menor':v==='observacion'?'Observacion':v==='oportunidad'?'Area de oportunidad':'';}
 function hallazgoCounts(items){
   return {
     fortaleza:items.filter(i=>i.hallazgo==='fortaleza'||(!i.hallazgo&&i.respuesta==='cumple')).length,
     mayor:items.filter(i=>i.hallazgo==='nc_mayor').length,
     menor:items.filter(i=>i.hallazgo==='nc_menor').length,
+    observacion:items.filter(i=>i.hallazgo==='observacion').length,
     oportunidad:items.filter(i=>i.hallazgo==='oportunidad'||(!i.hallazgo&&i.respuesta==='no cumple')).length
   };
 }
@@ -6437,13 +6713,13 @@ function auditAreaReportHTML(a,opts={}){
     '<div class="aud-grid"><div class="aud-box"><div class="aud-box-h">Auditor lider</div><div class="aud-box-b">'+esc(auditorInst)+'</div></div><div class="aud-box"><div class="aud-box-h">Auditores</div><div class="aud-box-b">'+listaHtml(meta.equipo||auditorInst)+'</div></div></div>'+
     '<div class="aud-grid"><div class="aud-box"><div class="aud-box-h">Procesos / areas auditadas</div><div class="aud-box-b">'+esc(a.area||'-')+'</div></div><div class="aud-box"><div class="aud-box-h">Participantes en la auditoria</div><div class="aud-box-b">'+listaHtml(meta.participantes)+'</div></div></div>'+
     '<p class="aud-p"><strong>Objetivo de la auditoria:</strong> '+nl2br(objetivo)+'</p><p class="aud-p"><strong>Alcance de la auditoria:</strong> '+nl2br(alcance)+'</p>'+
-    '<div class="aud-sign"><div><div class="aud-sign-line">Nombre y Firma<br>Auditor lider<br>'+esc(auditorInst)+'</div></div><div><div class="aud-sign-line">Nombre y Firma<br>Representante del SGC<br>'+esc(auditorInst)+'</div></div></div>'+
+    '<div class="aud-sign"><div><div class="aud-sign-line">Nombre y Firma<br>Auditor<br>'+esc(auditorInst)+'</div></div><div><div class="aud-sign-line">Nombre y Firma<br>Representante del SGC<br>'+esc(auditorInst)+'</div></div></div>'+
     '</div><div class="aud-section-title">Preguntas para Auditoria Interna</div><div class="aud-body"><table class="aud-table"><thead><tr><th style="width:12%">Requisito</th><th>Pregunta posible</th><th style="width:14%">Cumplimiento Si / No</th><th style="width:28%">Observaciones</th></tr></thead><tbody>'+
     (items.length?items.map(i=>'<tr><td class="center">'+esc(i.requisito||'')+'</td><td>'+esc(i.pregunta||'')+'</td><td class="center">'+esc(i.respuesta||'')+'</td><td>'+nl2br(i.obs||'')+'</td></tr>').join(''):'<tr><td colspan="4" class="center">Sin criterios registrados</td></tr>')+
-    '</tbody></table></div><div class="aud-section-title">Sistema de Gestion de Calidad - Hallazgos de la Auditoria</div><div class="aud-body"><table class="aud-table"><thead><tr><th style="width:12%">Requisito</th><th>Descripcion del Hallazgo (Evidencia objetiva)</th><th style="width:13%">Fortalezas</th><th style="width:13%">No Conformidad Mayor</th><th style="width:13%">No Conformidad Menor</th><th style="width:18%">Observacion/Area de oportunidad</th></tr></thead><tbody>'+
-    (hallazgos.length?hallazgos.map(i=>'<tr><td class="center">'+esc(i.requisito||'')+'</td><td>'+nl2br(i.evidencia||i.obs||i.pregunta||'')+'</td><td class="center">'+(i.hallazgo==='fortaleza'||(!i.hallazgo&&i.respuesta==='cumple')?'X':'')+'</td><td class="center">'+(i.hallazgo==='nc_mayor'?'X':'')+'</td><td class="center">'+(i.hallazgo==='nc_menor'?'X':'')+'</td><td class="center">'+(i.hallazgo==='oportunidad'||(!i.hallazgo&&i.respuesta==='no cumple')?'X':'')+'</td></tr>').join(''):'<tr><td colspan="6" class="center">Sin hallazgos registrados</td></tr>')+
+    '</tbody></table></div><div class="aud-section-title">Sistema de Gestion de Calidad - Hallazgos de la Auditoria</div><div class="aud-body"><table class="aud-table"><thead><tr><th style="width:11%">Requisito</th><th>Descripcion del Hallazgo (Evidencia objetiva)</th><th style="width:11%">Fortalezas</th><th style="width:12%">No Conformidad Mayor</th><th style="width:12%">No Conformidad Menor</th><th style="width:12%">Observacion</th><th style="width:13%">Area de oportunidad</th></tr></thead><tbody>'+
+    (hallazgos.length?hallazgos.map(i=>'<tr><td class="center">'+esc(i.requisito||'')+'</td><td>'+nl2br(i.evidencia||i.obs||i.pregunta||'')+'</td><td class="center">'+(i.hallazgo==='fortaleza'||(!i.hallazgo&&i.respuesta==='cumple')?'X':'')+'</td><td class="center">'+(i.hallazgo==='nc_mayor'?'X':'')+'</td><td class="center">'+(i.hallazgo==='nc_menor'?'X':'')+'</td><td class="center">'+(i.hallazgo==='observacion'?'X':'')+'</td><td class="center">'+(i.hallazgo==='oportunidad'||(!i.hallazgo&&i.respuesta==='no cumple')?'X':'')+'</td></tr>').join(''):'<tr><td colspan="7" class="center">Sin hallazgos registrados</td></tr>')+
     '</tbody></table><div class="aud-sign"><div><div class="aud-sign-line">Nombre del Auditor Lider<br>'+esc(auditorInst)+'</div></div><div><div class="aud-sign-line">Firma</div></div></div></div>'+
-    '<div class="aud-section-title">Resumen de Auditoria</div><div class="aud-body"><table class="aud-table"><tbody><tr><td>Numero total de Fortalezas:</td><td class="center">'+counts.fortaleza+'</td></tr><tr><td>Numero total de No Conformidades Mayores:</td><td class="center">'+counts.mayor+'</td></tr><tr><td>Numero total de No Conformidades Menores:</td><td class="center">'+counts.menor+'</td></tr><tr><td>Numero total de Observaciones/Areas de oportunidad:</td><td class="center">'+counts.oportunidad+'</td></tr><tr><th colspan="2">Juicio acerca de la capacidad del SGC para alcanzar los objetivos</th></tr><tr><td colspan="2">'+nl2br(meta.juicio||a.obs||'El area auditada presenta evidencia de cumplimiento y oportunidades de mejora conforme a los criterios revisados del SGC.')+'</td></tr><tr><th colspan="2">Resumen General de la Auditoria</th></tr><tr><td colspan="2">'+nl2br(meta.resumen_general||('Cumplimientos: '+items.filter(i=>i.respuesta==='cumple').length+'; No cumplimientos: '+items.filter(i=>i.respuesta==='no cumple').length+'; No aplica: '+items.filter(i=>i.respuesta==='n/a').length+'.'))+'</td></tr></tbody></table><div class="aud-sign"><div><div class="aud-sign-line">Nombre del Auditor Lider<br>'+esc(auditorInst)+'</div></div><div><div class="aud-sign-line">Nombre del Responsable del Area Auditada<br>'+esc(meta.responsable_area||'')+'</div></div></div></div></div>';
+    '<div class="aud-section-title">Resumen de Auditoria</div><div class="aud-body"><table class="aud-table"><tbody><tr><td>Numero total de Fortalezas:</td><td class="center">'+counts.fortaleza+'</td></tr><tr><td>Numero total de No Conformidades Mayores:</td><td class="center">'+counts.mayor+'</td></tr><tr><td>Numero total de No Conformidades Menores:</td><td class="center">'+counts.menor+'</td></tr><tr><td>Numero total de Observaciones:</td><td class="center">'+counts.observacion+'</td></tr><tr><td>Numero total de Areas de oportunidad:</td><td class="center">'+counts.oportunidad+'</td></tr><tr><th colspan="2">Juicio acerca de la capacidad del SGC para alcanzar los objetivos</th></tr><tr><td colspan="2">'+nl2br(meta.juicio||a.obs||'El area auditada presenta evidencia de cumplimiento y oportunidades de mejora conforme a los criterios revisados del SGC.')+'</td></tr><tr><th colspan="2">Resumen General de la Auditoria</th></tr><tr><td colspan="2">'+nl2br(meta.resumen_general||('Cumplimientos: '+items.filter(i=>i.respuesta==='cumple').length+'; No cumplimientos: '+items.filter(i=>i.respuesta==='no cumple').length+'; No aplica: '+items.filter(i=>i.respuesta==='n/a').length+'.'))+'</td></tr></tbody></table><div class="aud-sign"><div><div class="aud-sign-line">Nombre del Auditor Lider<br>'+esc(auditorInst)+'</div></div><div><div class="aud-sign-line">Nombre del Responsable del Area Auditada<br>'+esc(meta.responsable_area||'')+'</div></div></div></div></div>';
 }
 function auditGeneralReportHTML(auds){
   const allItems=auds.flatMap(a=>(a.items||[]).map(i=>({...i,area:a.area,fecha:a.fecha,auditor:a.auditor})));
@@ -6523,8 +6799,8 @@ function auditReportModel(a,opts={}){
   return {
     meta,auditorInst,items,general,
     counts:hallazgoCounts(items),
-    codigo:opts.codigo||'R-92/02',
-    rev:opts.rev||'02',
+    codigo:opts.codigo||(S.config&&S.config.aud_cod_area)||CONFIG_DEFAULT.aud_cod_area,
+    rev:opts.rev||(S.config&&S.config.aud_rev_area)||CONFIG_DEFAULT.aud_rev_area,
     titulo:opts.titulo||'Informe de Auditoria',
     objetivo:meta.objetivo||'Verificar el cumplimiento de la organizacion, con respecto a la normativa ISO 9001:2015 y sus criterios especificados en el SGC de la ENUFC.',
     alcance:meta.alcance||(general?'La auditoria interna comprende la evaluacion de los procesos incluidos dentro del SGC de la ENUFC en las areas de Direccion, Subdireccion Academica, Docencia, Control Escolar y Coordinacion de Calidad.':'La auditoria interna comprende la evaluacion de los procesos incluidos dentro del SGC de la ENUFC en el area de '+(a.area||'-')+'.'),
@@ -6539,12 +6815,15 @@ function auditDatosPageHTML(a,m,p,total){
   return auditPageHTML('aud-portrait',
     auditHeaderHTML(m.titulo,m.codigo,m.rev,p,total)+
     '<div class="aud-form-title">Datos generales de la auditoria:</div>'+
-    '<p class="aud-p"><strong>Auditoria No.</strong> '+esc(m.folio)+' realizada al SGC, conducida por el Auditor lider y el Equipo de Auditores indicados en este documento el dia <strong>'+esc(m.fecha)+'</strong>.</p>'+
+    '<p class="aud-p"><strong>Auditoria No.</strong> <strong style="text-decoration:underline">'+esc(m.folio)+'</strong> realizada al SGC, conducida por el Auditor lider y el Equipo de Auditores indicados en este documento el dia <strong>'+esc(m.fecha)+'</strong>.</p>'+
     '<p class="aud-p"><strong>Objetivo de la auditoria:</strong> <span class="aud-under">'+nl2br(m.objetivo)+'</span></p>'+
     '<div class="aud-line-grid"><div><div class="aud-line-title">Auditor lider:</div>'+lineList(m.auditorInst,1)+'</div><div><div class="aud-line-title">Auditores:</div>'+lineList(meta.equipo||m.auditorInst,4)+'</div></div>'+
     '<p class="aud-p"><strong>Alcance de la auditoria:</strong> <span class="aud-under">'+nl2br(m.alcance)+'</span></p>'+
     '<div class="aud-line-grid"><div><div class="aud-line-title">Procesos / areas auditadas:</div>'+lineList(m.areas,7)+'</div><div><div class="aud-line-title">Participantes en la auditoria:</div>'+lineList(meta.participantes,7)+'</div></div>'+
-    '<div class="aud-sign-spacer"></div><div class="aud-sign-row"><div>Nombre y Firma<br>Auditor lider</div><div>Nombre y Firma<br>Representante del SGC</div></div>'
+    '<div class="aud-sign-spacer"></div>'+
+    (m.general
+      ? '<div class="aud-sign-row" style="grid-template-columns:1fr;max-width:320px;margin-left:auto;margin-right:auto"><div>Nombre y Firma<br>Representante del SGC</div></div>'
+      : '<div class="aud-sign-row"><div>Nombre y Firma<br>Auditor</div><div>Nombre y Firma<br>Representante del SGC</div></div>')
   );
 }
 function auditPreguntasPagesHTML(m,start,total){
@@ -6567,8 +6846,8 @@ function auditHallazgosPageHTML(m,p,total){
   return auditPageHTML('aud-portrait',
     auditHeaderHTML('Informe de Auditoria',m.codigo,m.rev,p,total)+
     '<div class="aud-table-title">Sistema de Gestion de Calidad<br>Hallazgos de la Auditoria</div>'+
-    '<table class="aud-table"><thead><tr><th colspan="2">No. de Auditoria: '+esc(m.folio)+'</th><th colspan="4">Fecha: '+esc(m.fecha)+'</th></tr><tr><th style="width:13%">Requisito</th><th>Descripcion del Hallazgo (Evidencia objetiva)</th><th style="width:12%">Fortalezas</th><th style="width:10%">No Conformidad<br>Mayor</th><th style="width:10%">Menor</th><th style="width:13%">Observacion/<br>Area de oportunidad</th></tr></thead><tbody>'+
-    (h.length?h.map(i=>'<tr><td>'+esc(requisitoItem(i))+'</td><td>'+nl2br(i.evidencia||i.obs||i.pregunta||'')+'</td><td class="mark">'+marca(i.hallazgo==='fortaleza'||(!i.hallazgo&&i.respuesta==='cumple'))+'</td><td class="mark">'+marca(i.hallazgo==='nc_mayor')+'</td><td class="mark">'+marca(i.hallazgo==='nc_menor')+'</td><td class="mark">'+marca(i.hallazgo==='oportunidad'||(!i.hallazgo&&i.respuesta==='no cumple'))+'</td></tr>').join(''):'<tr><td colspan="6" class="center">Sin hallazgos registrados</td></tr>')+
+    '<table class="aud-table"><thead><tr><th colspan="2">No. de Auditoria: <span style="text-decoration:underline">'+esc(m.folio)+'</span></th><th colspan="5">Fecha: '+esc(m.fecha)+'</th></tr><tr><th style="width:12%">Requisito</th><th>Descripcion del Hallazgo (Evidencia objetiva)</th><th style="width:11%">Fortalezas</th><th style="width:10%">No Conformidad<br>Mayor</th><th style="width:9%">Menor</th><th style="width:11%">Observacion</th><th style="width:12%">Area de<br>oportunidad</th></tr></thead><tbody>'+
+    (h.length?h.map(i=>'<tr><td>'+esc(requisitoItem(i))+'</td><td>'+nl2br(i.evidencia||i.obs||i.pregunta||'')+'</td><td class="mark">'+marca(i.hallazgo==='fortaleza'||(!i.hallazgo&&i.respuesta==='cumple'))+'</td><td class="mark">'+marca(i.hallazgo==='nc_mayor')+'</td><td class="mark">'+marca(i.hallazgo==='nc_menor')+'</td><td class="mark">'+marca(i.hallazgo==='observacion')+'</td><td class="mark">'+marca(i.hallazgo==='oportunidad'||(!i.hallazgo&&i.respuesta==='no cumple'))+'</td></tr>').join(''):'<tr><td colspan="7" class="center">Sin hallazgos registrados</td></tr>')+
     '</tbody></table>'+
     '<table class="aud-table aud-firma-table"><thead><tr><th>Nombre del Auditor Lider</th><th style="width:28%">Firma</th></tr></thead><tbody><tr><td style="height:42px">'+esc(m.auditorInst)+'</td><td></td></tr></tbody></table>'
   );
@@ -6585,7 +6864,8 @@ function auditResumenPageHTML(a,m,p,total){
     '<tr><td><strong>Numero total de Fortalezas:</strong> '+m.counts.fortaleza+'</td></tr>'+
     '<tr><td><strong>Numero total de No Conformidades Mayores:</strong> '+m.counts.mayor+'</td></tr>'+
     '<tr><td><strong>Numero total de No Conformidades Menores:</strong> '+m.counts.menor+'</td></tr>'+
-    '<tr><td><strong>Numero total de Observaciones/Areas de oportunidad:</strong> '+m.counts.oportunidad+'</td></tr>'+
+    '<tr><td><strong>Numero total de Observaciones:</strong> '+m.counts.observacion+'</td></tr>'+
+    '<tr><td><strong>Numero total de Areas de oportunidad:</strong> '+m.counts.oportunidad+'</td></tr>'+
     '<tr><th>Juicio acerca de la capacidad del SGC para alcanzar los objetivos</th></tr>'+
     '<tr><td>'+nl2br(meta.juicio||a.obs||'Con base en los hallazgos de la auditoria interna, se determina el grado de cumplimiento del Sistema de Gestion de Calidad y las oportunidades de mejora identificadas.')+'</td></tr>'+
     '<tr><th>Resumen General de la Auditoria</th></tr>'+
@@ -6603,62 +6883,203 @@ function auditAreaReportHTML(a,opts={}){
   const total=1+preguntaPages+2;
   return '<div class="aud-report">'+auditDatosPageHTML(a,m,1,total)+auditPreguntasPagesHTML(m,2,total)+auditHallazgosPageHTML(m,2+preguntaPages,total)+auditResumenPageHTML(a,m,3+preguntaPages,total)+'</div>';
 }
-function auditGeneralReportHTML(auds){
+function auditGeneralReportHTML(auds,numero){
   const allItems=auds.flatMap(a=>(a.items||[]).map(i=>({...i,area:a.area,fecha:a.fecha,auditor:a.auditor})));
   const auditorInst=S.config?.auditor_lider||CONFIG_DEFAULT.auditor_lider;
   const participantes=auds.map(a=>a.meta?.participantes||'').filter(Boolean).join('\n');
   const audDireccion=auds.find(a=>String(a.area||'').toLowerCase().includes('direcci'));
   const representanteDireccion=audDireccion?.meta?.responsable_area||audDireccion?.meta?.representante_direccion||'Mtro. Samir Gomez Calderon';
-  const base={area:'Informe general',fecha:auds[0]?.fecha||hoy(),auditor:auditorInst,obs:'Informe general consolidado de auditorias internas por area.',meta:{numero:'General',auditor_lider:auditorInst,equipo:auditorInst,participantes,objetivo:'Verificar el cumplimiento de la organizacion, con respecto a la normativa ISO 9001:2015 y sus criterios especificados en el SGC de la ENUFC.',alcance:'La auditoria interna comprende la evaluacion de los procesos incluidos dentro del SGC de la ENUFC en las areas de Direccion, Subdireccion Academica, Docencia, Control Escolar y Coordinacion de Calidad.',juicio:auds.map(a=>a.meta?.juicio).filter(Boolean).join('\n\n'),resumen_general:auds.map(a=>(a.area?('Area '+a.area+': '):'')+(a.meta?.resumen_general||a.obs||'')).filter(Boolean).join('\n\n'),representante_direccion:representanteDireccion},items:allItems};
-  return auditAreaReportHTML(base,{codigo:'R-92/03',rev:'00',titulo:'Informe General de Auditoria',general:true});
+  const base={area:'Informe general',fecha:auds[0]?.fecha||hoy(),auditor:auditorInst,obs:'Informe general consolidado de auditorias internas por area.',meta:{numero:numero||'General',auditor_lider:auditorInst,equipo:auditorInst,participantes,objetivo:'Verificar el cumplimiento de la organizacion, con respecto a la normativa ISO 9001:2015 y sus criterios especificados en el SGC de la ENUFC.',alcance:'La auditoria interna comprende la evaluacion de los procesos incluidos dentro del SGC de la ENUFC en las areas de Direccion, Subdireccion Academica, Docencia, Control Escolar y Coordinacion de Calidad.',juicio:auds.map(a=>a.meta?.juicio).filter(Boolean).join('\n\n'),resumen_general:auds.map(a=>(a.area?('Area '+a.area+': '):'')+(a.meta?.resumen_general||a.obs||'')).filter(Boolean).join('\n\n'),representante_direccion:representanteDireccion},items:allItems};
+  return auditAreaReportHTML(base,{codigo:(S.config&&S.config.aud_cod_gen)||CONFIG_DEFAULT.aud_cod_gen,rev:(S.config&&S.config.aud_rev_gen)||CONFIG_DEFAULT.aud_rev_gen,titulo:'Informe General de Auditoria',general:true});
 }
+function audNumEtiqueta(a){return (a.meta&&a.meta.numero)?a.meta.numero:'Sin número';}
 function renderInformeAuditorias(){
   const c=document.getElementById('inf-contenido-aud');
   if(!S.auditorias.length){c.innerHTML='<p class="empty">Sin auditorias registradas.</p>';return;}
-  const areas=auditoriasPorArea(S.auditorias);
-  const auditadas=new Set(S.auditorias.map(a=>String(a.area||'').toLowerCase()));
-  const faltantes=AREAS_SGC.filter(a=>!auditadas.has(String(a).toLowerCase()));
-  const aviso=faltantes.length
-    ? '<div class="alert alert-info no-print">El informe general R-92/03 se generara cuando esten capturadas las auditorias de las 5 areas. Faltan: '+faltantes.map(esc).join(', ')+'.</div>'
-    : auditGeneralReportHTML(S.auditorias);
-  c.innerHTML='<div class="aud-actions no-print"><button class="btn btn-primary btn-sm" onclick="_imprimirPagina()">Imprimir informes / PDF</button></div>'+aviso+areas.map(auditAreaReportHTML).join('');
+  // Números de ciclo distintos (más reciente primero: por año y consecutivo desc).
+  const nums=[...new Set(S.auditorias.map(audNumEtiqueta))].sort((x,y)=>audNumClave(y)-audNumClave(x));
+  if(_infAudNum===undefined||!nums.includes(_infAudNum))_infAudNum=nums[0];
+  const sel=_infAudNum;
+  const audsSel=S.auditorias.filter(a=>audNumEtiqueta(a)===sel);
+  const areas=auditoriasPorArea(audsSel);           // un informe por área (fusiona si hay varias del área)
+  const areaNames=areas.map(a=>a.area).filter(Boolean);
+  // Validar la vista seleccionada contra las áreas disponibles de este número.
+  if(_infAudVista!=='__general__' && !areaNames.includes(_infAudVista))_infAudVista='__general__';
+  const vista=_infAudVista;
+  const optsVista='<option value="__general__"'+(vista==='__general__'?' selected':'')+'>Informe general (consolidado)</option>'+
+    areaNames.map(n=>'<option value="'+esc(n)+'"'+(n===vista?' selected':'')+'>&Aacute;rea: '+esc(n)+'</option>').join('');
+  const selector='<div class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">'+
+    '<label class="lbl" style="margin:0">N&uacute;mero de auditor&iacute;a:</label>'+
+    '<select id="inf-aud-num" style="width:auto;min-width:150px" onchange="_infAudNum=this.value;renderInformeAuditorias()">'+
+    nums.map(n=>'<option value="'+esc(n)+'"'+(n===sel?' selected':'')+'>'+esc(n)+'</option>').join('')+'</select>'+
+    '<label class="lbl" style="margin:0 0 0 6px">Ver:</label>'+
+    '<select id="inf-aud-vista" style="width:auto;min-width:200px" onchange="_infAudVista=this.value;renderInformeAuditorias()">'+optsVista+'</select>'+
+    '<span style="color:var(--muted);font-size:13px">'+audsSel.length+' &aacute;rea'+(audsSel.length!==1?'s':'')+' en este n&uacute;mero</span></div>';
+  let cuerpo;
+  if(vista==='__general__'){
+    // Faltantes de las 5 áreas SGC dentro de ESTE número (solo informativo; el general se genera igual).
+    const auditadas=new Set(audsSel.map(a=>String(a.area||'').toLowerCase()));
+    const faltantes=AREAS_SGC.filter(a=>!auditadas.has(String(a).toLowerCase()));
+    const aviso=faltantes.length
+      ? '<div class="alert alert-info no-print">El n&uacute;mero <strong>'+esc(sel)+'</strong> a&uacute;n no cubre las 5 &aacute;reas del SGC. Faltan: '+faltantes.map(esc).join(', ')+'. El informe general se genera con las &aacute;reas disponibles.</div>'
+      : '';
+    cuerpo=aviso+auditGeneralReportHTML(audsSel,sel);
+  }else{
+    const a=areas.find(x=>x.area===vista);
+    cuerpo=a?auditAreaReportHTML(a):'<p class="empty">Sin datos para esta &aacute;rea.</p>';
+  }
+  const etiqueta=vista==='__general__'?'informe general':'informe de '+vista;
+  c.innerHTML='<div class="aud-actions no-print"><button class="btn btn-primary btn-sm" onclick="_imprimirPagina()">Imprimir '+esc(etiqueta)+' / PDF</button></div>'+selector+cuerpo;
 }
 
 function renderAreasAdmin(){
-  S.areas=[...AREAS_SGC];
-  document.getElementById('lista-areas').innerHTML=AREAS_SGC.map(a=>`<div class="admin-item"><span>${a}</span><span class="badge badge-blue">?rea SGC</span></div>`).join('');
+  if(!Array.isArray(S.areas)||!S.areas.length)S.areas=[...AREAS_SGC];
+  const cont=document.getElementById('lista-areas');if(!cont)return;
+  const instHtml=AREAS_SGC.map(a=>`<div class="admin-item"><span>${esc(a)}</span><span class="badge badge-blue">Área SGC</span></div>`).join('');
+  const custom=areasPersonalizadas();
+  const custHtml=custom.map(a=>`<div class="admin-item"><span>${esc(a)}</span><button class="btn btn-sm btn-danger" onclick="delArea('${esc(a).replace(/'/g,"\\'")}')">Eliminar</button></div>`).join('');
+  cont.innerHTML=instHtml+custHtml;
 }
 window.addArea=async function(){
-  const el=document.getElementById('nueva-area');if(el)el.value='';
-  setSyncStatus('ok','El SGC usa solo las 5 areas institucionales');
+  const el=document.getElementById('nueva-area');
+  const nombre=(el?.value||'').trim();
+  if(!nombre){setSyncStatus('err','Escribe el nombre del área');return;}
+  if(!Array.isArray(S.areas))S.areas=[...AREAS_SGC];
+  if(S.areas.some(a=>_normAreaTxt(a)===_normAreaTxt(nombre))){setSyncStatus('err','Esa área ya existe');if(el)el.value='';return;}
+  S.areas.push(nombre);
+  try{localStorage.setItem('sgc_areas_custom',JSON.stringify(areasPersonalizadas()));}catch(e){}
+  try{await sb.from('areas').insert([{nombre}]);}catch(e){}
+  if(el)el.value='';
+  renderAreasAdmin();
+  fillSelects();
+  setSyncStatus('ok','Área agregada');
 };
-window.delArea=async function(i){
-  setSyncStatus('ok','Las areas institucionales no se eliminan');
+window.delArea=async function(nombre){
+  if(AREAS_SGC.some(a=>_normAreaTxt(a)===_normAreaTxt(nombre))){setSyncStatus('ok','Las áreas institucionales no se eliminan');return;}
+  if(!confirm('¿Eliminar el área "'+nombre+'"? Las preguntas o indicadores asignados a ella no se borran, pero quedarán sin área.'))return;
+  S.areas=(S.areas||[]).filter(a=>_normAreaTxt(a)!==_normAreaTxt(nombre));
+  try{localStorage.setItem('sgc_areas_custom',JSON.stringify(areasPersonalizadas()));}catch(e){}
+  try{await sb.from('areas').delete().eq('nombre',nombre);}catch(e){}
+  renderAreasAdmin();
+  fillSelects();
+  setSyncStatus('ok','Área eliminada');
 };
+// Al abrir Administrar: si no hay área elegida en el banco, elige la primera y muestra sus preguntas
+function bancoAdminAutoSel(){
+  const sel=document.getElementById('sel-area-admin');
+  if(sel&&!sel.value){const first=[...sel.options].find(o=>o.value);if(first)sel.value=first.value;}
+  renderBancoAdmin();
+}
+// Asignación efectiva para un área (su registro, o el default = todo el ISO)
+function _bancoAsigArea(area){
+  const maestro=S.bancoMaestro||[];
+  return (S.bancoAsig&&Array.isArray(S.bancoAsig[area]))?S.bancoAsig[area]:maestro.filter(q=>q.origen!=='custom').map(q=>q.id);
+}
+// Sincroniza el banco a la nube (respaldo). Best-effort, no bloquea.
+async function _bancoSyncSupa(){try{await sb.from('sgc_planificacion').upsert({clave:'banco_auditoria',valor:{maestro:S.bancoMaestro,asig:S.bancoAsig}},{onConflict:'clave'});}catch(e){}}
 window.renderBancoAdmin=function(){
   const area=v('sel-area-admin'),c=document.getElementById('banco-admin');
-  if(!area){c.innerHTML='';return;}
-  const pregs=S.preguntas[area]||[];
-  c.innerHTML=pregs.map((p,i)=>`<div class="admin-item"><span>${i+1}. ${p}</span><button class="btn btn-sm btn-danger" onclick="delPregunta('${area.replace(/'/g,"\'")}',${i})">Eliminar</button></div>`).join('')||'<p class="empty">Sin preguntas.</p>';
+  if(!c)return;
+  if(!area){c.innerHTML='<p class="empty">Selecciona un área para asignar y editar sus preguntas.</p>';return;}
+  const maestro=S.bancoMaestro||[];
+  if(!maestro.length){c.innerHTML='<p class="empty">El banco aún se está cargando. Recarga la página si no aparece.</p>';return;}
+  const asigSet=new Set(_bancoAsigArea(area));
+  const nAsig=maestro.filter(q=>asigSet.has(q.id)).length;
+  let html=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;padding:8px 10px;background:var(--blue-light,#eff6ff);border-radius:8px">
+    <span style="font-size:12px;color:var(--blue)"><b>${nAsig}</b> de ${maestro.length} preguntas aplican a <b>${esc(area)}</b></span>
+    <button class="btn btn-sm" onclick="bancoSelAll(true)">Marcar todas</button>
+    <button class="btn btn-sm" onclick="bancoSelAll(false)">Ninguna</button>
+  </div>
+  <p style="font-size:11px;color:var(--muted);margin:0 0 8px">Marca las casillas de las preguntas que aplican a esta área. Solo esas aparecerán en la auditoría del área. "Editar"/"Eliminar" afectan el banco completo.</p>`;
+  let cap='';
+  html+=maestro.map(q=>{
+    const h=q.capitulo!==cap?`<div style="font-weight:700;color:var(--blue);font-size:12px;margin:12px 0 4px">${esc(q.capitulo||'Preguntas')}</div>`:'';
+    cap=q.capitulo;
+    const on=asigSet.has(q.id);
+    return h+`<div class="admin-item" id="bq-${q.id}" style="align-items:flex-start;transition:background .3s">
+      <label style="display:flex;gap:8px;align-items:flex-start;flex:1;cursor:pointer">
+        <input type="checkbox" ${on?'checked':''} onchange="bancoToggle('${q.id}')" style="margin-top:3px;flex-shrink:0">
+        <span style="font-size:13px">${q.requisito?`<b style="color:var(--blue)">${esc(q.requisito)}</b> `:''}${esc(q.pregunta)}</span>
+      </label>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-sm" style="color:var(--blue);border-color:var(--blue)" onclick="bancoEditarPreg('${q.id}')">Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="bancoEliminarPreg('${q.id}')">Eliminar</button>
+      </div>
+    </div>`;
+  }).join('');
+  c.innerHTML=html;
 };
-window.addPregunta=async function(){
-  const area=v('sel-area-admin'),vv=v('nueva-preg');if(!area||!vv)return;
-  try{
-    const {data:areaRow}=await sb.from('areas').select('id').eq('nombre',area).maybeSingle();
-    const {error}=await sb.from('preguntas_auditoria').insert([{pregunta:vv,area_id:areaRow?.id||null}]);
-    if(error) throw error;
-    if(!S.preguntas[area])S.preguntas[area]=[];
-    S.preguntas[area].push(vv);
-    document.getElementById('nueva-preg').value='';renderBancoAdmin();
-    setSyncStatus('ok','Pregunta guardada');
-  }catch(e){setSyncStatus('err','Error al guardar pregunta');}
+window.bancoToggle=function(id){
+  const area=v('sel-area-admin');if(!area)return;
+  if(!S.bancoAsig)S.bancoAsig={};
+  if(!Array.isArray(S.bancoAsig[area]))S.bancoAsig[area]=_bancoAsigArea(area).slice();
+  const arr=S.bancoAsig[area],idx=arr.indexOf(id);
+  if(idx>=0)arr.splice(idx,1);else arr.push(id);
+  _guardarBanco();renderBancoAdmin();_bancoSyncSupa();
 };
-window.delPregunta=async function(area,i){
-  const preg=S.preguntas[area][i];
-  try{
-    await sb.from('preguntas_auditoria').delete().eq('pregunta',preg);
-    S.preguntas[area].splice(i,1);renderBancoAdmin();
-  }catch(e){setSyncStatus('err','Error al eliminar');}
+window.bancoSelAll=function(todas){
+  const area=v('sel-area-admin');if(!area)return;
+  if(!S.bancoAsig)S.bancoAsig={};
+  S.bancoAsig[area]=todas?(S.bancoMaestro||[]).map(q=>q.id):[];
+  _guardarBanco();renderBancoAdmin();_bancoSyncSupa();
+  setSyncStatus('ok',todas?'Todas las preguntas asignadas':'Preguntas desmarcadas');
+};
+// Deriva el nombre del capítulo ISO a partir del número de cláusula (ej. "7.5.3" → Capítulo 7)
+function _capituloDeClausula(clausula){
+  const m=String(clausula||'').match(/^\s*(\d+)/);
+  if(!m)return 'Preguntas personalizadas';
+  const num=m[1];
+  const existente=(S.bancoMaestro||[]).find(q=>(String(q.requisito||'').match(/^\s*(\d+)/)||[])[1]===num);
+  if(existente&&existente.capitulo)return existente.capitulo;
+  const CAP={'4':'Capitulo 4. Contexto de la Organizacion','5':'Capitulo 5. Liderazgo','6':'Capitulo 6. Planificacion','7':'Capitulo 7. Apoyo','8':'Capitulo 8. Operacion','9':'Capitulo 9. Evaluacion del Desempeño','10':'Capitulo 10. Mejora'};
+  return CAP[num]||('Capitulo '+num);
+}
+window.addPregunta=function(){
+  const area=v('sel-area-admin'),txt=v('nueva-preg'),clausula=v('nueva-preg-clausula');
+  if(!area){showMsg('banco-msg','err','Selecciona un área primero.',4000);setSyncStatus('err','Selecciona un área primero');return;}
+  if(!txt){showMsg('banco-msg','err','Escribe el texto de la pregunta.',4000);return;}
+  const dup=(S.bancoMaestro||[]).find(q=>q.pregunta.trim().toLowerCase()===txt.trim().toLowerCase());
+  if(dup){showMsg('banco-msg','err','Esa pregunta ya existe en el banco. Búscala con "'+esc(txt.slice(0,30))+'…" o edítala.',6000);setSyncStatus('err','Esa pregunta ya existe en el banco');return;}
+  if(!S.bancoMaestro)S.bancoMaestro=[];
+  const capitulo=_capituloDeClausula(clausula);
+  const q={id:'cust_'+Math.random().toString(36).slice(2,8),capitulo,requisito:(clausula||'').trim(),pregunta:txt,origen:'custom'};
+  // Insertar junto a las preguntas del mismo capítulo para que queden agrupadas
+  let idx=-1;
+  for(let i=0;i<S.bancoMaestro.length;i++){if(S.bancoMaestro[i].capitulo===capitulo)idx=i;}
+  if(idx>=0)S.bancoMaestro.splice(idx+1,0,q);else S.bancoMaestro.push(q);
+  if(!S.bancoAsig)S.bancoAsig={};
+  if(!Array.isArray(S.bancoAsig[area]))S.bancoAsig[area]=S.bancoMaestro.filter(x=>x.origen!=='custom').map(x=>x.id);
+  S.bancoAsig[area].push(q.id);
+  _guardarBanco();
+  ['nueva-preg','nueva-preg-clausula'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderBancoAdmin();_bancoSyncSupa();
+  // Llevar a la vista la pregunta recién agregada y resaltarla (queda en su capítulo, no arriba)
+  const nuevo=document.getElementById('bq-'+q.id);
+  if(nuevo){
+    nuevo.scrollIntoView({behavior:'smooth',block:'center'});
+    nuevo.style.background='#fff3bf';
+    setTimeout(()=>{nuevo.style.background='';},2200);
+  }
+  showMsg('banco-msg','ok','✓ Pregunta agregada en '+esc(capitulo)+(clausula?' (cláusula '+esc(clausula)+')':'')+' y asignada a '+esc(area)+'. Mira abajo, la resalté en amarillo.',6000);
+  setSyncStatus('ok','Pregunta agregada'+(clausula?' ('+esc(clausula)+')':'')+' y asignada a '+area);
+};
+window.bancoEditarPreg=function(id){
+  const q=(S.bancoMaestro||[]).find(x=>x.id===id);if(!q)return;
+  const nuevo=prompt('Editar el texto de la pregunta (cambia en todas las áreas donde aplique):',q.pregunta);
+  if(nuevo===null)return;
+  const t=nuevo.trim();
+  if(!t){setSyncStatus('err','La pregunta no puede quedar vacía');return;}
+  q.pregunta=t;
+  _guardarBanco();renderBancoAdmin();_bancoSyncSupa();
+  setSyncStatus('ok','Pregunta actualizada');
+};
+window.bancoEliminarPreg=function(id){
+  const q=(S.bancoMaestro||[]).find(x=>x.id===id);if(!q)return;
+  if(!confirm('¿Eliminar esta pregunta del banco? Dejará de aparecer en TODAS las áreas.\n\n'+q.pregunta))return;
+  S.bancoMaestro=(S.bancoMaestro||[]).filter(x=>x.id!==id);
+  if(S.bancoAsig)Object.keys(S.bancoAsig).forEach(a=>{S.bancoAsig[a]=(S.bancoAsig[a]||[]).filter(x=>x!==id);});
+  _guardarBanco();renderBancoAdmin();_bancoSyncSupa();
+  setSyncStatus('ok','Pregunta eliminada del banco');
 };
 
 /* ═══════════════════════════════════════
@@ -7006,10 +7427,40 @@ function nc_fillCicloSelect(current){
 // Áreas válidas del campo Área/Proceso, con su forma acentuada correcta.
 const _NC_AREAS_MAP={'direccion':'Dirección','subdireccion academica':'Subdirección Académica','docencia':'Docencia','control escolar':'Control Escolar','coordinacion de calidad':'Coordinación de Calidad'};
 function _ncNorm(v){return String(v||'').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
-// Reconoce un área aunque venga sin acentos (compatibilidad con registros previos)
-function _ncEsAreaValida(v){return Object.prototype.hasOwnProperty.call(_NC_AREAS_MAP,_ncNorm(v));}
+// Reconoce un área: las 5 institucionales (con o sin acentos) o cualquier área
+// personalizada registrada en S.areas. Así "Área1 / Área2" se distingue de "Área / numeral".
+function _ncEsAreaValida(v){
+  const k=_ncNorm(v);
+  if(Object.prototype.hasOwnProperty.call(_NC_AREAS_MAP,k))return true;
+  return (typeof S!=='undefined'&&Array.isArray(S.areas)&&S.areas.some(a=>_ncNorm(a)===k));
+}
 // Devuelve el/los nombre(s) de área con los acentos correctos para mostrar en el informe
 function _ncAreaAcentos(txt){return String(txt||'').split('/').map(p=>_NC_AREAS_MAP[_ncNorm(p)]||p.trim()).filter(Boolean).join(' / ');}
+// Lista de áreas disponibles para NC (institucionales + personalizadas)
+function _ncAreasDisponibles(){
+  const base=['Dirección','Subdirección Académica','Docencia','Control Escolar','Coordinación de Calidad'];
+  const seen=new Set(base.map(_ncNorm));
+  const out=[...base];
+  ((typeof S!=='undefined'&&Array.isArray(S.areas))?S.areas:[]).forEach(a=>{const k=_ncNorm(a);if(a&&!seen.has(k)){seen.add(k);out.push(String(a).trim());}});
+  return out;
+}
+// Selecciona en un <select> la opción que coincide con 'valor' ignorando acentos/mayúsculas
+function _ncSetSelectArea(sel,valor){
+  if(!sel)return;
+  const k=_ncNorm(valor);
+  if(!k){sel.value='';return;}
+  const opt=[...sel.options].find(o=>_ncNorm(o.value)===k);
+  sel.value=opt?opt.value:'';
+}
+// Puebla los dos selectores de área del formulario de NC desde las áreas disponibles
+function _ncLlenarSelectsArea(){
+  const areas=_ncAreasDisponibles();
+  const opts=areas.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('');
+  const s1=document.getElementById('nc-area-numeral');
+  const s2=document.getElementById('nc-area-numeral-2');
+  if(s1){const prev=s1.value;s1.innerHTML='<option value="">-- Seleccionar área --</option>'+opts;_ncSetSelectArea(s1,prev);}
+  if(s2){const prev=s2.value;s2.innerHTML='<option value="">-- Segunda área (opcional) --</option>'+opts;_ncSetSelectArea(s2,prev);}
+}
 // Combina las dos áreas seleccionadas en un solo texto "Área1 / Área2"
 function ncAreaCombinada(){
   const a1=(document.getElementById('nc-area-numeral')?.value||'').trim();
@@ -7022,6 +7473,7 @@ window.nc_nuevo=function(){
    'nc-ishi-personal','nc-ishi-procesos_metodos','nc-ishi-recursos','nc-ishi-informacion_datos','nc-ishi-entorno_contexto',
    'nc-5p-problema','nc-5p-1','nc-5p-2','nc-5p-3','nc-5p-4','nc-5p-5','nc-5p-resultado',
    'nc-fecha-verif','nc-obs-cierre'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  _ncLlenarSelectsArea();
   nc_fillCicloSelect('');
   const ishSvg=document.getElementById('nc-ishi-svg');if(ishSvg)ishSvg.innerHTML='';
   const fd=document.getElementById('nc-fecha');if(fd)fd.value=hoy();
@@ -7035,12 +7487,13 @@ window.nc_nuevo=function(){
 };
 window.nc_editar=function(i){
   const nc=leerNCs()[i];if(!nc)return;
+  _ncLlenarSelectsArea();
   const areaLegacy=(nc.area_numeral||nc.area||'').split('/').map(x=>x.trim());
-  document.getElementById('nc-area-numeral').value=areaLegacy[0]||'';
+  _ncSetSelectArea(document.getElementById('nc-area-numeral'),areaLegacy[0]||'');
   // Si la 2ª parte es un área válida → es la segunda área; si no, es numeral legacy
   const _seg=areaLegacy[1]||'';
   const _segEsArea=_ncEsAreaValida(_seg);
-  const _a2=document.getElementById('nc-area-numeral-2');if(_a2)_a2.value=_segEsArea?_seg:'';
+  _ncSetSelectArea(document.getElementById('nc-area-numeral-2'),_segEsArea?_seg:'');
   document.getElementById('nc-numeral').value=nc.numeral||(_segEsArea?'':_seg);
   document.getElementById('nc-responsable-area').value=nc.responsable_area||'';
   document.getElementById('nc-numero').value=nc.numero||'';
@@ -12128,8 +12581,8 @@ window.chatAplicarNC=function(dataStr){
       nc_nuevo();
       const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
       const _apart=String(c.area_numeral||'').split('/').map(x=>x.trim());
-      s('nc-area-numeral',_apart[0]||'');
-      s('nc-area-numeral-2',_ncEsAreaValida(_apart[1])?_apart[1]:'');
+      _ncSetSelectArea(document.getElementById('nc-area-numeral'),_apart[0]||'');
+      _ncSetSelectArea(document.getElementById('nc-area-numeral-2'),_ncEsAreaValida(_apart[1])?_apart[1]:'');
       s('nc-numeral',c.numeral||'');
       s('nc-descripcion',c.descripcion||'');
       s('nc-correccion',c.correccion||'');
@@ -12726,6 +13179,7 @@ async function cargarPlanificacionSupabase(){
     const map={};data.forEach(r=>{map[r.clave]=r.valor;});
     if(map.politica_calidad){localStorage.setItem('sgc_politica_calidad',JSON.stringify(map.politica_calidad));}
     if(map.foda){localStorage.setItem('sgc_foda',JSON.stringify(map.foda));_fodaData=map.foda;}
+    if(map.foda_areas){localStorage.setItem('sgc_foda_areas',JSON.stringify(map.foda_areas));_fodaAreas=map.foda_areas;}
     if(map.seguimiento_foda){localStorage.setItem('sgc_seguimiento_foda',JSON.stringify(map.seguimiento_foda));}
     if(map.objetivos_calidad){localStorage.setItem('sgc_objetivos_calidad',JSON.stringify(map.objetivos_calidad));}
     if(map.manual_calidad){localStorage.setItem('sgc_manual',JSON.stringify(map.manual_calidad));}
@@ -13159,6 +13613,28 @@ function fodaLeer(){
 }
 function fodaGuardar(d){localStorage.setItem('sgc_foda',JSON.stringify(d));}
 
+/* ── FODA por área ──
+   sgc_foda_areas = { "<área>": {F:[],D:[],O:[],A:[]} }  → se consolida en el FODA general */
+const FODA_AREAS_KEY='sgc_foda_areas';
+let _fodaAreas=null;
+let _fodaSel='__general__'; // '__general__' o el nombre del área en edición
+function fodaAreasLeer(){
+  if(_fodaAreas)return _fodaAreas;
+  try{_fodaAreas=JSON.parse(localStorage.getItem(FODA_AREAS_KEY)||'{}')||{};}catch{_fodaAreas={};}
+  return _fodaAreas;
+}
+function fodaAreasGuardar(){try{localStorage.setItem(FODA_AREAS_KEY,JSON.stringify(_fodaAreas||{}));}catch(e){}}
+function fodaAreaObj(area){
+  const all=fodaAreasLeer();
+  if(!all[area])all[area]={F:[],D:[],O:[],A:[]};
+  ['F','D','O','A'].forEach(c=>{if(!Array.isArray(all[area][c]))all[area][c]=[];});
+  return all[area];
+}
+async function fodaAreasSyncSupa(){try{await sb.from('sgc_planificacion').upsert({clave:'foda_areas',valor:_fodaAreas||{}},{onConflict:'clave'});}catch(e){}}
+// Objeto de datos del ámbito seleccionado (general o un área)
+function fodaCtxLeer(){return _fodaSel==='__general__'?fodaLeer():fodaAreaObj(_fodaSel);}
+function fodaCtxGuardarLS(){if(_fodaSel==='__general__')fodaGuardar(_fodaData);else fodaAreasGuardar();}
+
 window.fodaTab=function(tab){
   document.getElementById('foda-panel-matriz').style.display=tab==='matriz'?'block':'none';
   document.getElementById('foda-panel-seguimiento').style.display=tab==='seguimiento'?'block':'none';
@@ -13168,7 +13644,7 @@ window.fodaTab=function(tab){
 };
 
 function fodaRenderLista(cuad){
-  const d=fodaLeer();
+  const d=fodaCtxLeer();
   const items=d[cuad]||[];
   const colores={F:'#2e7d32',D:'#e65100',O:'#1565c0',A:'#b71c1c'};
   const el=document.getElementById('foda-lista-'+cuad);
@@ -13177,6 +13653,53 @@ function fodaRenderLista(cuad){
 }
 function fodaRenderTodos(){['F','D','O','A'].forEach(c=>fodaRenderLista(c));}
 
+function fodaLlenarSelector(){
+  const sel=document.getElementById('foda-area-sel');if(!sel)return;
+  const areas=(S.areas&&S.areas.length)?S.areas:[...AREAS_SGC];
+  let html='<option value="__general__">⭐ FODA General (consolidado)</option>';
+  html+='<optgroup label="FODA por área">';
+  areas.forEach(a=>{html+=`<option value="${esc(a)}">${esc(a)}</option>`;});
+  html+='</optgroup>';
+  sel.innerHTML=html;
+  if(![...sel.options].some(o=>o.value===_fodaSel))_fodaSel='__general__';
+  sel.value=_fodaSel;
+}
+function fodaAplicarAmbitoUI(){
+  const esGen=_fodaSel==='__general__';
+  const meta=document.getElementById('foda-meta-general');if(meta)meta.style.display=esGen?'':'none';
+  const metaA=document.getElementById('foda-meta-area');if(metaA)metaA.style.display=esGen?'none':'';
+  const jefeInp=document.getElementById('foda-area-jefe');
+  if(jefeInp&&!esGen)jefeInp.value=(fodaAreaObj(_fodaSel).jefe)||'';
+  const tools=document.getElementById('foda-general-tools');if(tools)tools.style.display=esGen?'':'none';
+  const revCard=document.getElementById('foda-revisiones-card');if(revCard)revCard.style.display=esGen?'':'none';
+  const prev=document.getElementById('foda-preview');if(prev)prev.style.display='none';
+  const hint=document.getElementById('foda-ctx-hint');
+  if(hint)hint.innerHTML=esGen
+    ?'Matriz institucional. Captúrala a mano o pulsa “Generar” para unir los FODA de todas las áreas.'
+    :`Capturando el FODA del área <b>${esc(_fodaSel)}</b>. Al terminar, vuelve a <b>⭐ FODA General</b> y pulsa “Generar” para consolidar.`;
+  const btn=document.getElementById('foda-btn-guardar');
+  if(btn)btn.textContent=esGen?'Guardar FODA General':'Guardar FODA — '+_fodaSel;
+}
+window.fodaSelArea=function(val){
+  _fodaSel=val||'__general__';
+  fodaAplicarAmbitoUI();
+  fodaRenderTodos();
+};
+window.fodaAreaJefeChange=function(v){
+  if(_fodaSel==='__general__')return;
+  fodaAreaObj(_fodaSel).jefe=(v||'').trim();
+  fodaAreasGuardar();
+};
+// Período / Fecha del documento FODA (compartidos por el general y todas las áreas)
+window.fodaDocHeaderChange=async function(){
+  const d=fodaLeer();
+  d.periodo=document.getElementById('foda-periodo').value;
+  d.fecha=document.getElementById('foda-fecha').value;
+  fodaGuardar(d);_fodaData=d;
+  try{await sb.from('sgc_planificacion').upsert({clave:'foda',valor:d},{onConflict:'clave'});setSyncStatus('ok','Período guardado');}
+  catch(e){setSyncStatus('err','Período local');}
+};
+
 window.foda_cargar=function(){
   const d=fodaLeer();
   const cfg=S.config||{};
@@ -13184,6 +13707,9 @@ window.foda_cargar=function(){
   document.getElementById('foda-fecha').value=d.fecha||hoy();
   document.getElementById('foda-elaboro').value=d.elaboro||(cfg.auditor_lider||'Mtro. Roberto Carlos Aguilar Pedroza')+' — Coordinador de la Calidad';
   document.getElementById('foda-reviso').value=d.reviso||'Mtro. Samir Gómez Calderón — Representante de dirección';
+  fodaAreasLeer();
+  fodaLlenarSelector();
+  fodaAplicarAmbitoUI();
   fodaRenderTodos();
   renderRevisionControl('foda');
 };
@@ -13191,20 +13717,32 @@ window.foda_cargar=function(){
 window.fodaAddItem=function(cuad){
   const inp=document.getElementById('foda-input-'+cuad);
   const txt=(inp?.value||'').trim();if(!txt)return;
-  const d=fodaLeer();
+  const d=fodaCtxLeer();
   if(!d[cuad])d[cuad]=[];
   d[cuad].push(txt);
-  fodaGuardar(d);_fodaData=d;
+  fodaCtxGuardarLS();
   inp.value='';
   fodaRenderLista(cuad);
 };
 window.fodaRemoveItem=function(cuad,idx){
-  const d=fodaLeer();
+  const d=fodaCtxLeer();
   if(d[cuad])d[cuad].splice(idx,1);
-  fodaGuardar(d);_fodaData=d;
+  fodaCtxGuardarLS();
   fodaRenderLista(cuad);
 };
 window.foda_guardar=async function(){
+  // Guardar el FODA de un área
+  if(_fodaSel!=='__general__'){
+    const a=fodaAreaObj(_fodaSel); // asegura que el área exista en la estructura
+    const jefeInp=document.getElementById('foda-area-jefe');
+    if(jefeInp)a.jefe=(jefeInp.value||'').trim();
+    fodaAreasGuardar();
+    try{await fodaAreasSyncSupa();setSyncStatus('ok','FODA de área guardado');}
+    catch(e){setSyncStatus('err','FODA área local');}
+    showMsg('foda-msg','ok',`FODA del área “${_fodaSel}” guardado. Ve a ⭐ FODA General y pulsa “Generar” para consolidar.`,3500);
+    return;
+  }
+  // Guardar el FODA general
   const d=fodaLeer();
   d.periodo=document.getElementById('foda-periodo').value;
   d.fecha=document.getElementById('foda-fecha').value;
@@ -13217,18 +13755,50 @@ window.foda_guardar=async function(){
   showMsg('foda-msg','ok','Matriz FODA guardada y visible en Control Documental.',2000);
 };
 
-function foda_htmlFormato(){
+/* Consolida el FODA general como la unión (sin duplicados) de los FODA por área */
+window.foda_generarDesdeAreas=async function(){
+  const all=fodaAreasLeer();
+  const claves=Object.keys(all);
+  const total=claves.reduce((n,a)=>n+['F','D','O','A'].reduce((m,c)=>m+((all[a][c]||[]).length),0),0);
+  if(!total){alert('Aún no hay factores capturados en los FODA por área.\n\nElige un área en el menú “Ámbito de la matriz”, captura sus factores y guárdalos; luego vuelve aquí y pulsa Generar.');return;}
+  if(!confirm('Se reemplazará el contenido del FODA General con la unión (sin duplicados) de los FODA de todas las áreas.\n\n¿Continuar?'))return;
+  const orden=[...(S.areas||[]),...claves.filter(a=>!(S.areas||[]).includes(a))];
   const d=fodaLeer();
-  const mkRows=(arr)=>arr.map(x=>'<tr><td>'+esc(x)+'</td></tr>').join('');
-  const maxF=Math.max((d.F||[]).length,(d.D||[]).length,(d.O||[]).length,(d.A||[]).length);
+  ['F','D','O','A'].forEach(c=>{
+    const vistos=new Set(),out=[];
+    orden.forEach(a=>{
+      ((all[a]&&all[a][c])||[]).forEach(it=>{
+        const k=normTxt(it);
+        if(it&&!vistos.has(k)){vistos.add(k);out.push(it);}
+      });
+    });
+    d[c]=out;
+  });
+  fodaGuardar(d);_fodaData=d;
+  _fodaSel='__general__';
+  const sel=document.getElementById('foda-area-sel');if(sel)sel.value='__general__';
+  fodaAplicarAmbitoUI();
+  fodaRenderTodos();
+  try{await sb.from('sgc_planificacion').upsert({clave:'foda',valor:d},{onConflict:'clave'});setSyncStatus('ok','FODA general generado');}
+  catch(e){setSyncStatus('err','FODA local');}
+  await planSyncControlDocumental('foda',d);
+  const nAreas=orden.filter(a=>all[a]&&['F','D','O','A'].some(c=>(all[a][c]||[]).length)).length;
+  showMsg('foda-msg','ok',`FODA General consolidado desde ${nAreas} área(s): ${d.F.length} F · ${d.D.length} D · ${d.O.length} O · ${d.A.length} A.`,4000);
+};
+
+function foda_htmlFormato(ctx){
+  const esArea=!!(ctx&&ctx!=='__general__');
+  const d=esArea?fodaAreaObj(ctx):fodaLeer();
+  const meta=esArea?fodaLeer():d; // período/firmas se toman del documento general
   const tdF=(d.F||[]).map(x=>'<tr><td>'+esc(x)+'</td></tr>').join('');
   const tdD=(d.D||[]).map(x=>'<tr><td>'+esc(x)+'</td></tr>').join('');
   const tdO=(d.O||[]).map(x=>'<tr><td>'+esc(x)+'</td></tr>').join('');
   const tdA=(d.A||[]).map(x=>'<tr><td>'+esc(x)+'</td></tr>').join('');
   const sigLine='<br><br><span style="display:block;border-top:1px solid #111;margin-top:24px;font-size:9pt;color:#555">Nombre, Fecha y Firma</span>';
   const revFoda=planGetData('foda').version||'00';
-  return '<div class="fmt-doc">'+fmtHead('MATRIZ FODA','R-61/01',revFoda,'')+
-  '<table class="fmt-table"><tr><td colspan="2"><b>Período de Aplicación:</b> '+esc(d.periodo||'')+'</td></tr></table>'+
+  const titulo=esArea?('MATRIZ FODA — '+String(ctx).toUpperCase()):'MATRIZ FODA';
+  return '<div class="fmt-doc">'+fmtHead(titulo,'R-61/01',revFoda,'')+
+  '<table class="fmt-table"><tr><td colspan="2"><b>Período de Aplicación:</b> '+esc(meta.periodo||'')+(esArea?('&nbsp;&nbsp;|&nbsp;&nbsp;<b>Área:</b> '+esc(ctx)):'')+'</td></tr></table>'+
   '<table class="fmt-table" style="margin-top:8px">'+
   '<tr><th colspan="2" class="fmt-gray">FACTORES INTERNOS</th></tr>'+
   '<tr><th style="width:50%;background:#c6efce;color:#375623">FORTALEZAS (F)</th><th style="background:#ffeb9c;color:#9c5700">DEBILIDADES (D)</th></tr>'+
@@ -13237,11 +13807,20 @@ function foda_htmlFormato(){
   '<tr><th style="background:#c6efce;color:#375623">OPORTUNIDADES (O)</th><th style="background:#ffc7ce;color:#9c0006">AMENAZAS (A)</th></tr>'+
   '<tr><td style="vertical-align:top"><table style="width:100%;border:none">'+tdO+'</table></td><td style="vertical-align:top"><table style="width:100%;border:none">'+tdA+'</table></td></tr>'+
   '</table>'+
-  '<table class="fmt-table" style="margin-top:8px"><tr><td style="width:50%;text-align:center;padding:12px">'+esc(d.elaboro||'')+sigLine+'</td><td style="text-align:center;padding:12px">'+esc(d.reviso||'')+sigLine+'</td></tr></table>'+
+  '<table class="fmt-table" style="margin-top:8px"><tr><td style="width:50%;text-align:center;padding:12px">'+(esArea?'<b style="font-size:9pt;color:#555">Jefe del Área</b><br>':'')+esc(esArea?(d.jefe||''):(meta.elaboro||''))+sigLine+'</td><td style="text-align:center;padding:12px">'+(esArea?'<b style="font-size:9pt;color:#555">Revisó y Aprobó</b><br>':'')+esc(meta.reviso||'')+sigLine+'</td></tr></table>'+
   '</div>';
 }
-window.foda_vistaPrevia=function(){activarVistaFormato('foda-preview',foda_htmlFormato());};
+window.foda_vistaPrevia=function(){activarVistaFormato('foda-preview',foda_htmlFormato(_fodaSel));};
 window.foda_imprimir=function(){imprimirSoloFormato('sec-foda',foda_vistaPrevia);};
+window.foda_imprimirTodas=function(){
+  const all=fodaAreasLeer();
+  const orden=(S.areas||[]).filter(a=>all[a]&&['F','D','O','A'].some(c=>(all[a][c]||[]).length));
+  if(!orden.length){alert('No hay FODA por área capturado todavía.');return;}
+  imprimirSoloFormato('sec-foda',()=>{
+    const html=orden.map(a=>foda_htmlFormato(a)).join('<div style="page-break-before:always"></div>');
+    activarVistaFormato('foda-preview',html);
+  });
+};
 
 /* ═══════════════════════════════════════
    SEGUIMIENTO AL FODA (R-61/02)
