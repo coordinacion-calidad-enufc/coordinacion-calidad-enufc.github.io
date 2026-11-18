@@ -5638,7 +5638,7 @@ window.guardarAuditoria = async function(){
   const pregs=_audBank(area);
   const meta={
     numero:v('aud-numero')||'01',
-    auditor_lider:S.config.auditor_lider||nom,
+    auditor_lider:nom||S.config.auditor_lider,
     equipo:v('aud-equipo'),
     participantes:v('aud-participantes'),
     responsable_area:v('aud-responsable-area'),
@@ -5714,10 +5714,10 @@ window.guardarAuditoria = async function(){
     if(esEdit){
       const i=S.auditorias.findIndex(x=>x.id===audId);
       const prev=i>=0?S.auditorias[i]:{};
-      const actualizada={id:audId,folio,auditor:prev.auditor||S.config.auditor_lider||nom,fecha:fec,area,obs,meta,items,timestamp:prev.timestamp||Date.now()};
+      const actualizada={id:audId,folio,auditor:nom||prev.auditor||S.config.auditor_lider,fecha:fec,area,obs,meta,items,timestamp:prev.timestamp||Date.now()};
       if(i>=0)S.auditorias[i]=actualizada; else S.auditorias.unshift(actualizada);
     }else{
-      S.auditorias.unshift({id:audId,folio,auditor:S.config.auditor_lider||nom,fecha:fec,area,obs,meta,items,timestamp:Date.now()});
+      S.auditorias.unshift({id:audId,folio,auditor:nom||S.config.auditor_lider,fecha:fec,area,obs,meta,items,timestamp:Date.now()});
     }
     window._ultimaAuditoriaId=audId;
     msg.innerHTML=`<div class="alert alert-ok">OK Auditoria ${esEdit?'actualizada':'guardada'}. <button class="btn btn-sm btn-primary" onclick="abrirInformeAuditoriaActual()">Ver informe del &aacute;rea</button> <button class="btn btn-sm" onclick="goto('informes',null);switchInfTab('aud')">Ver informe general</button></div>`;
@@ -6794,7 +6794,7 @@ function auditPreguntaGrupos(items){
   return chunkArray(rows,12).map((chunk,n)=>({rows:chunk,parte:n+1,totalPartes:Math.ceil(rows.length/12)}));
 }
 function auditReportModel(a,opts={}){
-  const meta=a.meta||{}, auditorInst=S.config?.auditor_lider||CONFIG_DEFAULT.auditor_lider, items=a.items||[];
+  const meta=a.meta||{}, auditorInst=a.auditor||meta.auditor_lider||S.config?.auditor_lider||CONFIG_DEFAULT.auditor_lider, items=a.items||[];
   const general=!!opts.general;
   return {
     meta,auditorInst,items,general,
@@ -6887,9 +6887,11 @@ function auditGeneralReportHTML(auds,numero){
   const allItems=auds.flatMap(a=>(a.items||[]).map(i=>({...i,area:a.area,fecha:a.fecha,auditor:a.auditor})));
   const auditorInst=S.config?.auditor_lider||CONFIG_DEFAULT.auditor_lider;
   const participantes=auds.map(a=>a.meta?.participantes||'').filter(Boolean).join('\n');
+  // Lista de todos los auditores del ciclo, indicando qué área auditó cada uno.
+  const auditoresAreas=[...new Set(auds.map(a=>{const nom=a.auditor||a.meta?.auditor_lider||'';return nom?(nom+(a.area?(' — '+a.area):'')):'';}).filter(Boolean))].join('\n')||auditorInst;
   const audDireccion=auds.find(a=>String(a.area||'').toLowerCase().includes('direcci'));
   const representanteDireccion=audDireccion?.meta?.responsable_area||audDireccion?.meta?.representante_direccion||'Mtro. Samir Gomez Calderon';
-  const base={area:'Informe general',fecha:auds[0]?.fecha||hoy(),auditor:auditorInst,obs:'Informe general consolidado de auditorias internas por area.',meta:{numero:numero||'General',auditor_lider:auditorInst,equipo:auditorInst,participantes,objetivo:'Verificar el cumplimiento de la organizacion, con respecto a la normativa ISO 9001:2015 y sus criterios especificados en el SGC de la ENUFC.',alcance:'La auditoria interna comprende la evaluacion de los procesos incluidos dentro del SGC de la ENUFC en las areas de Direccion, Subdireccion Academica, Docencia, Control Escolar y Coordinacion de Calidad.',juicio:auds.map(a=>a.meta?.juicio).filter(Boolean).join('\n\n'),resumen_general:auds.map(a=>(a.area?('Area '+a.area+': '):'')+(a.meta?.resumen_general||a.obs||'')).filter(Boolean).join('\n\n'),representante_direccion:representanteDireccion},items:allItems};
+  const base={area:'Informe general',fecha:auds[0]?.fecha||hoy(),auditor:auditorInst,obs:'Informe general consolidado de auditorias internas por area.',meta:{numero:numero||'General',auditor_lider:auditorInst,equipo:auditoresAreas,participantes,objetivo:'Verificar el cumplimiento de la organizacion, con respecto a la normativa ISO 9001:2015 y sus criterios especificados en el SGC de la ENUFC.',alcance:'La auditoria interna comprende la evaluacion de los procesos incluidos dentro del SGC de la ENUFC en las areas de Direccion, Subdireccion Academica, Docencia, Control Escolar y Coordinacion de Calidad.',juicio:auds.map(a=>a.meta?.juicio).filter(Boolean).join('\n\n'),resumen_general:auds.map(a=>(a.area?('Area '+a.area+': '):'')+(a.meta?.resumen_general||a.obs||'')).filter(Boolean).join('\n\n'),representante_direccion:representanteDireccion},items:allItems};
   return auditAreaReportHTML(base,{codigo:(S.config&&S.config.aud_cod_gen)||CONFIG_DEFAULT.aud_cod_gen,rev:(S.config&&S.config.aud_rev_gen)||CONFIG_DEFAULT.aud_rev_gen,titulo:'Informe General de Auditoria',general:true});
 }
 function audNumEtiqueta(a){return (a.meta&&a.meta.numero)?a.meta.numero:'Sin número';}
